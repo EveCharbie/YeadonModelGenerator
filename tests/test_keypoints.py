@@ -1,5 +1,5 @@
 import pytest
-from src.im2meas import create_meas
+from src.im2meas import YeadonModel
 
 
 @pytest.mark.parametrize("keypoint", [
@@ -153,5 +153,6 @@ from src.im2meas import create_meas
     "Lk6d"
 ])
 def test_keypoints(keypoint):
-    keypoints = create_meas()
+    yeadon = YeadonModel("")
+    keypoints = yeadon.keypoints
     assert keypoints.get(keypoint, None), f"{keypoint} not found"
