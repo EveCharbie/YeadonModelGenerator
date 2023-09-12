@@ -67,7 +67,7 @@ class YeadonModel:
                 "Ls5": self._find_acromion(im, data),
                 "Ls6": body_parts_pos["nose"],
                 "Ls7": body_parts_pos["left_ear"],
-                #TODO"Ls8": body_parts_pos["top_of_head"],
+                "Ls8": self._find_top_of_head(im),
                 "La0": body_parts_pos["left_shoulder"],
                 "La1": body_parts_pos["left_mid_arm"],
                 "La2": body_parts_pos["left_elbow"],
@@ -166,7 +166,31 @@ class YeadonModel:
         acromion = np.array([acromion_y + crop_offset[0], acromion_x + crop_offset[1]])
         
         return acromion
+    def _find_top_of_head(self, image):
 
+        # Grayscaling the image
+        grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+
+        # Using canny algorithme to get the edges
+        edges = cv.Canny(grayscale_image, 50, 150)
+
+        # Binarise the image
+        _, binary_image = cv.threshold(edges, 0, 255, cv.THRESH_BINARY)
+
+        # Find the contour
+        contours, _ = cv.findContours(binary_image, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+
+        # Find the largest contour
+        largest_contour = max(contours, key=cv.contourArea)
+
+        # Initialize top_of_head as the bottom of the image
+        top_of_head = (0, image.shape[0])
+
+        # Iterate through the points in the largest contour to find the topmost point
+        for point in largest_contour[:, 0]:
+            if point[1] < top_of_head[1]:
+                top_of_head = (point[0], point[1])
+        return top_of_head
 
 if __name__ == '__main__':
     pass
