@@ -166,6 +166,7 @@ class YeadonModel:
         acromion = np.array([acromion_y + crop_offset[0], acromion_x + crop_offset[1]])
         
         return acromion
+
     def _find_top_of_head(self, image):
 
         # Grayscaling the image
@@ -177,20 +178,8 @@ class YeadonModel:
         # Binarise the image
         _, binary_image = cv.threshold(edges, 0, 255, cv.THRESH_BINARY)
 
-        # Find the contour
-        contours, _ = cv.findContours(binary_image, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-
-        # Find the largest contour
-        largest_contour = max(contours, key=cv.contourArea)
-
-        # Initialize top_of_head as the bottom of the image
-        top_of_head = (0, image.shape[0])
-
-        # Iterate through the points in the largest contour to find the topmost point
-        for point in largest_contour[:, 0]:
-            if point[1] < top_of_head[1]:
-                top_of_head = (point[0], point[1])
-        return top_of_head
+        # Return the first pixel from top to bot to find the top_of_head
+        return [np.where(binary_image != 0)[0][0], np.where(binary_image != 0)[1][0]]
 
 if __name__ == '__main__':
     pass
