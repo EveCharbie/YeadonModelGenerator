@@ -179,7 +179,7 @@ class YeadonModel:
         _, binary_image = cv.threshold(edges, 0, 255, cv.THRESH_BINARY)
 
         # Return the first pixel from top to bot to find the top_of_head
-        return [np.where(binary_image != 0)[0][0], np.where(binary_image != 0)[1][0]]
+        return [np.where(binary_image != 0)[1][0], np.where(binary_image != 0)[0][0]]
 
 if __name__ == '__main__':
     pass
