@@ -1,12 +1,7 @@
-import io
+import cv2 as cv
 import numpy as np
-import PIL
-from PIL import Image
-import requests
-import torch
 import openpifpaf
-import matplotlib.pyplot as plt
-
+import PIL
 
 class YeadonModel:
 
@@ -69,7 +64,7 @@ class YeadonModel:
                 "Ls2": body_parts_pos["left_lowest_front_rib"],
                 "Ls3": body_parts_pos["left_nipple"],
                 "Ls4": body_parts_pos["left_shoulder"],
-                #TODO"Ls5": body_parts_pos["acromium"],
+                "Ls5": self._find_acromion(im, data),
                 "Ls6": body_parts_pos["nose"],
                 "Ls7": body_parts_pos["left_ear"],
                 #TODO"Ls8": body_parts_pos["top_of_head"],
@@ -110,6 +105,67 @@ class YeadonModel:
                 "Lk8": body_parts_pos["right_ball"],
                 "Lk9": body_parts_pos["right_toe_nail"]
                 }
+        
+    def _find_acromion(self, im, data):
+        """Finds the acromion given an image and a set of keypoints.
+        
+        Parameters
+        ----------
+        im : numpy array
+            The image to be processed.
+        data : numpy array
+            The keypoints of the image (given by openpifpaf WholeBody, predictions[0].data generally).
+            
+        Returns
+        -------
+        numpy array
+            The coordinates of the acromion in the image.
+        """
+
+        # pre-process
+        gray = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
+        blurred = cv.medianBlur(gray,5)
+        thresh = cv.adaptiveThreshold(blurred, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2)
+        
+        r_shoulder, r_ear = data[6], data[4] # https://github.com/jin-s13/COCO-WholeBody/blob/master/imgs/Fig2_anno.png
+
+        def crop(image, position_1, position_2):
+            """Return the cropped image given two positions.
+            
+            Parameters
+            ----------
+            image : numpy array
+                The image to be cropped.
+            position_1 : tuple
+                The position of the first corner of the image to be cropped.
+            position_2 : tuple
+                The position of the second corner of the image to be cropped.
+                
+            Returns
+            -------
+            numpy array
+                The cropped image.
+            """
+            x1, y1 = map(int, position_1[0:2])
+            x2, y2 = map(int, position_2[0:2])
+            if x1 > x2:
+                x2, x1 = x1, x2
+            if y1 > y2:
+                y2, y1 = y1, y2
+            return image[y1:y2, x1:x2].copy()
+
+        shoulder2ear = crop(thresh, r_shoulder, r_ear)
+        
+        # 'ignore the head', wipes the pixels going past the ear vertical line
+        head_limit = np.min(np.where(shoulder2ear[0] == 0))
+        shoulder2ear[:, head_limit::] = 255
+        
+        # for now taking the highest point, and the average between ear and shoulder
+        crop_offset = [min(r_shoulder[1], r_ear[1]), min(r_shoulder[0], r_ear[0])]
+        acromion_y, acromion_x = np.where(shoulder2ear == 0)[0][0], shoulder2ear.shape[1] / 2
+        acromion = np.array([acromion_y + crop_offset[0], acromion_x + crop_offset[1]])
+        
+        return acromion
 
 
 if __name__ == '__main__':
