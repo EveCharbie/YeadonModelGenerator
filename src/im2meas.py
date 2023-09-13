@@ -3,6 +3,8 @@ import numpy as np
 import openpifpaf
 import PIL
 
+RESIZE_SIZE = 600  # the maximum size of the image to be processed (in pixels)
+
 
 class YeadonModel:
     """A class used to represent a Yeadon Model.
@@ -260,8 +262,20 @@ class YeadonModel:
         return top_of_head
 
     def _resize(self, im):
+        """Resizes an image given a maximum size of RESIZE_SIZE.
+
+        Parameters
+        ----------
+        im : PIL Image
+            The image to be resized.
+
+        Returns
+        -------
+        PIL Image
+            The resized image.
+        """
         x_im, y_im = im.size
-        x_ratio, y_ratio = 600 / x_im, 600 / y_im
+        x_ratio, y_ratio = RESIZE_SIZE / x_im, RESIZE_SIZE / y_im
         min_ratio = min(x_ratio, x_ratio)
         if min_ratio >= 1:
             return im.copy()
