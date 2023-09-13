@@ -26,12 +26,14 @@ class YeadonModel:
         YeadonModel
             The YeadonModel object with the keypoints of the image.
         """
-        pil_im = PIL.Image.open(impath).convert('RGB')
+        pil_im = PIL.Image.open(impath).convert("RGB")
         pil_im = self._resize(pil_im)
         im = np.asarray(pil_im)
-        predictor = openpifpaf.Predictor(
-            checkpoint='shufflenetv2k30-wholebody')
+        predictor = openpifpaf.Predictor(checkpoint="shufflenetv2k30-wholebody")
         predictions, gt_anns, image_meta = predictor.pil_image(pil_im)
+        # You can find the index here:
+        # https://github.com/jin-s13/COCO-WholeBody/blob/master/imgs/Fig2_anno.png
+        # as "predictions" is an array the index starts at 0 and not at 1 like in the github
         data = predictions[0].data
         body_parts_index = {
             "nose": 0,
@@ -54,11 +56,27 @@ class YeadonModel:
             "left_heel": 19,
             "right_heel": 22,
             "left_toe_nail": 17,
-            "right_toe_nail": 20
+            "right_toe_nail": 20,
         }
         body_parts_pos = {k: data[v] for k, v in body_parts_index.items()}
-        hand_pos = [96, 100, 104, 108, 117, 121, 125,
-                    129, 98, 102, 106, 110, 119, 123, 127, 131]
+        hand_pos = [
+            96,
+            100,
+            104,
+            108,
+            117,
+            121,
+            125,
+            129,
+            98,
+            102,
+            106,
+            110,
+            119,
+            123,
+            127,
+            131,
+        ]
         hand_part_pos = []
         for hand_position in hand_pos:
             hand_part_pos.append(data[hand_position])
@@ -66,16 +84,15 @@ class YeadonModel:
         body_parts_pos["right_knuckles"] = np.mean(hand_part_pos[4:7], axis=0)
         body_parts_pos["left_nails"] = np.mean(hand_part_pos[8:11], axis=0)
         body_parts_pos["right_nails"] = np.mean(hand_part_pos[12:15], axis=0)
-        left_lowest_front_rib_approx = (data[5] + data[11])/2
+        left_lowest_front_rib_approx = (data[5] + data[11]) / 2
         body_parts_pos["left_lowest_front_rib"] = left_lowest_front_rib_approx
-        right_lowest_front_rib_approx = (data[6] + data[12])/2
+        right_lowest_front_rib_approx = (data[6] + data[12]) / 2
         body_parts_pos["right_lowest_front_rib"] = right_lowest_front_rib_approx
-        body_parts_pos["left_nipple"] = (
-            left_lowest_front_rib_approx + data[5]) / 2
-        body_parts_pos["right_nipple"] = (
-            right_lowest_front_rib_approx + data[6]) / 2
+        body_parts_pos["left_nipple"] = (left_lowest_front_rib_approx + data[5]) / 2
+        body_parts_pos["right_nipple"] = (right_lowest_front_rib_approx + data[6]) / 2
         body_parts_pos["umbiculus"] = (
-            (left_lowest_front_rib_approx*3) + (data[11]*2))/5
+            (left_lowest_front_rib_approx * 3) + (data[11] * 2)
+        ) / 5
         left_arch_approx = (data[17] + data[19]) / 2
         body_parts_pos["left_arch"] = left_arch_approx
         right_arch_approx = (data[20] + data[22]) / 2
@@ -133,13 +150,22 @@ class YeadonModel:
             "Lk8": body_parts_pos["right_ball"],
             "Lk9": body_parts_pos["right_toe_nail"],
             "Ls1L": abs(body_parts_pos["umbiculus"][1] - body_parts_pos["left_hip"][1]),
-            "Ls2L": abs(body_parts_pos["left_lowest_front_rib"][1] - body_parts_pos["left_hip"][1]),
-            "Ls3L": abs(body_parts_pos["left_nipple"][1] - body_parts_pos["left_hip"][1]),
-            "Ls4L": abs(body_parts_pos["left_shoulder"][1] - body_parts_pos["left_hip"][1]),
+            "Ls2L": abs(
+                body_parts_pos["left_lowest_front_rib"][1]
+                - body_parts_pos["left_hip"][1]
+            ),
+            "Ls3L": abs(
+                body_parts_pos["left_nipple"][1] - body_parts_pos["left_hip"][1]
+            ),
+            "Ls4L": abs(
+                body_parts_pos["left_shoulder"][1] - body_parts_pos["left_hip"][1]
+            ),
             "Ls5L": abs(body_parts_pos["acromion"][1] - body_parts_pos["left_hip"][1]),
             "Ls6L": abs(body_parts_pos["acromion"][1] - body_parts_pos["nose"][1]),
             "Ls7L": abs(body_parts_pos["acromion"][1] - body_parts_pos["left_ear"][1]),
-            "Ls8L": abs(body_parts_pos["acromion"][1] - body_parts_pos["top_of_head"][1]),
+            "Ls8L": abs(
+                body_parts_pos["acromion"][1] - body_parts_pos["top_of_head"][1]
+            ),
         }
 
     def _find_acromion(self, im, data):
@@ -162,7 +188,8 @@ class YeadonModel:
         gray = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
         blurred = cv.medianBlur(gray, 5)
         thresh = cv.adaptiveThreshold(
-            blurred, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2)
+            blurred, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2
+        )
 
         # https://github.com/jin-s13/COCO-WholeBody/blob/master/imgs/Fig2_anno.png
         r_shoulder, r_ear = data[6], data[4]
@@ -199,12 +226,12 @@ class YeadonModel:
         shoulder2ear[:, head_limit::] = 255
 
         # for now taking the highest point, and the average between ear and shoulder
-        crop_offset = [min(r_shoulder[1], r_ear[1]),
-                       min(r_shoulder[0], r_ear[0])]
-        acromion_y, acromion_x = np.where(shoulder2ear == 0)[
-            0][0], shoulder2ear.shape[1] / 2
-        acromion = np.array([acromion_y + crop_offset[0],
-                            acromion_x + crop_offset[1]])
+        crop_offset = [min(r_shoulder[1], r_ear[1]), min(r_shoulder[0], r_ear[0])]
+        acromion_y, acromion_x = (
+            np.where(shoulder2ear == 0)[0][0],
+            shoulder2ear.shape[1] / 2,
+        )
+        acromion = np.array([acromion_y + crop_offset[0], acromion_x + crop_offset[1]])
 
         return acromion
 
@@ -226,11 +253,15 @@ class YeadonModel:
         _, binary_image = cv.threshold(edges, 0, 255, cv.THRESH_BINARY)
 
         # the first pixel from top to bottom to find the top_of_head
-        top_of_head = [np.where(binary_image != 0)[1][0], np.where(binary_image != 0)[0][0]]
+        top_of_head = [
+            np.where(binary_image != 0)[1][0],
+            np.where(binary_image != 0)[0][0],
+        ]
         return top_of_head
+
     def _resize(self, im):
         x_im, y_im = im.size
-        x_ratio, y_ratio = 600/x_im, 600/y_im
+        x_ratio, y_ratio = 600 / x_im, 600 / y_im
         min_ratio = min(x_ratio, x_ratio)
         if min_ratio >= 1:
             return im.copy()
@@ -238,5 +269,5 @@ class YeadonModel:
         return im.resize((y_resize, x_resize))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
