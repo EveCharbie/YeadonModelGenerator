@@ -27,6 +27,7 @@ class YeadonModel:
             The YeadonModel object with the keypoints of the image.
         """
         pil_im = PIL.Image.open(impath).convert('RGB')
+        pil_im = self._resize(pil_im)
         im = np.asarray(pil_im)
         predictor = openpifpaf.Predictor(
             checkpoint='shufflenetv2k30-wholebody')
@@ -83,16 +84,18 @@ class YeadonModel:
         body_parts_pos["right_ball"] = (data[20] + right_arch_approx) / 2
         body_parts_pos["left_mid_arm"] = (data[5] + data[7]) / 2
         body_parts_pos["right_mid_arm"] = (data[6] + data[8]) / 2
+        body_parts_pos["acromion"] = self._find_acromion(im, data)
+        body_parts_pos["top_of_head"] = self._find_top_of_head(im)
         self.keypoints = {
             "Ls0": body_parts_pos["left_hip"],
             "Ls1": body_parts_pos["umbiculus"],
             "Ls2": body_parts_pos["left_lowest_front_rib"],
             "Ls3": body_parts_pos["left_nipple"],
             "Ls4": body_parts_pos["left_shoulder"],
-            "Ls5": self._find_acromion(im, data),
+            "Ls5": body_parts_pos["acromion"],
             "Ls6": body_parts_pos["nose"],
             "Ls7": body_parts_pos["left_ear"],
-            "Ls8": self._find_top_of_head(im),
+            "Ls8": body_parts_pos["top_of_head"],
             "La0": body_parts_pos["left_shoulder"],
             "La1": body_parts_pos["left_mid_arm"],
             "La2": body_parts_pos["left_elbow"],
@@ -128,7 +131,15 @@ class YeadonModel:
             "Lk6": body_parts_pos["right_heel"],
             "Lk7": body_parts_pos["right_arch"],
             "Lk8": body_parts_pos["right_ball"],
-            "Lk9": body_parts_pos["right_toe_nail"]
+            "Lk9": body_parts_pos["right_toe_nail"],
+            "Ls1L": abs(body_parts_pos["umbiculus"][1] - body_parts_pos["left_hip"][1]),
+            "Ls2L": abs(body_parts_pos["left_lowest_front_rib"][1] - body_parts_pos["left_hip"][1]),
+            "Ls3L": abs(body_parts_pos["left_nipple"][1] - body_parts_pos["left_hip"][1]),
+            "Ls4L": abs(body_parts_pos["left_shoulder"][1] - body_parts_pos["left_hip"][1]),
+            "Ls5L": abs(body_parts_pos["acromion"][1] - body_parts_pos["left_hip"][1]),
+            "Ls6L": abs(body_parts_pos["acromion"][1] - body_parts_pos["nose"][1]),
+            "Ls7L": abs(body_parts_pos["acromion"][1] - body_parts_pos["left_ear"][1]),
+            "Ls8L": abs(body_parts_pos["acromion"][1] - body_parts_pos["top_of_head"][1]),
         }
 
     def _find_acromion(self, im, data):
@@ -215,10 +226,16 @@ class YeadonModel:
         _, binary_image = cv.threshold(edges, 0, 255, cv.THRESH_BINARY)
 
         # the first pixel from top to bottom to find the top_of_head
-        top_of_the_head = [np.where(binary_image != 0)[
-            1][0], np.where(binary_image != 0)[0][0]]
-
-        return top_of_the_head
+        top_of_head = [np.where(binary_image != 0)[1][0], np.where(binary_image != 0)[0][0]]
+        return top_of_head
+    def _resize(self, im):
+        x_im, y_im = im.size
+        x_ratio, y_ratio = 600/x_im, 600/y_im
+        min_ratio = min(x_ratio, x_ratio)
+        if min_ratio >= 1:
+            return im.copy()
+        x_resize, y_resize = int(min_ratio * x_im), int(min_ratio * y_im)
+        return im.resize((y_resize, x_resize))
 
 
 if __name__ == '__main__':
