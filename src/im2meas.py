@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 import openpifpaf
 import PIL
+from rembg import remove
 
 RESIZE_SIZE = 600  # the maximum size of the image to be processed (in pixels)
 
@@ -31,6 +32,7 @@ class YeadonModel:
         pil_im = PIL.Image.open(impath).convert("RGB")
         pil_im = self._resize(pil_im)
         im = np.asarray(pil_im)
+        im = remove(im)
         predictor = openpifpaf.Predictor(checkpoint="shufflenetv2k30-wholebody")
         predictions, gt_anns, image_meta = predictor.pil_image(pil_im)
         # You can find the index here:
@@ -107,8 +109,8 @@ class YeadonModel:
         body_parts_pos["top_of_head"] = self._find_top_of_head(im)
         body_parts_pos["right_maximum_forearm"] = self._get_maximum(data[10], data[8], im)
         body_parts_pos["left_maximum_forearm"] = self._get_maximum(data[9], data[7], im)
-        # TODO get better imgbody_parts_pos["right_maximum_calf"] = self._get_maximum(data[16], data[14], im)
-        # TODO get better imgbody_parts_pos["left_maximum_calf"] = self._get_maximum(data[15], data[13], im)
+        body_parts_pos["right_maximum_calf"] = self._get_maximum(data[16], data[14], im)
+        body_parts_pos["left_maximum_calf"] = self._get_maximum(data[15], data[13], im)
         body_parts_pos["right_crotch"],body_parts_pos["left_crotch"] = self._get_crotch_right_left(im, data)
         body_parts_pos["right_mid_thigh"],body_parts_pos["left_mid_thigh"] = self._get_mid_thigh_right_left(data, body_parts_pos["right_crotch"],body_parts_pos["right_crotch"])
         self.keypoints = {
@@ -141,7 +143,7 @@ class YeadonModel:
             "Lj1": body_parts_pos["left_crotch"],
             "Lj2": body_parts_pos["left_mid_thigh"],
             "Lj3": body_parts_pos["left_knee"],
-            # TODO"Lj4": body_parts_pos["left_maximum_calf"],
+            "Lj4": body_parts_pos["left_maximum_calf"],
             "Lj5": body_parts_pos["left_ankle"],
             "Lj6": body_parts_pos["left_heel"],
             "Lj7": body_parts_pos["left_arch"],
@@ -151,7 +153,7 @@ class YeadonModel:
             "Lk1": body_parts_pos["right_crotch"],
             "Lk2": body_parts_pos["right_mid_thigh"],
             "Lk3": body_parts_pos["right_knee"],
-            # TODO"Lk4": body_parts_pos["right_maximum_calf"],
+            "Lk4": body_parts_pos["right_maximum_calf"],
             "Lk5": body_parts_pos["right_ankle"],
             "Lk6": body_parts_pos["right_heel"],
             "Lk7": body_parts_pos["right_arch"],
