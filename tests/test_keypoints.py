@@ -152,7 +152,7 @@ def test_keypoints():
         "Lk9w",
         "Lk6d"
     ]
-    yeadon = YeadonModel("img/stockman2.jpeg")
+    yeadon = YeadonModel("img/green_front_t2.jpg")
     keypoints = yeadon.keypoints
     for point in checklist:
         assert keypoints.get(point, None) is not None, f"{point} not found"

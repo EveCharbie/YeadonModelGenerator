@@ -105,6 +105,12 @@ class YeadonModel:
         body_parts_pos["right_mid_arm"] = (data[6] + data[8]) / 2
         body_parts_pos["acromion"] = self._find_acromion(im, data)
         body_parts_pos["top_of_head"] = self._find_top_of_head(im)
+        body_parts_pos["right_maximum_forearm"] = self._get_maximum(data[10], data[8], im)
+        body_parts_pos["left_maximum_forearm"] = self._get_maximum(data[9], data[7], im)
+        # TODO get better imgbody_parts_pos["right_maximum_calf"] = self._get_maximum(data[16], data[14], im)
+        # TODO get better imgbody_parts_pos["left_maximum_calf"] = self._get_maximum(data[15], data[13], im)
+        body_parts_pos["right_crotch"],body_parts_pos["left_crotch"] = self._get_crotch_right_left(im, data)
+        body_parts_pos["right_mid_thigh"],body_parts_pos["left_mid_thigh"] = self._get_mid_thigh_right_left(data, body_parts_pos["right_crotch"],body_parts_pos["right_crotch"])
         self.keypoints = {
             "Ls0": body_parts_pos["left_hip"],
             "Ls1": body_parts_pos["umbiculus"],
@@ -118,7 +124,7 @@ class YeadonModel:
             "La0": body_parts_pos["left_shoulder"],
             "La1": body_parts_pos["left_mid_arm"],
             "La2": body_parts_pos["left_elbow"],
-            # TODO"La3": body_parts_pos["left_maximum_forearm"],
+            "La3": body_parts_pos["left_maximum_forearm"],
             "La4": body_parts_pos["left_wrist"],
             "La5": body_parts_pos["left_base_of_thumb"],
             "La6": body_parts_pos["left_knuckles"],
@@ -126,14 +132,14 @@ class YeadonModel:
             "Lb0": body_parts_pos["right_shoulder"],
             "Lb1": body_parts_pos["right_mid_arm"],
             "Lb2": body_parts_pos["right_elbow"],
-            # TODO"Lb3": body_parts_pos["right_maximum_forearm"],
+            "Lb3": body_parts_pos["right_maximum_forearm"],
             "Lb4": body_parts_pos["right_wrist"],
             "Lb5": body_parts_pos["right_base_of_thumb"],
             "Lb6": body_parts_pos["right_knuckles"],
             "Lb7": body_parts_pos["right_nails"],
             "Lj0": body_parts_pos["left_hip"],
-            # TODO"Lj1": body_parts_pos["left_crotch"],
-            # TODO"Lj2": body_parts_pos["left_mid_thigh"],
+            "Lj1": body_parts_pos["left_crotch"],
+            "Lj2": body_parts_pos["left_mid_thigh"],
             "Lj3": body_parts_pos["left_knee"],
             # TODO"Lj4": body_parts_pos["left_maximum_calf"],
             "Lj5": body_parts_pos["left_ankle"],
@@ -142,8 +148,8 @@ class YeadonModel:
             "Lj8": body_parts_pos["left_ball"],
             "Lj9": body_parts_pos["left_toe_nail"],
             "Lk0": body_parts_pos["right_hip"],
-            # TODO"Lk1": body_parts_pos["right_crotch"],
-            # TODO"Lk2": body_parts_pos["right_mid_thigh"],
+            "Lk1": body_parts_pos["right_crotch"],
+            "Lk2": body_parts_pos["right_mid_thigh"],
             "Lk3": body_parts_pos["right_knee"],
             # TODO"Lk4": body_parts_pos["right_maximum_calf"],
             "Lk5": body_parts_pos["right_ankle"],
@@ -169,6 +175,127 @@ class YeadonModel:
                 body_parts_pos["acromion"][1] - body_parts_pos["top_of_head"][1]
             ),
         }
+
+    def _get_maximum(self,start, end, im):
+        def pt_from(origin, angle, distance):
+            """
+            compute the point [x, y] that is 'distance' apart from the origin point
+            perpendicular
+            """
+            x = origin[1] + np.sin(angle) * distance
+            y = origin[0] + np.cos(angle) * distance
+            return np.array([int(y),int(x)])
+        def get_max_approx(top_arr, bottom_arr):
+            if len(top_arr) != len(bottom_arr):
+                print("error not the same nbr of pts")
+                return
+            vector = np.array(top_arr) - np.array(bottom_arr)
+            norms = np.linalg.norm(vector, axis=1)
+            maximum = np.max(norms)
+            return maximum
+        def get_points(start, end):
+            p1 = start[0:2]
+            p1 = np.array([p1[1],p1[0]])
+            p2 = end[0:2]
+            p2 = np.array([p2[1],p2[0]])
+            return np.array([p1,p2])
+
+        def vector_angle_plus(p1,p2):
+            vector = np.array([p2[0] - p1[0], p2[1] - p1[1]])
+            angle_radians = np.arctan2(vector[1],vector[0]) + np.pi/2
+            return angle_radians
+
+        def vector_angle_minus(p1,p2):
+            vector = np.array([p2[0] - p1[0], p2[1] - p1[1]])
+            angle_radians = np.arctan2(vector[1],vector[0]) - np.pi/2
+            return angle_radians
+
+        def get_maximum_range(p1,p2, angle_radians):
+            x_values = np.linspace(p1[1],p2[1], 100)
+            y_values = np.linspace(p1[0],p2[0], 100)
+            result = [(y, x) for x, y in zip(x_values, y_values)]
+
+            save = []
+
+            for point in result:
+                distance = 0
+                while True:
+
+                    x,y = pt_from(point, angle_radians, distance)
+                    if x < 0 or x >= edges.shape[1] or y < 0 or y >= edges.shape[0]:
+                        break
+
+                    # Check if we've found an edge pixel
+                    #hit_zone = edges[y-1:y+2, x-1:x+2] == 255# 3 x 3
+                    hit_zone = edges[x,y] == 255
+                    if np.any(hit_zone):
+                        save.append((y,x))
+                        break
+
+                    distance += 0.01
+            return save
+        grayscale_image = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
+        blurred_image = cv.GaussianBlur(grayscale_image, (3, 3), 0)
+        for i in range(2):
+            blurred_image = cv.GaussianBlur(blurred_image, (3, 3), 0)
+            # Using canny algorithme to get the edges
+        edges = cv.Canny(blurred_image, 50, 150)
+
+        #get the maximums for calf and forearm
+        p1,p2 = get_points(start, end)
+        #set the angle in the direction of the edges
+        angle_radians = vector_angle_plus(p1,p2)
+        r_side = get_maximum_range(p1,p2, angle_radians)
+        #set the angle in the direction of other side
+        angle_radians = vector_angle_minus(p1,p2)
+        l_side = get_maximum_range(p1,p2, angle_radians)
+        #find the max distance of all points
+        maximum = get_max_approx(r_side, l_side)
+        return maximum
+
+    def _get_crotch_right_left(self, image, data):
+        def crop(image, position_1, position_2):
+            """Return the cropped image given two positions.
+
+            Parameters
+            ----------
+            image : numpy array
+                The image to be cropped.
+            position_1 : tuple
+                The position of the first corner of the image to be cropped.
+            position_2 : tuple
+                The position of the second corner of the image to be cropped.
+
+            Returns
+            -------
+            numpy array
+                The cropped image.
+            """
+            x1, y1 = map(int, position_1[0:2])
+            x2, y2 = map(int, position_2[0:2])
+            if x1 > x2:
+                x2, x1 = x1, x2
+            if y1 > y2:
+                y2, y1 = y1, y2
+            return image[y1:y2, x1:x2].copy()
+
+        grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+        blurred_image = cv.GaussianBlur(grayscale_image, (3, 3), 0)  # Adjust the kernel size (5, 5) as needed
+        for i in range(2):
+            blurred_image = cv.GaussianBlur(blurred_image, (3, 3), 0)
+            # Using canny algorithme to get the edges
+        edges = cv.Canny(blurred_image, 50, 150)
+        
+        crotch_zone = crop(edges, data[12], data[13])
+        crotch_approx_crop = np.where(crotch_zone != 0)[1][0], np.where(crotch_zone != 0)[0][1]
+        crotch_approx_right = np.array([data[12][0],data[12][1] +  crotch_approx_crop[1]])
+        crotch_approx_left = np.array([data[11][0],data[11][1] +  crotch_approx_crop[1]])
+        return crotch_approx_right, crotch_approx_left
+
+    def _get_mid_thigh_right_left(self, data, r_crotch, l_crotch):
+        mid_thigh_right = (data[14][0:2] + r_crotch)/2
+        mid_thigh_left = (data[13][0:2] + l_crotch)/2
+        return mid_thigh_right, mid_thigh_left
 
     def _find_acromion(self, im, data):
         """Finds the acromion given an image and a set of keypoints.
