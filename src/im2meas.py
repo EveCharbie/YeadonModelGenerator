@@ -200,11 +200,11 @@ class YeadonModel:
             # TODO "Ls6p":,
             # TODO "Ls7p":,
 
-            "Ls0w": self._get_maximum(body_parts_pos["left_hip"], body_parts_pos["left_hip"],edges),
-            "Ls1w": self._get_maximum(body_parts_pos["umbiculus"], body_parts_pos["umbiculus"],edges),
-            "Ls2w": self._get_maximum(body_parts_pos["left_lowest_front_rib"], body_parts_pos["left_lowest_front_rib"],edges),
-            "Ls3w": self._get_maximum(body_parts_pos["left_nipple"], body_parts_pos["left_nipple"],edges),
-            "Ls4w": self._get_maximum(body_parts_pos["left_shoulder"], body_parts_pos["left_shoulder"],edges),
+            "Ls0w": self._get_maximum_line(body_parts_pos["left_hip"], body_parts_pos["right_hip"],edges),
+            # TODO"Ls1w": self._get_maximum_line(body_parts_pos["umbiculus"], body_parts_pos["umbiculus"],edges),
+            "Ls2w": self._get_maximum_line(body_parts_pos["left_lowest_front_rib"], body_parts_pos["right_lowest_front_rib"],edges),
+            "Ls3w": self._get_maximum_line(body_parts_pos["left_nipple"], body_parts_pos["right_nipple"],edges),
+            "Ls4w": self._get_maximum_line(body_parts_pos["left_shoulder"], body_parts_pos["right_shoulder"],edges),
 
             "La1L": (np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["left_elbow"]))/2,
             "La2L": np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["left_elbow"]),
@@ -226,7 +226,7 @@ class YeadonModel:
             "La4w": self._get_maximum_start(body_parts_pos["left_wrist"], body_parts_pos["left_elbow"], edges),
             # TODO "La5w": self._get_maximum_start(body_parts_pos["left_base_of_thumb"], body_parts_pos["left_wrist"], edges),
             "La6w": self._get_maximum_start(body_parts_pos["left_knuckles"], body_parts_pos["left_wrist"], edges),
-            # TODO"La7w": self._get_maximum_start(body_parts_pos["left_nails"], body_parts_pos["left_wrist"], edges),
+            "La7w": self._get_maximum_start(body_parts_pos["left_nails"], body_parts_pos["left_wrist"], edges),
 
             "Lb1L": (np.linalg.norm(body_parts_pos["right_shoulder"] - body_parts_pos["right_elbow"]))/2,
             "Lb2L": np.linalg.norm(body_parts_pos["right_shoulder"] - body_parts_pos["right_elbow"]),
@@ -302,6 +302,44 @@ class YeadonModel:
 
             # TODO "Lk6d":,
         }
+        print(self.keypoints)
+    def _get_maximum_line(self,start, end, edges):
+        def pt_from(origin, angle, distance):
+            """
+            compute the point [x, y] that is 'distance' apart from the origin point
+            perpendicular
+            """
+            x = origin[1] + np.sin(angle) * distance
+            y = origin[0] + np.cos(angle) * distance
+            return np.array([int(y),int(x)])
+        def find_edge(p1,p2,angle_radians):
+            distance = 0
+            save = []
+            while True:
+                #as we want the width of the "start", we choose p1
+                x,y = pt_from(p1, angle_radians, distance)
+                if x < 0 or x >= edges.shape[0] or y < 0 or y >= edges.shape[1]:
+                    break
+                hit_zone = edges[x,y] == 255
+                if np.any(hit_zone):
+                    save.append((y,x))
+                    break
+
+                distance += 0.01
+            return save
+        def get_points(start, end):
+            p1 = start[0:2]
+            p1 = np.array([p1[1],p1[0]])
+            p2 = end[0:2]
+            p2 = np.array([p2[1],p2[0]])
+            return np.array([p1,p2])
+        p1,p2 = get_points(start,end)
+        vector = np.array([p2[0] - p1[0], p2[1] - p1[1]])
+        angle_radians = np.arctan2(vector[1],vector[0])
+        max1 = find_edge(p1,p2,angle_radians)
+        angle_radians = -np.arctan2(vector[1],vector[0])
+        max2 = find_edge(p1,p2,angle_radians)
+        return np.linalg.norm(np.array(max1) - np.array(max2))
     def _get_maximum_start(self, start, end, edges):
         def pt_from(origin, angle, distance):
             """
