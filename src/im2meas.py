@@ -29,10 +29,8 @@ class YeadonModel:
         YeadonModel
             The YeadonModel object with the keypoints of the image.
         """
-        pil_im = PIL.Image.open(impath).convert("RGB")
-        pil_im = self._resize(pil_im)
-        im = np.asarray(pil_im)
-        im = remove(im)
+
+        pil_im, im = self._create_resize_remove_im(impath)
         edges = self._canny_edges(im)
 
         predictor = openpifpaf.Predictor(checkpoint="shufflenetv2k30-wholebody")
@@ -555,5 +553,11 @@ class YeadonModel:
         cv.drawContours(edges, contours, -1, (0, 255, 0), 2)
         return edges
 
+    def _create_resize_remove_im(self, impath):
+        pil_im = PIL.Image.open(impath).convert("RGB")
+        pil_im = self._resize(pil_im)
+        im = np.asarray(pil_im)
+        im = remove(im)
+        return pil_im, im
 if __name__ == "__main__":
     pass
