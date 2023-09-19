@@ -38,7 +38,7 @@ class YeadonModel:
         kernel = cv.getStructuringElement(cv.MORPH_RECT, (3, 3))
 
         # apply the dilation operation to the edges
-        dilate = cv.dilate(edges, kernel, iterations=2)
+        dilate = cv.dilate(edges, kernel, iterations=1)
 
         # find the contours in the dilated image
         contours, _ = cv.findContours(dilate, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
@@ -155,7 +155,7 @@ class YeadonModel:
             "Lj1": body_parts_pos["left_crotch"],
             "Lj2": body_parts_pos["left_mid_thigh"],
             "Lj3": body_parts_pos["left_knee"],
-            "Lj4": body_parts_pos["left_maximum_calf"],
+            # TODO"Lj4": body_parts_pos["left_maximum_calf"],
             "Lj5": body_parts_pos["left_ankle"],
             "Lj6": body_parts_pos["left_heel"],
             "Lj7": body_parts_pos["left_arch"],
@@ -165,7 +165,7 @@ class YeadonModel:
             "Lk1": body_parts_pos["right_crotch"],
             "Lk2": body_parts_pos["right_mid_thigh"],
             "Lk3": body_parts_pos["right_knee"],
-            "Lk4": body_parts_pos["right_maximum_calf"],
+            # TODO"Lk4": body_parts_pos["right_maximum_calf"],
             "Lk5": body_parts_pos["right_ankle"],
             "Lk6": body_parts_pos["right_heel"],
             "Lk7": body_parts_pos["right_arch"],
@@ -205,11 +205,11 @@ class YeadonModel:
 
             "La1L": (np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["left_elbow"]))/2,
             "La2L": np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["left_elbow"]),
-            "La3L": np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["left_maximum_forearm"]),
+            #TODO "La3L": np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["left_maximum_forearm"]),
             "La4L": np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["left_wrist"]),
             "La5L": np.linalg.norm(body_parts_pos["left_wrist"] - body_parts_pos["left_base_of_thumb"]),
             "La6L": np.linalg.norm(body_parts_pos["left_wrist"] - body_parts_pos["left_knuckles"]),
-            "La7L": np.linalg.norm(body_parts_pos["left_wrist"] - body_parts_pos["left_nails"]),
+            #TODO "La7L": np.linalg.norm(body_parts_pos["left_wrist"] - body_parts_pos["left_nails"]),
 
             # TODO "La0p":,
             # TODO "La1p":,
@@ -223,15 +223,15 @@ class YeadonModel:
             "La4w": self._get_maximum_start(body_parts_pos["left_wrist"], body_parts_pos["left_elbow"], edges),
             # TODO "La5w": self._get_maximum_start(body_parts_pos["left_base_of_thumb"], body_parts_pos["left_wrist"], edges),
             "La6w": self._get_maximum_start(body_parts_pos["left_knuckles"], body_parts_pos["left_wrist"], edges),
-            "La7w": self._get_maximum_start(body_parts_pos["left_nails"], body_parts_pos["left_wrist"], edges),
+            #TODO "La7w": self._get_maximum_start(body_parts_pos["left_nails"], body_parts_pos["left_wrist"], edges),
 
             "Lb1L": (np.linalg.norm(body_parts_pos["right_shoulder"] - body_parts_pos["right_elbow"]))/2,
             "Lb2L": np.linalg.norm(body_parts_pos["right_shoulder"] - body_parts_pos["right_elbow"]),
-            "Lb3L": np.linalg.norm(body_parts_pos["right_shoulder"] - body_parts_pos["right_maximum_forearm"]),
+            #TODO "Lb3L": np.linalg.norm(body_parts_pos["right_shoulder"] - body_parts_pos["right_maximum_forearm"]),
             "Lb4L": np.linalg.norm(body_parts_pos["right_shoulder"] - body_parts_pos["right_wrist"]),
             "Lb5L": np.linalg.norm(body_parts_pos["right_wrist"] - body_parts_pos["right_base_of_thumb"]),
             "Lb6L": np.linalg.norm(body_parts_pos["right_wrist"] - body_parts_pos["right_knuckles"]),
-            "Lb7L": np.linalg.norm(body_parts_pos["right_wrist"] - body_parts_pos["right_nails"]),
+            #TODO"Lb7L": np.linalg.norm(body_parts_pos["right_wrist"] - body_parts_pos["right_nails"]),
 
             # TODO "Lb0p":,
             # TODO "Lb1p":,
@@ -250,7 +250,7 @@ class YeadonModel:
             "Lj1L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_crotch"]),
             "Lj2L": (np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_knee"]))/2,
             "Lj3L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_knee"]),
-            "Lj4L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_maximum_calf"]),
+            #"Lj4L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_maximum_calf"]),
             "Lj5L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_ankle"]),
             "Lj6L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_heel"]),
             "Lj7L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_arch"]),
@@ -276,7 +276,7 @@ class YeadonModel:
             "Lk1L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_crotch"]),
             "Lk2L": (np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_knee"]))/2,
             "Lk3L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_knee"]),
-            "Lk4L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_maximum_calf"]),
+            #"Lk4L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_maximum_calf"]),
             "Lk5L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_ankle"]),
             "Lk6L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_heel"]),
             "Lk7L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_arch"]),
@@ -543,9 +543,9 @@ class YeadonModel:
         PIL Image
             The resized image.
         """
-        x_im, y_im = im.size
+        x_im, y_im = im.height, im.width
         x_ratio, y_ratio = RESIZE_SIZE / x_im, RESIZE_SIZE / y_im
-        min_ratio = min(x_ratio, x_ratio)
+        min_ratio = min(x_ratio, y_ratio)
         if min_ratio >= 1:
             return im.copy()
         x_resize, y_resize = int(min_ratio * x_im), int(min_ratio * y_im)
