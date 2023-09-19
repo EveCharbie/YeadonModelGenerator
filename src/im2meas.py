@@ -33,17 +33,7 @@ class YeadonModel:
         pil_im = self._resize(pil_im)
         im = np.asarray(pil_im)
         im = remove(im)
-        grayscale_image = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
-        edges = cv.Canny(grayscale_image, 10, 100)
-        kernel = cv.getStructuringElement(cv.MORPH_RECT, (3, 3))
-
-        # apply the dilation operation to the edges
-        dilate = cv.dilate(edges, kernel, iterations=1)
-
-        # find the contours in the dilated image
-        contours, _ = cv.findContours(dilate, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-        edges = np.zeros(im.shape)
-        cv.drawContours(edges, contours, -1, (0, 255, 0), 2)
+        edges = self._canny_edges(im)
 
         predictor = openpifpaf.Predictor(checkpoint="shufflenetv2k30-wholebody")
         predictions, gt_anns, image_meta = predictor.pil_image(pil_im)
@@ -155,7 +145,7 @@ class YeadonModel:
             "Lj1": body_parts_pos["left_crotch"],
             "Lj2": body_parts_pos["left_mid_thigh"],
             "Lj3": body_parts_pos["left_knee"],
-            # TODO"Lj4": body_parts_pos["left_maximum_calf"],
+            "Lj4": body_parts_pos["left_maximum_calf"],
             "Lj5": body_parts_pos["left_ankle"],
             "Lj6": body_parts_pos["left_heel"],
             "Lj7": body_parts_pos["left_arch"],
@@ -165,7 +155,7 @@ class YeadonModel:
             "Lk1": body_parts_pos["right_crotch"],
             "Lk2": body_parts_pos["right_mid_thigh"],
             "Lk3": body_parts_pos["right_knee"],
-            # TODO"Lk4": body_parts_pos["right_maximum_calf"],
+            "Lk4": body_parts_pos["right_maximum_calf"],
             "Lk5": body_parts_pos["right_ankle"],
             "Lk6": body_parts_pos["right_heel"],
             "Lk7": body_parts_pos["right_arch"],
@@ -205,11 +195,11 @@ class YeadonModel:
 
             "La1L": (np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["left_elbow"]))/2,
             "La2L": np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["left_elbow"]),
-            #TODO "La3L": np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["left_maximum_forearm"]),
+            "La3L": np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["left_maximum_forearm"]),
             "La4L": np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["left_wrist"]),
             "La5L": np.linalg.norm(body_parts_pos["left_wrist"] - body_parts_pos["left_base_of_thumb"]),
             "La6L": np.linalg.norm(body_parts_pos["left_wrist"] - body_parts_pos["left_knuckles"]),
-            #TODO "La7L": np.linalg.norm(body_parts_pos["left_wrist"] - body_parts_pos["left_nails"]),
+            "La7L": np.linalg.norm(body_parts_pos["left_wrist"] - body_parts_pos["left_nails"]),
 
             # TODO "La0p":,
             # TODO "La1p":,
@@ -223,15 +213,15 @@ class YeadonModel:
             "La4w": self._get_maximum_start(body_parts_pos["left_wrist"], body_parts_pos["left_elbow"], edges),
             # TODO "La5w": self._get_maximum_start(body_parts_pos["left_base_of_thumb"], body_parts_pos["left_wrist"], edges),
             "La6w": self._get_maximum_start(body_parts_pos["left_knuckles"], body_parts_pos["left_wrist"], edges),
-            #TODO "La7w": self._get_maximum_start(body_parts_pos["left_nails"], body_parts_pos["left_wrist"], edges),
+            # TODO"La7w": self._get_maximum_start(body_parts_pos["left_nails"], body_parts_pos["left_wrist"], edges),
 
             "Lb1L": (np.linalg.norm(body_parts_pos["right_shoulder"] - body_parts_pos["right_elbow"]))/2,
             "Lb2L": np.linalg.norm(body_parts_pos["right_shoulder"] - body_parts_pos["right_elbow"]),
-            #TODO "Lb3L": np.linalg.norm(body_parts_pos["right_shoulder"] - body_parts_pos["right_maximum_forearm"]),
+            "Lb3L": np.linalg.norm(body_parts_pos["right_shoulder"] - body_parts_pos["right_maximum_forearm"]),
             "Lb4L": np.linalg.norm(body_parts_pos["right_shoulder"] - body_parts_pos["right_wrist"]),
             "Lb5L": np.linalg.norm(body_parts_pos["right_wrist"] - body_parts_pos["right_base_of_thumb"]),
             "Lb6L": np.linalg.norm(body_parts_pos["right_wrist"] - body_parts_pos["right_knuckles"]),
-            #TODO"Lb7L": np.linalg.norm(body_parts_pos["right_wrist"] - body_parts_pos["right_nails"]),
+            "Lb7L": np.linalg.norm(body_parts_pos["right_wrist"] - body_parts_pos["right_nails"]),
 
             # TODO "Lb0p":,
             # TODO "Lb1p":,
@@ -250,7 +240,7 @@ class YeadonModel:
             "Lj1L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_crotch"]),
             "Lj2L": (np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_knee"]))/2,
             "Lj3L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_knee"]),
-            #"Lj4L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_maximum_calf"]),
+            "Lj4L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_maximum_calf"]),
             "Lj5L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_ankle"]),
             "Lj6L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_heel"]),
             "Lj7L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_arch"]),
@@ -276,7 +266,7 @@ class YeadonModel:
             "Lk1L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_crotch"]),
             "Lk2L": (np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_knee"]))/2,
             "Lk3L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_knee"]),
-            #"Lk4L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_maximum_calf"]),
+            "Lk4L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_maximum_calf"]),
             "Lk5L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_ankle"]),
             "Lk6L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_heel"]),
             "Lk7L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_arch"]),
@@ -314,7 +304,7 @@ class YeadonModel:
             while True:
                 #as we want the width of the "start", we choose p1
                 x,y = pt_from(p1, angle_radians, distance)
-                if x < 0 or x >= edges.shape[1] or y < 0 or y >= edges.shape[0]:
+                if x < 0 or x >= edges.shape[0] or y < 0 or y >= edges.shape[1]:
                     break
                 hit_zone = edges[x,y] == 255
                 if np.any(hit_zone):
@@ -383,7 +373,7 @@ class YeadonModel:
                 while True:
 
                     x,y = pt_from(point, angle_radians, distance)
-                    if x < 0 or x >= edges.shape[1] or y < 0 or y >= edges.shape[0]:
+                    if x < 0 or x >= edges.shape[0] or y < 0 or y >= edges.shape[1]:
                         break
 
                     # Check if we've found an edge pixel
@@ -551,6 +541,19 @@ class YeadonModel:
         x_resize, y_resize = int(min_ratio * x_im), int(min_ratio * y_im)
         return im.resize((y_resize, x_resize))
 
+    def _canny_edges(self, im):
+        grayscale_image = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
+        edges = cv.Canny(grayscale_image, 10, 100)
+        kernel = cv.getStructuringElement(cv.MORPH_RECT, (3, 3))
+
+        # apply the dilation operation to the edges
+        dilate = cv.dilate(edges, kernel, iterations=1)
+
+        # find the contours in the dilated image
+        contours, _ = cv.findContours(dilate, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+        edges = np.zeros(im.shape)
+        cv.drawContours(edges, contours, -1, (0, 255, 0), 2)
+        return edges
 
 if __name__ == "__main__":
     pass
