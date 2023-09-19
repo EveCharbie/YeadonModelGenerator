@@ -242,10 +242,10 @@ class YeadonModel:
             # TODO "Lb6p":,
             # TODO "Lb7p":,
 
-            # TODO "Lb4w":,
-            # TODO "Lb5w":,
-            # TODO "Lb6w":,
-            # TODO "Lb7w":,
+            "Lb4w": self._get_maximum_start(body_parts_pos["right_wrist"], body_parts_pos["right_elbow"], edges),
+            # TODO "Lb5w": self._get_maximum_start(body_parts_pos["right_base_of_thumb"], body_parts_pos["right_wrist"], edges),
+            "Lb6w": self._get_maximum_start(body_parts_pos["right_knuckles"], body_parts_pos["right_wrist"], edges),
+            "Lb7w": self._get_maximum_start(body_parts_pos["right_nails"], body_parts_pos["right_wrist"], edges),
 
             "Lj1L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_crotch"]),
             "Lj2L": (np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_knee"]))/2,
@@ -312,6 +312,7 @@ class YeadonModel:
             distance = 0
             save = []
             while True:
+                #as we want the width of the "start", we choose p1
                 x,y = pt_from(p1, angle_radians, distance)
                 if x < 0 or x >= edges.shape[1] or y < 0 or y >= edges.shape[0]:
                     break
@@ -376,7 +377,7 @@ class YeadonModel:
             result = [(y, x) for x, y in zip(x_values, y_values)]
 
             save = []
-
+            #for all the points between p1 and p2
             for point in result:
                 distance = 0
                 while True:
@@ -432,8 +433,9 @@ class YeadonModel:
             if y1 > y2:
                 y2, y1 = y1, y2
             return edges[y1:y2, x1:x2].copy()
-        
+        #crop the image to see the right hip to the left knee
         crotch_zone = crop(edges, data[12], data[13])
+        #now the cropped image only has the crotch as an edge so we can get it like the head
         crotch_approx_crop = np.where(crotch_zone != 0)[1][0], np.where(crotch_zone != 0)[0][1]
         crotch_approx_right = np.array([data[12][0],data[12][1] +  crotch_approx_crop[1]])
         crotch_approx_left = np.array([data[11][0],data[11][1] +  crotch_approx_crop[1]])
