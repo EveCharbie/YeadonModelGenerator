@@ -29,16 +29,21 @@ class YeadonModel:
         YeadonModel
             The YeadonModel object with the keypoints of the image.
         """
-
+        #front
         pil_im, im = self._create_resize_remove_im(impath)
         edges = self._canny_edges(im)
-
         predictor = openpifpaf.Predictor(checkpoint="shufflenetv2k30-wholebody")
         predictions, gt_anns, image_meta = predictor.pil_image(pil_im)
         # You can find the index here:
         # https://github.com/jin-s13/COCO-WholeBody/blob/master/imgs/Fig2_anno.png
         # as "predictions" is an array the index starts at 0 and not at 1 like in the github
         data = predictions[0].data[:,0:2]
+        #right side
+        pil_r_side_im, im_r_side = self._create_resize_remove_im("img/green_side.jpg")
+        edges_r_side = self._canny_edges(im_r_side)
+        predictions2, gt_anns2, image_meta2 = predictor.pil_image(pil_r_side_im)
+        data_r_side = predictions2[0].data[:,0:2]
+
         body_parts_index = {
             "nose": 0,
             "left_ear": 3,
@@ -62,7 +67,10 @@ class YeadonModel:
             "left_toe_nail": 17,
             "right_toe_nail": 20,
         }
+        #front
         body_parts_pos = {k: data[v] for k, v in body_parts_index.items()}
+        #right side
+        body_parts_pos_r_side = {k: data_r_side[v] for k, v in body_parts_index.items()}
         hand_pos = [
             96,
             100,
@@ -81,9 +89,11 @@ class YeadonModel:
             127,
             131,
         ]
+        #front
         hand_part_pos = []
         for hand_position in hand_pos:
             hand_part_pos.append(data[hand_position])
+        
         body_parts_pos["left_knuckles"] = np.mean(hand_part_pos[0:3], axis=0)
         body_parts_pos["right_knuckles"] = np.mean(hand_part_pos[4:7], axis=0)
         body_parts_pos["left_nails"] = np.mean(hand_part_pos[8:11], axis=0)
@@ -113,6 +123,11 @@ class YeadonModel:
         body_parts_pos["left_maximum_calf"] = self._get_maximum(data[15], data[13], edges)
         body_parts_pos["right_crotch"],body_parts_pos["left_crotch"] = self._get_crotch_right_left(im, data)
         body_parts_pos["right_mid_thigh"],body_parts_pos["left_mid_thigh"] = self._get_mid_thigh_right_left(data, body_parts_pos["right_crotch"],body_parts_pos["right_crotch"])
+
+        #right side
+        hand_part_pos_r_side = []
+        for hand_position in hand_pos:
+            hand_part_pos_r_side.append(data_r_side[hand_position])
         self.keypoints = {
             "Ls0": body_parts_pos["left_hip"],
             "Ls1": body_parts_pos["umbiculus"],
