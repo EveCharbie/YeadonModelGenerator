@@ -3,6 +3,7 @@ import numpy as np
 import openpifpaf
 import PIL
 from rembg import remove
+import matplotlib.pyplot as plt
 
 RESIZE_SIZE = 600  # the maximum size of the image to be processed (in pixels)
 
@@ -39,7 +40,7 @@ class YeadonModel:
         # as "predictions" is an array the index starts at 0 and not at 1 like in the github
         data = predictions[0].data[:,0:2]
         #right side
-        pil_r_side_im, im_r_side = self._create_resize_remove_im("img/green_side.jpg")
+        pil_r_side_im, im_r_side = self._create_resize_remove_im("img/green_up.jpg")
         edges_r_side = self._canny_edges(im_r_side)
         predictions2, gt_anns2, image_meta2 = predictor.pil_image(pil_r_side_im)
         data_r_side = predictions2[0].data[:,0:2]
@@ -70,7 +71,21 @@ class YeadonModel:
         #front
         body_parts_pos = {k: data[v] for k, v in body_parts_index.items()}
         #right side
-        body_parts_pos_r_side = {k: data_r_side[v] for k, v in body_parts_index.items()}
+        body_parts_index_r = {
+            "nose": 0,
+            "right_ear": 4,
+            "right_shoulder": 6,
+            "right_elbow": 8,
+            "right_wrist": 10,
+            "right_hip": 12,
+            "right_knee": 14,
+            "left_ankle": 15,
+            "right_ankle": 16,
+            "right_base_of_thumb": 114,
+            "right_heel": 22,
+            "right_toe_nail": 20,
+        }
+        body_parts_pos_r = {k: data_r_side[v] for k, v in body_parts_index_r.items()}
         hand_pos = [
             96,
             100,
@@ -94,6 +109,7 @@ class YeadonModel:
         for hand_position in hand_pos:
             hand_part_pos.append(data[hand_position])
         
+        #front
         body_parts_pos["left_knuckles"] = np.mean(hand_part_pos[0:3], axis=0)
         body_parts_pos["right_knuckles"] = np.mean(hand_part_pos[4:7], axis=0)
         body_parts_pos["left_nails"] = np.mean(hand_part_pos[8:11], axis=0)
@@ -117,17 +133,38 @@ class YeadonModel:
         body_parts_pos["right_mid_arm"] = (data[6] + data[8]) / 2
         body_parts_pos["acromion"] = self._find_acromion(im, data)
         body_parts_pos["top_of_head"] = self._find_top_of_head(edges)
-        body_parts_pos["right_maximum_forearm"] = self._get_maximum(data[10], data[8], edges)
-        body_parts_pos["left_maximum_forearm"] = self._get_maximum(data[9], data[7], edges)
-        body_parts_pos["right_maximum_calf"] = self._get_maximum(data[16], data[14], edges)
-        body_parts_pos["left_maximum_calf"] = self._get_maximum(data[15], data[13], edges)
+        body_parts_pos["right_maximum_forearm"] = self._get_maximum_point(data[10], data[8], edges)
+        body_parts_pos["left_maximum_forearm"] = self._get_maximum_point(data[9], data[7], edges)
+        body_parts_pos["right_maximum_calf"] = self._get_maximum_point(data[16], data[14], edges)
+        body_parts_pos["left_maximum_calf"] = self._get_maximum_point(data[15], data[13], edges)
         body_parts_pos["right_crotch"],body_parts_pos["left_crotch"] = self._get_crotch_right_left(im, data)
-        body_parts_pos["right_mid_thigh"],body_parts_pos["left_mid_thigh"] = self._get_mid_thigh_right_left(data, body_parts_pos["right_crotch"],body_parts_pos["right_crotch"])
-
+        body_parts_pos["right_mid_thigh"],body_parts_pos["left_mid_thigh"] = self._get_mid_thigh_right_left(data, body_parts_pos["right_crotch"],body_parts_pos["left_crotch"])
+        #print(body_parts_pos)
         #right side
-        hand_part_pos_r_side = []
-        for hand_position in hand_pos:
-            hand_part_pos_r_side.append(data_r_side[hand_position])
+        hand_pos_r = [
+            117,
+            121,
+            125,
+            129,
+            119,
+            123,
+            127,
+            131,
+        ]
+        hand_part_pos_r = []
+        for hand_position in hand_pos_r:
+            hand_part_pos_r.append(data[hand_position])
+
+        body_parts_pos_r["right_knuckles"] = np.mean(hand_part_pos_r[0:3], axis=0)
+        body_parts_pos_r["right_nails"] = np.mean(hand_part_pos_r[4:7], axis=0)
+        right_arch_approx = (data_r_side[20] + data_r_side[22]) / 2
+        body_parts_pos_r["right_arch"] = right_arch_approx
+        body_parts_pos_r["right_ball"] = (data_r_side[20] + right_arch_approx) / 2
+        body_parts_pos_r["right_mid_arm"] = (data_r_side[6] + data_r_side[8]) / 2
+        body_parts_pos_r["top_of_head"] = self._find_top_of_head(edges_r_side)
+        body_parts_pos_r["right_maximum_forearm"] = self._get_maximum_point(data_r_side[10], data_r_side[8], edges_r_side)
+        body_parts_pos_r["right_maximum_calf"] = self._get_maximum_point(data_r_side[15], data_r_side[14], edges_r_side)
+        #print(body_parts_pos_r)
         self.keypoints = {
             "Ls0": body_parts_pos["left_hip"],
             "Ls1": body_parts_pos["umbiculus"],
@@ -192,7 +229,7 @@ class YeadonModel:
                 body_parts_pos["acromion"][1] - body_parts_pos["top_of_head"][1]
             ),
 
-            # TODO "Ls0p":,
+            # TODO "Ls0p": self._stadium_perimeter(),
             # TODO "Ls1p":,
             # TODO "Ls2p":,
             # TODO "Ls3p":,
@@ -215,16 +252,16 @@ class YeadonModel:
             "La7L": np.linalg.norm(body_parts_pos["left_wrist"] - body_parts_pos["left_nails"]),
 
             # TODO "La0p":,
-            # TODO "La1p":,
-            # TODO "La2p":,
-            # TODO "La3p":,
-            # TODO "La4p":,
+            "La1p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["left_mid_arm"], body_parts_pos["left_elbow"], edges)),
+            "La2p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["left_elbow"], body_parts_pos["left_mid_arm"], edges)),
+            "La3p":self._circle_perimeter(self._get_maximum_start(body_parts_pos["left_maximum_forearm"], body_parts_pos["left_elbow"], edges)),
+            # TODO "La4p": ,
             # TODO "La5p":,
             # TODO "La6p":,
             # TODO "La7p":,
 
             "La4w": self._get_maximum_start(body_parts_pos["left_wrist"], body_parts_pos["left_elbow"], edges),
-            # TODO "La5w": self._get_maximum_start(body_parts_pos["left_base_of_thumb"], body_parts_pos["left_wrist"], edges),
+            "La5w": self._get_maximum_start(body_parts_pos["left_base_of_thumb"], body_parts_pos["left_wrist"], edges),
             "La6w": self._get_maximum_start(body_parts_pos["left_knuckles"], body_parts_pos["left_wrist"], edges),
             "La7w": self._get_maximum_start(body_parts_pos["left_nails"], body_parts_pos["left_wrist"], edges),
 
@@ -237,9 +274,9 @@ class YeadonModel:
             "Lb7L": np.linalg.norm(body_parts_pos["right_wrist"] - body_parts_pos["right_nails"]),
 
             # TODO "Lb0p":,
-            # TODO "Lb1p":,
-            # TODO "Lb2p":,
-            # TODO "Lb3p":,
+            "Lb1p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["right_mid_arm"], body_parts_pos["right_elbow"], edges)),
+            "Lb2p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["right_elbow"], body_parts_pos["right_mid_arm"], edges)),
+            "Lb3p":self._circle_perimeter(self._get_maximum_start(body_parts_pos["right_maximum_forearm"], body_parts_pos["right_elbow"], edges)),
             # TODO "Lb4p":,
             # TODO "Lb5p":,
             # TODO "Lb6p":,
@@ -260,10 +297,10 @@ class YeadonModel:
             "Lj8L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_ball"]),
             "Lj9L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_toe_nail"]),
 
-            # TODO "Lj0p":,
-            # TODO "Lj1p":,
-            # TODO "Lj2p":,
-            # TODO "Lj3p":,
+            # TODO "Lj0p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["left_hip"], body_parts_pos["left_knee"], edges)),
+            "Lj1p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["left_crotch"], body_parts_pos["left_knee"], edges)),
+            "Lj2p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["left_mid_thigh"], body_parts_pos["left_knee"], edges)),
+            "Lj3p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["left_knee"], body_parts_pos["left_hip"], edges)),
             # TODO "Lj4p":,
             # TODO "Lj5p":,
             # TODO "Lj6p":,
@@ -286,10 +323,10 @@ class YeadonModel:
             "Lk8L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_ball"]),
             "Lk9L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_toe_nail"]),
 
-            # TODO "Lk0p":,
-            # TODO "Lk1p":,
-            # TODO "Lk2p":,
-            # TODO "Lk3p":,
+            # TODO "Lk0p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["right_hip"], body_parts_pos["right_knee"], edges)),
+            "Lk1p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["right_crotch"], body_parts_pos["right_knee"], edges)),
+            "Lk2p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["right_mid_thigh"], body_parts_pos["right_hip"], edges)),
+            "Lk3p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["right_knee"], body_parts_pos["right_hip"], edges)),
             # TODO "Lk4p":,
             # TODO "Lk5p":,
             # TODO "Lk6p":,
@@ -377,6 +414,82 @@ class YeadonModel:
         angle_radians = np.arctan2(vector[1],vector[0]) + np.pi/2
         max2 = find_edge(p1,p2,angle_radians)
         return np.linalg.norm(np.array(max1) - np.array(max2))
+
+    def _get_maximum_point(self,start, end, edges):
+        def pt_from(origin, angle, distance):
+            """
+            compute the point [x, y] that is 'distance' apart from the origin point
+            perpendicular
+            """
+            x = origin[1] + np.sin(angle) * distance
+            y = origin[0] + np.cos(angle) * distance
+            return np.array([int(y),int(x)])
+        def get_max_approx(top_arr, bottom_arr):
+            if len(top_arr) != len(bottom_arr):
+                print("error not the same nbr of pts")
+                return
+            max_norm = 0
+            save_index = 0
+            vector = np.array(top_arr) - np.array(bottom_arr)
+            norms = np.linalg.norm(vector,axis = 1)
+            for i in range(len(top_arr)):
+                if norms[i] > max_norm:
+                    max_norm = norms[i]
+                    save_index = i
+            return save_index
+        def get_points(start, end):
+            p1 = start[0:2]
+            p1 = np.array([p1[1],p1[0]])
+            p2 = end[0:2]
+            p2 = np.array([p2[1],p2[0]])
+            return np.array([p1,p2])
+
+        def vector_angle_plus(p1,p2):
+            vector = np.array([p2[0] - p1[0], p2[1] - p1[1]])
+            angle_radians = np.arctan2(vector[1],vector[0]) + np.pi/2
+            return angle_radians
+
+        def vector_angle_minus(p1,p2):
+            vector = np.array([p2[0] - p1[0], p2[1] - p1[1]])
+            angle_radians = np.arctan2(vector[1],vector[0]) - np.pi/2
+            return angle_radians
+
+        def get_maximum_range(p1,p2, angle_radians):
+            save = []
+            #for all the points between p1 and p2
+            for point in result:
+                distance = 0
+                while True:
+
+                    x,y = pt_from(point, angle_radians, distance)
+                    if x < 0 or x >= edges.shape[0] or y < 0 or y >= edges.shape[1]:
+                        break
+
+                    # Check if we've found an edge pixel
+                    #hit_zone = edges[y-1:y+2, x-1:x+2] == 255# 3 x 3
+                    hit_zone = edges[x,y] == 255
+                    if np.any(hit_zone):
+                        save.append((y,x))
+                        break
+
+                    distance += 0.01
+            return save
+
+        #get the maximums for calf and forearm
+        p1,p2 = get_points(start, end)
+        #create an array with 100 points between start and end
+        x_values = np.linspace(p1[1],p2[1], 100)
+        y_values = np.linspace(p1[0],p2[0], 100)
+        result = [(y, x) for x, y in zip(x_values, y_values)]
+        #set the angle in the direction of the edges
+        angle_radians = vector_angle_plus(p1,p2)
+        r_side = get_maximum_range(p1,p2, angle_radians)
+        #set the angle in the direction of other side
+        angle_radians = vector_angle_minus(p1,p2)
+        l_side = get_maximum_range(p1,p2, angle_radians)
+        #get the index of the max
+        index = get_max_approx(r_side,l_side)
+        return result[index][::-1]
 
     def _get_maximum(self,start, end, edges):
         def pt_from(origin, angle, distance):
@@ -475,11 +588,14 @@ class YeadonModel:
                 y2, y1 = y1, y2
             return edges[y1:y2, x1:x2].copy()
         #crop the image to see the right hip to the left knee
-        crotch_zone = crop(edges, data[12], data[13])
+        crotch_zone = crop(edges.copy(), data[12], data[13])
         #now the cropped image only has the crotch as an edge so we can get it like the head
         crotch_approx_crop = np.where(crotch_zone != 0)[1][0], np.where(crotch_zone != 0)[0][1]
         crotch_approx_right = np.array([data[12][0],data[12][1] +  crotch_approx_crop[1]])
         crotch_approx_left = np.array([data[11][0],data[11][1] +  crotch_approx_crop[1]])
+        print(crotch_approx_crop)
+        print(crotch_approx_right)
+        print(crotch_approx_left)
         return crotch_approx_right, crotch_approx_left
 
     def _get_mid_thigh_right_left(self, data, r_crotch, l_crotch):
@@ -576,6 +692,11 @@ class YeadonModel:
         a = width - depth
         perimeter = 2 * (np.pi * radius + a)
         return perimeter
+
+    def _circle_perimeter(self, diag):
+        r = diag/2
+        return 2 * np.pi * r
+
     def _resize(self, im):
         """Resizes an image given a maximum size of RESIZE_SIZE.
 
