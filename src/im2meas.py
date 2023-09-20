@@ -571,6 +571,11 @@ class YeadonModel:
         ]
         return top_of_head
 
+    def _stadium_perimeter(self, width, depth):
+        radius = depth/2
+        a = width - depth
+        perimeter = 2 * (np.pi * radius + a)
+        return perimeter
     def _resize(self, im):
         """Resizes an image given a maximum size of RESIZE_SIZE.
 
