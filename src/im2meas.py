@@ -31,8 +31,8 @@ class YeadonModel:
             The YeadonModel object with the keypoints of the image.
         """
         #front
-        pil_im, im = self._create_resize_remove_im(impath)
-        edges = self._canny_edges(im)
+        pil_im, image, im = self._create_resize_remove_im(impath)
+        edges = self._canny_edges(im, image)
         predictor = openpifpaf.Predictor(checkpoint="shufflenetv2k30-wholebody")
         predictions, gt_anns, image_meta = predictor.pil_image(pil_im)
         # You can find the index here:
@@ -40,8 +40,8 @@ class YeadonModel:
         # as "predictions" is an array the index starts at 0 and not at 1 like in the github
         data = predictions[0].data[:,0:2]
         #right side
-        pil_r_side_im, im_r_side = self._create_resize_remove_im("img/green_up.jpg")
-        edges_r_side = self._canny_edges(im_r_side)
+        pil_r_side_im, image_r_side, im_r_side = self._create_resize_remove_im("/home/william/YeadonModelGenerator/img/green_up.jpg")
+        edges_r_side = self._canny_edges(im_r_side, image_r_side)
         predictions2, gt_anns2, image_meta2 = predictor.pil_image(pil_r_side_im)
         data_r_side = predictions2[0].data[:,0:2]
 
@@ -120,8 +120,11 @@ class YeadonModel:
         body_parts_pos["right_lowest_front_rib"] = right_lowest_front_rib_approx
         body_parts_pos["left_nipple"] = (left_lowest_front_rib_approx + data[5]) / 2
         body_parts_pos["right_nipple"] = (right_lowest_front_rib_approx + data[6]) / 2
-        body_parts_pos["umbiculus"] = (
+        body_parts_pos["left_umbiculus"] = (
             (left_lowest_front_rib_approx * 3) + (data[11] * 2)
+        ) / 5
+        body_parts_pos["right_umbiculus"] = (
+            (right_lowest_front_rib_approx * 3) + (data[12] * 2)
         ) / 5
         left_arch_approx = (data[17] + data[19]) / 2
         body_parts_pos["left_arch"] = left_arch_approx
@@ -137,7 +140,7 @@ class YeadonModel:
         body_parts_pos["left_maximum_forearm"] = self._get_maximum_point(data[9], data[7], edges)
         body_parts_pos["right_maximum_calf"] = self._get_maximum_point(data[16], data[14], edges)
         body_parts_pos["left_maximum_calf"] = self._get_maximum_point(data[15], data[13], edges)
-        body_parts_pos["right_crotch"],body_parts_pos["left_crotch"] = self._get_crotch_right_left(im, data)
+        body_parts_pos["right_crotch"],body_parts_pos["left_crotch"] = self._get_crotch_right_left(edges, data)
         body_parts_pos["right_mid_thigh"],body_parts_pos["left_mid_thigh"] = self._get_mid_thigh_right_left(data, body_parts_pos["right_crotch"],body_parts_pos["left_crotch"])
         #print(body_parts_pos)
         #right side
@@ -167,7 +170,7 @@ class YeadonModel:
         #print(body_parts_pos_r)
         self.keypoints = {
             "Ls0": body_parts_pos["left_hip"],
-            "Ls1": body_parts_pos["umbiculus"],
+            "Ls1": body_parts_pos["left_umbiculus"],
             "Ls2": body_parts_pos["left_lowest_front_rib"],
             "Ls3": body_parts_pos["left_nipple"],
             "Ls4": body_parts_pos["left_shoulder"],
@@ -211,7 +214,7 @@ class YeadonModel:
             "Lk7": body_parts_pos["right_arch"],
             "Lk8": body_parts_pos["right_ball"],
             "Lk9": body_parts_pos["right_toe_nail"],
-            "Ls1L": abs(body_parts_pos["umbiculus"][1] - body_parts_pos["left_hip"][1]),
+            "Ls1L": abs(body_parts_pos["left_umbiculus"][1] - body_parts_pos["left_hip"][1]),
             "Ls2L": abs(
                 body_parts_pos["left_lowest_front_rib"][1]
                 - body_parts_pos["left_hip"][1]
@@ -238,7 +241,7 @@ class YeadonModel:
             # TODO "Ls7p":,
 
             "Ls0w": self._get_maximum_line(body_parts_pos["left_hip"], body_parts_pos["right_hip"],edges),
-            # TODO"Ls1w": self._get_maximum_line(body_parts_pos["umbiculus"], body_parts_pos["umbiculus"],edges),
+            # TODO"Ls1w": self._get_maximum_line(body_parts_pos["left_umbiculus"], body_parts_pos["left_umbiculus"],edges),
             "Ls2w": self._get_maximum_line(body_parts_pos["left_lowest_front_rib"], body_parts_pos["right_lowest_front_rib"],edges),
             "Ls3w": self._get_maximum_line(body_parts_pos["left_nipple"], body_parts_pos["right_nipple"],edges),
             "Ls4w": self._get_maximum_line(body_parts_pos["left_shoulder"], body_parts_pos["right_shoulder"],edges),
@@ -423,7 +426,7 @@ class YeadonModel:
             """
             x = origin[1] + np.sin(angle) * distance
             y = origin[0] + np.cos(angle) * distance
-            return np.array([int(y),int(x)])
+            return np.array([int(y), int(x)])
         def get_max_approx(top_arr, bottom_arr):
             if len(top_arr) != len(bottom_arr):
                 print("error not the same nbr of pts")
@@ -586,9 +589,10 @@ class YeadonModel:
                 x2, x1 = x1, x2
             if y1 > y2:
                 y2, y1 = y1, y2
-            return edges[y1:y2, x1:x2].copy()
+            x = image[y1:y2, x1:x2].copy()
+            return x
         #crop the image to see the right hip to the left knee
-        crotch_zone = crop(edges.copy(), data[12], data[13])
+        crotch_zone = crop(edges, data[12], data[13])
         #now the cropped image only has the crotch as an edge so we can get it like the head
         crotch_approx_crop = np.where(crotch_zone != 0)[1][0], np.where(crotch_zone != 0)[0][1]
         crotch_approx_right = np.array([data[12][0],data[12][1] +  crotch_approx_crop[1]])
@@ -718,25 +722,28 @@ class YeadonModel:
         x_resize, y_resize = int(min_ratio * x_im), int(min_ratio * y_im)
         return im.resize((y_resize, x_resize))
 
-    def _canny_edges(self, im):
+    def _canny_edges(self, im, image):
         grayscale_image = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
-        edges = cv.Canny(grayscale_image, 10, 100)
+        edged = cv.Canny(grayscale_image, 10, 100)
+
+        # define a (3, 3) structuring element
         kernel = cv.getStructuringElement(cv.MORPH_RECT, (3, 3))
 
-        # apply the dilation operation to the edges
-        dilate = cv.dilate(edges, kernel, iterations=1)
+        # apply the dilation operation to the edged image
+        dilate = cv.dilate(edged, kernel, iterations=1)
 
         # find the contours in the dilated image
         contours, _ = cv.findContours(dilate, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-        edges = np.zeros(im.shape)
+        edges = np.zeros(image.shape)
+        # draw the contours on a copy of the original image
         cv.drawContours(edges, contours, -1, (0, 255, 0), 2)
         return edges
 
     def _create_resize_remove_im(self, impath):
         pil_im = PIL.Image.open(impath).convert("RGB")
         pil_im = self._resize(pil_im)
-        im = np.asarray(pil_im)
-        im = remove(im)
-        return pil_im, im
+        image = np.asarray(pil_im)
+        im = remove(image)
+        return pil_im, image, im
 if __name__ == "__main__":
     pass
