@@ -51,7 +51,12 @@ class YeadonModel:
         edges_l_side = self._canny_edges(im_l_side, image_l_side)
         predictions3, gt_anns3, image_meta3 = predictor.pil_image(pil_l_side_im)
         data_l_side = predictions3[0].data[:, 0:2]
-
+        # front T pose but with the hand to the top
+        pil_up_im, image_up, im_up = self._create_resize_remove_im(
+            "/home/william/YeadonModelGenerator/img/al_front_t2.png")
+        edges_up = self._canny_edges(im_up, image_up)
+        predictions4, gt_anns4, image_meta4 = predictor.pil_image(pil_up_im)
+        data_up = predictions4[0].data[:, 0:2]
         # front
         body_parts_index = {
             "nose": 0,
@@ -95,6 +100,8 @@ class YeadonModel:
             131,
         ]
         body_parts_pos = {k: data[v] for k, v in body_parts_index.items()}
+        # front up
+        body_parts_pos_up = {k: data_up[v] for k, v in body_parts_index.items()}
 
         # right side
         body_parts_index_r = {
@@ -105,7 +112,6 @@ class YeadonModel:
             "right_wrist": 10,
             "right_hip": 12,
             "right_knee": 14,
-            "left_ankle": 15,
             "right_ankle": 16,
             "right_base_of_thumb": 114,
             "right_heel": 22,
@@ -190,6 +196,40 @@ class YeadonModel:
                                                                                                              body_parts_pos[
                                                                                                                  "left_crotch"])
         # print(body_parts_pos)
+        # front up
+        left_lowest_front_rib_approx = (data_up[5] + data_up[11]) / 2
+        body_parts_pos_up["left_lowest_front_rib"] = left_lowest_front_rib_approx
+        right_lowest_front_rib_approx = (data_up[6] + data_up[12]) / 2
+        body_parts_pos_up["right_lowest_front_rib"] = right_lowest_front_rib_approx
+        body_parts_pos_up["left_nipple"] = (left_lowest_front_rib_approx + data_up[5]) / 2
+        body_parts_pos_up["right_nipple"] = (right_lowest_front_rib_approx + data_up[6]) / 2
+        body_parts_pos_up["left_umbiculus"] = (
+                                                   (left_lowest_front_rib_approx * 3) + (data_up[11] * 2)
+                                           ) / 5
+        body_parts_pos_up["right_umbiculus"] = (
+                                                    (right_lowest_front_rib_approx * 3) + (data_up[12] * 2)
+                                            ) / 5
+        left_arch_approx = (data_up[17] + data_up[19]) / 2
+        body_parts_pos_up["left_arch"] = left_arch_approx
+        right_arch_approx = (data_up[20] + data_up[22]) / 2
+        body_parts_pos_up["right_arch"] = right_arch_approx
+        body_parts_pos_up["left_ball"] = (data_up[17] + left_arch_approx) / 2
+        body_parts_pos_up["right_ball"] = (data_up[20] + right_arch_approx) / 2
+        body_parts_pos_up["left_mid_arm"] = (data_up[5] + data_up[7]) / 2
+        body_parts_pos_up["right_mid_arm"] = (data_up[6] + data_up[8]) / 2
+        body_parts_pos_up["left_acromion"] = self._find_acromion_left(edges_up, data_up)
+        body_parts_pos_up["right_acromion"] = self._find_acromion_right(edges_up, data_up)
+        body_parts_pos_up["top_of_head"] = self._find_top_of_head(edges_up)
+        body_parts_pos_up["right_maximum_forearm"] = self._get_maximum_point(data_up[10], data_up[8], edges_up)
+        body_parts_pos_up["left_maximum_forearm"] = self._get_maximum_point(data_up[9], data_up[7], edges_up)
+        body_parts_pos_up["right_maximum_calf"] = self._get_maximum_point(data_up[16], data_up[14], edges_up)
+        body_parts_pos_up["left_maximum_calf"] = self._get_maximum_point(data_up[15], data_up[13], edges_up)
+        body_parts_pos_up["right_crotch"], body_parts_pos_up["left_crotch"] = self._get_crotch_right_left(edges_up, data_up)
+        body_parts_pos_up["right_mid_thigh"], body_parts_pos_up["left_mid_thigh"] = self._get_mid_thigh_right_left(data_up,
+                                                                                                             body_parts_pos_up[
+                                                                                                                 "right_crotch"],
+                                                                                                             body_parts_pos_up[
+                                                                                                                 "left_crotch"])
         # right side
         hand_part_pos_r = []
         for hand_position in hand_pos_r:
