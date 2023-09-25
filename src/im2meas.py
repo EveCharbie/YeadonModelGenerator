@@ -166,6 +166,8 @@ class YeadonModel:
         body_parts_pos["left_lowest_front_rib"] = left_lowest_front_rib_approx
         right_lowest_front_rib_approx = (data[6] + data[12]) / 2
         body_parts_pos["right_lowest_front_rib"] = right_lowest_front_rib_approx
+        body_parts_pos["left_shoulder_perimeter_width"] = self._get_maximum_point(data[7], data[5], edges)
+        body_parts_pos["right_shoulder_perimeter_width"] = self._get_maximum_point(data[8], data[6], edges)
         body_parts_pos["left_nipple"] = (left_lowest_front_rib_approx + data[5]) / 2
         body_parts_pos["right_nipple"] = (right_lowest_front_rib_approx + data[6]) / 2
         body_parts_pos["left_umbiculus"] = (
@@ -364,7 +366,7 @@ class YeadonModel:
             "La6L": np.linalg.norm(body_parts_pos["left_wrist"] - body_parts_pos["left_knuckles"]),
             "La7L": np.linalg.norm(body_parts_pos["left_wrist"] - body_parts_pos["left_nails"]),
 
-            # TODO "La0p":,
+            "La0p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["left_shoulder_perimeter_width"], body_parts_pos["left_elbow"], edges)),
             "La1p": self._circle_perimeter(
                 self._get_maximum_start(body_parts_pos["left_mid_arm"], body_parts_pos["left_elbow"], edges)),
             "La2p": self._circle_perimeter(
@@ -389,7 +391,7 @@ class YeadonModel:
             "Lb6L": np.linalg.norm(body_parts_pos["right_wrist"] - body_parts_pos["right_knuckles"]),
             "Lb7L": np.linalg.norm(body_parts_pos["right_wrist"] - body_parts_pos["right_nails"]),
 
-            # TODO "Lb0p":,
+            "Lb0p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["right_shoulder_perimeter_width"], body_parts_pos["right_elbow"], edges)),
             "Lb1p": self._circle_perimeter(
                 self._get_maximum_start(body_parts_pos["right_mid_arm"], body_parts_pos["right_elbow"], edges)),
             "Lb2p": self._circle_perimeter(
@@ -527,12 +529,16 @@ class YeadonModel:
             if len(top_arr) != len(bottom_arr):
                 print("error not the same nbr of pts")
                 return
-            max_norm = 0
-            save_index = 0
+
+
             vector = np.array(top_arr) - np.array(bottom_arr)
             norms = np.linalg.norm(vector, axis=1)
+            max_norm = norms[0]
+            save_index = 0
             for i in range(len(top_arr)):
                 if norms[i] > max_norm:
+                    if norms[i] > norms[0] * 2:
+                        break
                     max_norm = norms[i]
                     save_index = i
             return save_index
@@ -803,7 +809,29 @@ class YeadonModel:
         image = np.asarray(pil_im)
         im = remove(image)
         return pil_im, image, im
+    def _get_ratio(self, cropped):
+        gray = cv.cvtColor(cropped, cv.COLOR_BGR2GRAY)
 
+        criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+
+        # Find the chessboard corners
+        ret, corners = cv.findChessboardCorners(cropped, (5, 5), None)
+        corners2 = cv.cornerSubPix(gray, corners, (5, 5), (-1, -1), criteria)
+
+        # Draw the corners on the image
+        cv.drawChessboardCorners(cropped, (5, 5), corners2, ret)
+
+        # Get the contour of the chessboard pattern
+        rect = cv.boundingRect(corners2)
+        x, y, w, h = rect
+        chessboard_contour = np.array([[[x, y]], [[x + w, y]], [[x + w, y + h]], [[x, y + h]]])
+
+        # Draw the contour on the image
+        #cv.drawContours(cropped, [chessboard_contour], -1, (255, 0, 0), 1)
+
+        ratio =  chessboard_contour[0] - chessboard_contour[1]
+        ratio = 9.7/ratio
+        return ratio
 
 if __name__ == "__main__":
     pass
