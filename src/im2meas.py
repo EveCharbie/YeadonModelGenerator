@@ -372,12 +372,12 @@ class YeadonModel:
             "La3p": self._circle_perimeter(
                 self._get_maximum_start(body_parts_pos["left_maximum_forearm"], body_parts_pos["left_elbow"], edges)),
             "La4p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_wrist"], body_parts_pos["left_elbow"], edges), self._get_maximum_start(body_parts_pos_up["left_wrist"], body_parts_pos_up["left_elbow"], edges_up)),
-            # TODO "La5p": ,
-            "La6p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_knuckles"], body_parts_pos["left_wrist"], edges), self._get_maximum_start(data[97], body_parts_pos_up["left_wrist"], edges_up)),
-            "La7p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_nails"], body_parts_pos["left_wrist"], edges), self._get_maximum_start(data[98], body_parts_pos_up["left_wrist"], edges_up)),
+            "La5p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_base_of_thumb"], data[94], edges), self._get_maximum_start(data_up[96], body_parts_pos_up["left_wrist"], edges_up)), #TODO not sure
+            "La6p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_knuckles"], body_parts_pos["left_wrist"], edges), self._get_maximum_start(data_up[97], body_parts_pos_up["left_wrist"], edges_up)), #TODO not sure
+            "La7p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_nails"], body_parts_pos["left_wrist"], edges), self._get_maximum_start(data_up[98], body_parts_pos_up["left_wrist"], edges_up)), #TODO not sure
 
             "La4w": self._get_maximum_start(body_parts_pos["left_wrist"], body_parts_pos["left_elbow"], edges),
-            "La5w": self._get_maximum_start(body_parts_pos["left_base_of_thumb"], body_parts_pos["left_wrist"], edges),
+            "La5w": self._get_maximum_start(body_parts_pos["left_base_of_thumb"], data[94], edges),
             "La6w": self._get_maximum_start(body_parts_pos["left_knuckles"], body_parts_pos["left_wrist"], edges),
             "La7w": self._get_maximum_start(body_parts_pos["left_nails"], body_parts_pos["left_wrist"], edges),
 
@@ -397,12 +397,12 @@ class YeadonModel:
             "Lb3p": self._circle_perimeter(
                 self._get_maximum_start(body_parts_pos["right_maximum_forearm"], body_parts_pos["right_elbow"], edges)),
             "Lb4p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["right_wrist"], body_parts_pos["right_elbow"], edges), self._get_maximum_start(body_parts_pos_up["right_wrist"], body_parts_pos_up["right_elbow"], edges_up)),
-            # TODO "Lb5p":,
-            "Lb6p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["right_knuckles"], body_parts_pos["right_wrist"], edges), self._get_maximum_start(data[117], body_parts_pos_up["right_wrist"], edges_up)),
-            "Lb7p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["right_nails"], body_parts_pos["right_wrist"], edges), self._get_maximum_start(data[119], body_parts_pos_up["right_wrist"], edges_up)),
+            "Lb5p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["right_base_of_thumb"], data[115], edges), self._get_maximum_start(data_up[117], body_parts_pos_up["right_wrist"], edges_up)), #TODO not sure
+            "Lb6p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["right_knuckles"], body_parts_pos["right_wrist"], edges), self._get_maximum_start(data_up[117], body_parts_pos_up["right_wrist"], edges_up)), #TODO not sure
+            "Lb7p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["right_nails"], body_parts_pos["right_wrist"], edges), self._get_maximum_start(data_up[119], body_parts_pos_up["right_wrist"], edges_up)), #TODO not sure
 
             "Lb4w": self._get_maximum_start(body_parts_pos["right_wrist"], body_parts_pos["right_elbow"], edges),
-            # TODO "Lb5w": self._get_maximum_start(body_parts_pos["right_base_of_thumb"], body_parts_pos["right_wrist"], edges),
+            "Lb5w": self._get_maximum_start(body_parts_pos["right_base_of_thumb"], data[115], edges),
             "Lb6w": self._get_maximum_start(body_parts_pos["right_knuckles"], body_parts_pos["right_wrist"], edges),
             "Lb7w": self._get_maximum_start(body_parts_pos["right_nails"], body_parts_pos["right_wrist"], edges),
 
@@ -412,26 +412,26 @@ class YeadonModel:
             "Lj4L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_maximum_calf"]),
             "Lj5L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_ankle"]),
             "Lj6L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_heel"]),
-            "Lj7L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_arch"]),
+            # not measured "Lj7L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_arch"]),
             "Lj8L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_ball"]),
             "Lj9L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_toe_nail"]),
 
-            # TODO "Lj0p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["left_hip"], body_parts_pos["left_knee"], edges)),
+            # not measured "Lj0p":,
             "Lj1p": self._circle_perimeter(
                 self._get_maximum_start(body_parts_pos["left_crotch"], body_parts_pos["left_knee"], edges)),
             "Lj2p": self._circle_perimeter(
                 self._get_maximum_start(body_parts_pos["left_mid_thigh"], body_parts_pos["left_knee"], edges)),
             "Lj3p": self._circle_perimeter(
                 self._get_maximum_start(body_parts_pos["left_knee"], body_parts_pos["left_hip"], edges)),
-            # TODO "Lj4p":,
-            # TODO "Lj5p":,
+            "Lj4p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["left_maximum_calf"], body_parts_pos["left_knee"], edges)),
+            "Lj5p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["left_ankle"], body_parts_pos["left_knee"], edges)),
             # TODO "Lj6p":,
             # TODO "Lj7p":,
             # TODO "Lj8p":,
             # TODO "Lj9p":,
 
-            # TODO "Lj8w":,
-            # TODO "Lj9w":,
+            "Lj8w":self._get_maximum_start(body_parts_pos["left_ball"], body_parts_pos["left_heel"], edges),
+            "Lj9w":self._get_maximum_line(body_parts_pos["left_toe_nail"], data[18], edges),
 
             # TODO "Lj6d":,
 
@@ -441,26 +441,26 @@ class YeadonModel:
             "Lk4L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_maximum_calf"]),
             "Lk5L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_ankle"]),
             "Lk6L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_heel"]),
-            "Lk7L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_arch"]),
+            # not measured "Lk7L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_arch"]),
             "Lk8L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_ball"]),
             "Lk9L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_toe_nail"]),
 
-            # TODO "Lk0p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["right_hip"], body_parts_pos["right_knee"], edges)),
+            # not measured "Lk0p":,
             "Lk1p": self._circle_perimeter(
                 self._get_maximum_start(body_parts_pos["right_crotch"], body_parts_pos["right_knee"], edges)),
             "Lk2p": self._circle_perimeter(
                 self._get_maximum_start(body_parts_pos["right_mid_thigh"], body_parts_pos["right_hip"], edges)),
             "Lk3p": self._circle_perimeter(
                 self._get_maximum_start(body_parts_pos["right_knee"], body_parts_pos["right_hip"], edges)),
-            # TODO "Lk4p":,
-            # TODO "Lk5p":,
+            "Lk4p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["right_maximum_calf"], body_parts_pos["right_knee"], edges)),
+            "Lk5p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["right_ankle"], body_parts_pos["right_knee"], edges)),
             # TODO "Lk6p":,
             # TODO "Lk7p":,
             # TODO "Lk8p":,
             # TODO "Lk9p":,
 
-            # TODO "Lk8w":,
-            # TODO "Lk9w":,
+            "Lk8w": self._get_maximum_start(body_parts_pos["right_ball"], body_parts_pos["right_heel"], edges),
+            "Lk9w": self._get_maximum_line(body_parts_pos["right_toe_nail"], data[21], edges),
 
             # TODO "Lk6d":,
         }
