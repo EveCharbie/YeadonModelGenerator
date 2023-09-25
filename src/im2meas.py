@@ -371,10 +371,10 @@ class YeadonModel:
                 self._get_maximum_start(body_parts_pos["left_elbow"], body_parts_pos["left_mid_arm"], edges)),
             "La3p": self._circle_perimeter(
                 self._get_maximum_start(body_parts_pos["left_maximum_forearm"], body_parts_pos["left_elbow"], edges)),
-            # TODO "La4p": ,
-            # TODO "La5p":,
-            # TODO "La6p":,
-            # TODO "La7p":,
+            "La4p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_wrist"], body_parts_pos["left_elbow"], edges), self._get_maximum_start(body_parts_pos_up["left_wrist"], body_parts_pos_up["left_elbow"], edges_up)),
+            # TODO "La5p": ,
+            "La6p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_knuckles"], body_parts_pos["left_wrist"], edges), self._get_maximum_start(data[97], body_parts_pos_up["left_wrist"], edges_up)),
+            "La7p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_nails"], body_parts_pos["left_wrist"], edges), self._get_maximum_start(data[98], body_parts_pos_up["left_wrist"], edges_up)),
 
             "La4w": self._get_maximum_start(body_parts_pos["left_wrist"], body_parts_pos["left_elbow"], edges),
             "La5w": self._get_maximum_start(body_parts_pos["left_base_of_thumb"], body_parts_pos["left_wrist"], edges),
@@ -396,10 +396,10 @@ class YeadonModel:
                 self._get_maximum_start(body_parts_pos["right_elbow"], body_parts_pos["right_mid_arm"], edges)),
             "Lb3p": self._circle_perimeter(
                 self._get_maximum_start(body_parts_pos["right_maximum_forearm"], body_parts_pos["right_elbow"], edges)),
-            # TODO "Lb4p":,
+            "Lb4p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["right_wrist"], body_parts_pos["right_elbow"], edges), self._get_maximum_start(body_parts_pos_up["right_wrist"], body_parts_pos_up["right_elbow"], edges_up)),
             # TODO "Lb5p":,
-            # TODO "Lb6p":,
-            # TODO "Lb7p":,
+            "Lb6p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["right_knuckles"], body_parts_pos["right_wrist"], edges), self._get_maximum_start(data[117], body_parts_pos_up["right_wrist"], edges_up)),
+            "Lb7p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["right_nails"], body_parts_pos["right_wrist"], edges), self._get_maximum_start(data[119], body_parts_pos_up["right_wrist"], edges_up)),
 
             "Lb4w": self._get_maximum_start(body_parts_pos["right_wrist"], body_parts_pos["right_elbow"], edges),
             # TODO "Lb5w": self._get_maximum_start(body_parts_pos["right_base_of_thumb"], body_parts_pos["right_wrist"], edges),
@@ -466,7 +466,7 @@ class YeadonModel:
         }
         print(self.keypoints)
 
-    def _get_maximum(self, start, end, edges, angle):
+    def _get_maximum(self, start, end, edges, angle, is_start):
         def pt_from(origin, angle, distance):
             """
             compute the point [x, y] that is 'distance' apart from the origin point
@@ -503,15 +503,15 @@ class YeadonModel:
         vector = np.array([p2[0] - p1[0], p2[1] - p1[1]])
         angle_radians = np.arctan2(vector[1], vector[0]) - angle
         max1 = find_edge(p1, p2, angle_radians)
-        angle_radians = np.arctan2(vector[1], vector[0]) + angle
+        angle_radians = (np.arctan2(vector[1], vector[0]) + angle) * is_start
         max2 = find_edge(p1, p2, angle_radians)
         return np.linalg.norm(np.array(max1) - np.array(max2))
 
     def _get_maximum_line(self, start, end, edges):
-        return self._get_maximum(start, end, edges, 0)
+        return self._get_maximum(start, end, edges, 0, -1)
 
     def _get_maximum_start(self, start, end, edges):
-        return self._get_maximum(start, end, edges, np.pi / 2)
+        return self._get_maximum(start, end, edges, np.pi / 2, 1)
 
     def _get_maximum_point(self, start, end, edges):
         def pt_from(origin, angle, distance):
