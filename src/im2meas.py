@@ -39,6 +39,8 @@ class YeadonModel:
         # https://github.com/jin-s13/COCO-WholeBody/blob/master/imgs/Fig2_anno.png
         # as "predictions" is an array the index starts at 0 and not at 1 like in the github
         data = predictions[0].data[:, 0:2]
+        ratio = self._get_ratio(self._crop(im, data[6], data[11]))
+        print(ratio)
         # right side
         pil_r_side_im, image_r_side, im_r_side = self._create_resize_remove_im(
             "/home/william/YeadonModelGenerator/img/al_up_r.png")
@@ -57,6 +59,18 @@ class YeadonModel:
         edges_up = self._canny_edges(im_up, image_up)
         predictions4, gt_anns4, image_meta4 = predictor.pil_image(pil_up_im)
         data_up = predictions4[0].data[:, 0:2]
+        # front pike
+        pil_pike_im, image_pike, im_pike = self._create_resize_remove_im(
+            "/home/william/YeadonModelGenerator/img/al_front_t.png")
+        edges_pike = self._canny_edges(im_pike, image_pike)
+        predictions5, gt_anns5, image_meta5 = predictor.pil_image(pil_pike_im)
+        data_pike = predictions5[0].data[:, 0:2]
+        # right side pike
+        pil_r_pike_im, image_r_pike, im_r_pike = self._create_resize_remove_im(
+            "/home/william/YeadonModelGenerator/img/al_up_r.png")
+        edges_r_pike = self._canny_edges(im_r_pike, image_r_pike)
+        predictions6, gt_anns6, image_meta6 = predictor.pil_image(pil_r_pike_im)
+        data_r_pike = predictions6[0].data[:, 0:2]
         # front
         body_parts_index = {
             "nose": 0,
@@ -154,6 +168,29 @@ class YeadonModel:
             110,
         ]
         body_parts_pos_l = {k: data_l_side[v] for k, v in body_parts_index_l.items()}
+        # front pike
+        body_parts_index_pike = {
+            "left_hip": 11,
+            "right_hip": 12,
+            "left_knee": 13,
+            "right_knee": 14,
+            "left_ankle": 15,
+            "right_ankle": 16,
+            "left_heel": 19,
+            "right_heel": 22,
+            "left_toe_nail": 17,
+            "right_toe_nail": 20,
+        }
+        body_parts_pos_pike = {k: data_pike[v] for k, v in body_parts_index_pike.items()}
+        # right side pike
+        body_parts_index_r_pike = {
+            "right_hip": 12,
+            "right_knee": 14,
+            "right_ankle": 16,
+            "right_heel": 22,
+            "right_toe_nail": 20,
+        }
+        body_parts_pos_r_pike = {k: data_r_pike[v] for k, v in body_parts_index_r_pike.items()}
         # front
         hand_part_pos = []
         for hand_position in hand_pos:
@@ -265,6 +302,17 @@ class YeadonModel:
         body_parts_pos_l["left_arch"] = left_arch_approx
         body_parts_pos_l["left_ball"] = (data_l_side[17] + left_arch_approx) / 2
         body_parts_pos_l["left_mid_arm"] = (data_l_side[5] + data_l_side[7]) / 2
+        # front pike
+        left_arch_approx = (data_pike[17] + data_pike[19]) / 2
+        body_parts_pos_pike["left_arch"] = left_arch_approx
+        right_arch_approx = (data_pike[20] + data_pike[22]) / 2
+        body_parts_pos_pike["right_arch"] = right_arch_approx
+        body_parts_pos_pike["left_ball"] = (data_pike[17] + left_arch_approx) / 2
+        body_parts_pos_pike["right_ball"] = (data_pike[20] + right_arch_approx) / 2
+        # right side pike
+        right_arch_approx = (data_pike[20] + data_pike[22]) / 2
+        body_parts_pos_pike["right_arch"] = right_arch_approx
+        body_parts_pos_pike["right_ball"] = (data_r_pike[20] + right_arch_approx) / 2
         # print(body_parts_pos_r)
         self.keypoints = {
             "Ls0": body_parts_pos["left_hip"],
@@ -427,10 +475,10 @@ class YeadonModel:
                 self._get_maximum_start(body_parts_pos["left_knee"], body_parts_pos["left_hip"], edges)),
             "Lj4p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["left_maximum_calf"], body_parts_pos["left_knee"], edges)),
             "Lj5p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["left_ankle"], body_parts_pos["left_knee"], edges)),
-            # TODO "Lj6p":,
-            # TODO "Lj7p":,
-            # TODO "Lj8p":,
-            # TODO "Lj9p":,
+            # TODO "Lj6p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos_pike[""]),
+            # TODO "Lj7p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos_pike["right_arch"], body_parts_pos_pike["right_heel"], edges_pike, self.get_maximum_start(body_parts_pos_r_pike["right_arch"], body_parts_pos_r_side["right_heel"], edges)),
+            # TODO "Lj8p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos_pike["right_ball"], body_parts_pos_pike["right_heel"], edges_pike, self.get_maximum_start(body_parts_pos_r_pike["right_ball"], body_parts_pos_r_side["right_heel"], edges)),
+            # TODO "Lj9p": self._stadium_perimeter(np.linalg.norm(body_parts_pos_pike["right_toe_nail"] - data[21]), edges_pike, self.get_maximum_start(body_parts_pos_r_pike["right_toe_nail"], body_parts_pos_r_side["right_heel"], edges)),
 
             "Lj8w":self._get_maximum_start(body_parts_pos["left_ball"], body_parts_pos["left_heel"], edges),
             "Lj9w":self._get_maximum_line(body_parts_pos["left_toe_nail"], data[18], edges),
@@ -466,7 +514,10 @@ class YeadonModel:
 
             # TODO "Lk6d":,
         }
-        print(self.keypoints)
+        #print(self.keypoints)
+        #for key, value in self.keypoints.items():
+        #    if key[-1].isalpha():
+        #        print(f"{key}: {value * ratio}")
 
     def _get_maximum(self, start, end, edges, angle, is_start):
         def pt_from(origin, angle, distance):
@@ -597,35 +648,36 @@ class YeadonModel:
         index = get_max_approx(r_side, l_side)
         return result[index][::-1]
 
+    def _crop(self, image, position_1, position_2):
+        """Return the cropped image given two positions.
+
+        Parameters
+        ----------
+        image : numpy array
+            The image to be cropped.
+        position_1 : tuple
+            The position of the first corner of the image to be cropped.
+        position_2 : tuple
+            The position of the second corner of the image to be cropped.
+
+        Returns
+        -------
+        numpy array
+            The cropped image.
+        """
+        x1, y1 = map(int, position_1[0:2])
+        x2, y2 = map(int, position_2[0:2])
+        if x1 > x2:
+            x2, x1 = x1, x2
+        if y1 > y2:
+            y2, y1 = y1, y2
+        x = image[y1:y2, x1:x2].copy()
+        return x
     def _get_crotch_right_left(self, edges, data):
-        def crop(image, position_1, position_2):
-            """Return the cropped image given two positions.
 
-            Parameters
-            ----------
-            image : numpy array
-                The image to be cropped.
-            position_1 : tuple
-                The position of the first corner of the image to be cropped.
-            position_2 : tuple
-                The position of the second corner of the image to be cropped.
-
-            Returns
-            -------
-            numpy array
-                The cropped image.
-            """
-            x1, y1 = map(int, position_1[0:2])
-            x2, y2 = map(int, position_2[0:2])
-            if x1 > x2:
-                x2, x1 = x1, x2
-            if y1 > y2:
-                y2, y1 = y1, y2
-            x = image[y1:y2, x1:x2].copy()
-            return x
 
         # crop the image to see the right hip to the left knee
-        crotch_zone = crop(edges, data[12], data[13])
+        crotch_zone = self._crop(edges, data[12], data[13])
         # now the cropped image only has the crotch as an edge so we can get it like the head
         crotch_approx_crop = np.where(crotch_zone != 0)[1][0], np.where(crotch_zone != 0)[0][1]
         crotch_approx_right = np.array([data[12][0], data[12][1] + crotch_approx_crop[1]])
@@ -653,33 +705,9 @@ class YeadonModel:
             The coordinates of the acromion in the image.
         """
 
-        def crop(image, position_1, position_2):
-            """Return the cropped image given two positions.
-
-            Parameters
-            ----------
-            image : numpy array
-                The image to be cropped.
-            position_1 : tuple
-                The position of the first corner of the image to be cropped.
-            position_2 : tuple
-                The position of the second corner of the image to be cropped.
-
-            Returns
-            -------
-            numpy array
-                The cropped image.
-            """
-            x1, y1 = map(int, position_1[0:2])
-            x2, y2 = map(int, position_2[0:2])
-            if x1 > x2:
-                x2, x1 = x1, x2
-            if y1 > y2:
-                y2, y1 = y1, y2
-            return image[y1:y2, x1:x2].copy()
 
         r_ear, r_shoulder = data[4], data[6]
-        cropped_img = crop(edges, r_ear, r_shoulder)
+        cropped_img = self._crop(edges, r_ear, r_shoulder)
         cropped_img[:int(len(cropped_img) / 2), :] = 0
         cropped_img[:, :int(len(cropped_img[0]) / 2)] = 0
         acromion = np.array(
@@ -702,33 +730,8 @@ class YeadonModel:
             The coordinates of the acromion in the image.
         """
 
-        def crop(image, position_1, position_2):
-            """Return the cropped image given two positions.
-
-            Parameters
-            ----------
-            image : numpy array
-                The image to be cropped.
-            position_1 : tuple
-                The position of the first corner of the image to be cropped.
-            position_2 : tuple
-                The position of the second corner of the image to be cropped.
-
-            Returns
-            -------
-            numpy array
-                The cropped image.
-            """
-            x1, y1 = map(int, position_1[0:2])
-            x2, y2 = map(int, position_2[0:2])
-            if x1 > x2:
-                x2, x1 = x1, x2
-            if y1 > y2:
-                y2, y1 = y1, y2
-            return image[y1:y2, x1:x2].copy()
-
         l_ear, l_shoulder = data[3], data[5]
-        cropped_img = crop(edges, l_ear, l_shoulder)
+        cropped_img = self._crop(edges, l_ear, l_shoulder)
         cropped_img[:int(len(cropped_img) / 2), :] = 0
         cropped_img[:, :int(len(cropped_img[0]) / 2)] = 0
         acromion = np.array(
@@ -829,7 +832,7 @@ class YeadonModel:
         # Draw the contour on the image
         #cv.drawContours(cropped, [chessboard_contour], -1, (255, 0, 0), 1)
 
-        ratio =  chessboard_contour[0] - chessboard_contour[1]
+        ratio =  np.linalg.norm(chessboard_contour[0] - chessboard_contour[1])
         ratio = 9.7/ratio
         return ratio
 
