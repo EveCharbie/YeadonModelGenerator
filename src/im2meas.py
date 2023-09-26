@@ -67,7 +67,7 @@ class YeadonModel:
         # right side pike
         pil_l_pike_im, image_l_pike, im_l_pike = self._create_resize_remove_im(
             "/home/william/YeadonModelGenerator/img/alexandre_pike_l.png")
-        edges_r_pike = self._canny_edges(im_l_pike, image_l_pike)
+        edges_l_pike = self._canny_edges(im_l_pike, image_l_pike)
         predictions6, gt_anns6, image_meta6 = predictor.pil_image(pil_l_pike_im)
         data_l_pike = predictions6[0].data[:, 0:2]
         # front
@@ -183,13 +183,13 @@ class YeadonModel:
         body_parts_pos_pike = {k: data_pike[v] for k, v in body_parts_index_pike.items()}
         # left side pike
         body_parts_index_l_pike = {
-            "right_hip": 12,
-            "right_knee": 14,
-            "right_ankle": 16,
-            "right_heel": 22,
-            "right_toe_nail": 20,
+            "left_hip": 11,
+            "left_knee": 13,
+            "left_ankle": 15,
+            "left_heel": 19,
+            "left_toe_nail": 17,
         }
-        body_parts_pos_r_pike = {k: data_l_pike[v] for k, v in body_parts_index_l_pike.items()}
+        body_parts_pos_l_pike = {k: data_l_pike[v] for k, v in body_parts_index_l_pike.items()}
         # front
         hand_part_pos = []
         for hand_position in hand_pos:
@@ -309,9 +309,9 @@ class YeadonModel:
         body_parts_pos_pike["left_ball"] = (data_pike[17] + left_arch_approx) / 2
         body_parts_pos_pike["right_ball"] = (data_pike[20] + right_arch_approx) / 2
         # left side pike
-        right_arch_approx = (data_l_pike[20] + data_l_pike[22]) / 2
-        body_parts_pos_pike["right_arch"] = right_arch_approx
-        body_parts_pos_pike["right_ball"] = (data_l_pike[20] + right_arch_approx) / 2
+        left_arch_approx = (data_l_side[17] + data_l_side[19]) / 2
+        body_parts_pos_pike["left_arch"] = left_arch_approx
+        body_parts_pos_pike["left_ball"] = (data_l_pike[20] + left_arch_approx) / 2
         # print(body_parts_pos_r)
         self.keypoints = {
             "Ls0": body_parts_pos["left_hip"],
@@ -475,9 +475,9 @@ class YeadonModel:
             "Lj4p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["left_maximum_calf"], body_parts_pos["left_knee"], edges)),
             "Lj5p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["left_ankle"], body_parts_pos["left_knee"], edges)),
             # TODO "Lj6p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos_pike[""]),
-            # TODO "Lj7p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos_pike["right_arch"], body_parts_pos_pike["right_heel"], edges_pike, self.get_maximum_start(body_parts_pos_r_pike["right_arch"], body_parts_pos_r_side["right_heel"], edges)),
-            # TODO "Lj8p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos_pike["right_ball"], body_parts_pos_pike["right_heel"], edges_pike, self.get_maximum_start(body_parts_pos_r_pike["right_ball"], body_parts_pos_r_side["right_heel"], edges)),
-            # TODO "Lj9p": self._stadium_perimeter(np.linalg.norm(body_parts_pos_pike["right_toe_nail"] - data[21]), edges_pike, self.get_maximum_start(body_parts_pos_r_pike["right_toe_nail"], body_parts_pos_r_side["right_heel"], edges)),
+            # TODO "Lj7p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos_pike["left_arch"], body_parts_pos_pike["left_heel"], edges_pike), self.get_maximum_start(body_parts_pos_l_pike["left_arch"], body_parts_pos_l["left_heel"], edges_l_pike)),
+            # TODO "Lj8p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos_pike["left_ball"], body_parts_pos_pike["left_heel"], edges_pike), self.get_maximum_start(body_parts_pos_l_pike["left_ball"], body_parts_pos_l["left_heel"], edges_l_pike)),
+            # TODO "Lj9p": self._stadium_perimeter(np.linalg.norm(body_parts_pos_pike["left_toe_nail"] - data[21]), self.get_maximum_start(body_parts_pos_l_pike["left_toe_nail"], body_parts_pos_l_pike["left_heel"], edges_l_pike)),
 
             "Lj8w":self._get_maximum_start(body_parts_pos["left_ball"], body_parts_pos["left_heel"], edges),
             "Lj9w":self._get_maximum_line(body_parts_pos["left_toe_nail"], data[18], edges),
