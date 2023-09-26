@@ -5,7 +5,7 @@ import PIL
 from rembg import remove
 import matplotlib.pyplot as plt
 
-RESIZE_SIZE = 600  # the maximum size of the image to be processed (in pixels)
+RESIZE_SIZE = 1000  # the maximum size of the image to be processed (in pixels)
 
 
 class YeadonModel:
@@ -39,38 +39,37 @@ class YeadonModel:
         # https://github.com/jin-s13/COCO-WholeBody/blob/master/imgs/Fig2_anno.png
         # as "predictions" is an array the index starts at 0 and not at 1 like in the github
         data = predictions[0].data[:, 0:2]
-        ratio = self._get_ratio(self._crop(im, data[6], data[11]))
-        print(ratio)
+        self.ratio = self._get_ratio(im)
         # right side
         pil_r_side_im, image_r_side, im_r_side = self._create_resize_remove_im(
-            "/home/william/YeadonModelGenerator/img/al_up_r.png")
+            "/home/william/YeadonModelGenerator/img/alexandre_up_r.png")
         edges_r_side = self._canny_edges(im_r_side, image_r_side)
         predictions2, gt_anns2, image_meta2 = predictor.pil_image(pil_r_side_im)
         data_r_side = predictions2[0].data[:, 0:2]
         # left side
         pil_l_side_im, image_l_side, im_l_side = self._create_resize_remove_im(
-            "/home/william/YeadonModelGenerator/img/al_up_l.png")
+            "/home/william/YeadonModelGenerator/img/alexandre_up_l.png")
         edges_l_side = self._canny_edges(im_l_side, image_l_side)
         predictions3, gt_anns3, image_meta3 = predictor.pil_image(pil_l_side_im)
         data_l_side = predictions3[0].data[:, 0:2]
         # front T pose but with the hand to the top
         pil_up_im, image_up, im_up = self._create_resize_remove_im(
-            "/home/william/YeadonModelGenerator/img/al_front_t2.png")
+            "/home/william/YeadonModelGenerator/img/alexandre_front_t.png")
         edges_up = self._canny_edges(im_up, image_up)
         predictions4, gt_anns4, image_meta4 = predictor.pil_image(pil_up_im)
         data_up = predictions4[0].data[:, 0:2]
         # front pike
         pil_pike_im, image_pike, im_pike = self._create_resize_remove_im(
-            "/home/william/YeadonModelGenerator/img/al_front_t.png")
+            "/home/william/YeadonModelGenerator/img/alexandre_pike.png")
         edges_pike = self._canny_edges(im_pike, image_pike)
         predictions5, gt_anns5, image_meta5 = predictor.pil_image(pil_pike_im)
         data_pike = predictions5[0].data[:, 0:2]
         # right side pike
-        pil_r_pike_im, image_r_pike, im_r_pike = self._create_resize_remove_im(
-            "/home/william/YeadonModelGenerator/img/al_up_r.png")
-        edges_r_pike = self._canny_edges(im_r_pike, image_r_pike)
-        predictions6, gt_anns6, image_meta6 = predictor.pil_image(pil_r_pike_im)
-        data_r_pike = predictions6[0].data[:, 0:2]
+        pil_l_pike_im, image_l_pike, im_l_pike = self._create_resize_remove_im(
+            "/home/william/YeadonModelGenerator/img/alexandre_pike_l.png")
+        edges_r_pike = self._canny_edges(im_l_pike, image_l_pike)
+        predictions6, gt_anns6, image_meta6 = predictor.pil_image(pil_l_pike_im)
+        data_l_pike = predictions6[0].data[:, 0:2]
         # front
         body_parts_index = {
             "nose": 0,
@@ -182,15 +181,15 @@ class YeadonModel:
             "right_toe_nail": 20,
         }
         body_parts_pos_pike = {k: data_pike[v] for k, v in body_parts_index_pike.items()}
-        # right side pike
-        body_parts_index_r_pike = {
+        # left side pike
+        body_parts_index_l_pike = {
             "right_hip": 12,
             "right_knee": 14,
             "right_ankle": 16,
             "right_heel": 22,
             "right_toe_nail": 20,
         }
-        body_parts_pos_r_pike = {k: data_r_pike[v] for k, v in body_parts_index_r_pike.items()}
+        body_parts_pos_r_pike = {k: data_l_pike[v] for k, v in body_parts_index_l_pike.items()}
         # front
         hand_part_pos = []
         for hand_position in hand_pos:
@@ -309,10 +308,10 @@ class YeadonModel:
         body_parts_pos_pike["right_arch"] = right_arch_approx
         body_parts_pos_pike["left_ball"] = (data_pike[17] + left_arch_approx) / 2
         body_parts_pos_pike["right_ball"] = (data_pike[20] + right_arch_approx) / 2
-        # right side pike
-        right_arch_approx = (data_pike[20] + data_pike[22]) / 2
+        # left side pike
+        right_arch_approx = (data_l_pike[20] + data_l_pike[22]) / 2
         body_parts_pos_pike["right_arch"] = right_arch_approx
-        body_parts_pos_pike["right_ball"] = (data_r_pike[20] + right_arch_approx) / 2
+        body_parts_pos_pike["right_ball"] = (data_l_pike[20] + right_arch_approx) / 2
         # print(body_parts_pos_r)
         self.keypoints = {
             "Ls0": body_parts_pos["left_hip"],
@@ -406,7 +405,7 @@ class YeadonModel:
             "Ls3w": self._get_maximum_line(body_parts_pos["left_nipple"], body_parts_pos["right_nipple"], edges),
             "Ls4w": np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["right_shoulder"]),
 
-            "La1L": (np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["left_elbow"])) / 2,
+            # Not needed"La1L": (np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["left_elbow"])) / 2,
             "La2L": np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["left_elbow"]),
             "La3L": np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["left_maximum_forearm"]),
             "La4L": np.linalg.norm(body_parts_pos["left_shoulder"] - body_parts_pos["left_wrist"]),
@@ -431,7 +430,7 @@ class YeadonModel:
             "La6w": self._get_maximum_start(body_parts_pos["left_knuckles"], body_parts_pos["left_wrist"], edges),
             "La7w": self._get_maximum_start(body_parts_pos["left_nails"], body_parts_pos["left_wrist"], edges),
 
-            "Lb1L": (np.linalg.norm(body_parts_pos["right_shoulder"] - body_parts_pos["right_elbow"])) / 2,
+            # Not needed"Lb1L": (np.linalg.norm(body_parts_pos["right_shoulder"] - body_parts_pos["right_elbow"])) / 2,
             "Lb2L": np.linalg.norm(body_parts_pos["right_shoulder"] - body_parts_pos["right_elbow"]),
             "Lb3L": np.linalg.norm(body_parts_pos["right_shoulder"] - body_parts_pos["right_maximum_forearm"]),
             "Lb4L": np.linalg.norm(body_parts_pos["right_shoulder"] - body_parts_pos["right_wrist"]),
@@ -457,7 +456,7 @@ class YeadonModel:
             "Lb7w": self._get_maximum_start(body_parts_pos["right_nails"], body_parts_pos["right_wrist"], edges),
 
             "Lj1L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_crotch"]),
-            "Lj2L": (np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_knee"])) / 2,
+            # Not needed"Lj2L": (np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_knee"])) / 2,
             "Lj3L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_knee"]),
             "Lj4L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_maximum_calf"]),
             "Lj5L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_ankle"]),
@@ -515,9 +514,7 @@ class YeadonModel:
             # TODO "Lk6d":,
         }
         #print(self.keypoints)
-        #for key, value in self.keypoints.items():
-        #    if key[-1].isalpha():
-        #        print(f"{key}: {value * ratio}")
+        self._create_txt("alexandre.txt")
 
     def _get_maximum(self, start, end, edges, angle, is_start):
         def pt_from(origin, angle, distance):
@@ -812,17 +809,17 @@ class YeadonModel:
         image = np.asarray(pil_im)
         im = remove(image)
         return pil_im, image, im
-    def _get_ratio(self, cropped):
-        gray = cv.cvtColor(cropped, cv.COLOR_BGR2GRAY)
+    def _get_ratio(self, img):
+        gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
         criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
         # Find the chessboard corners
-        ret, corners = cv.findChessboardCorners(cropped, (5, 5), None)
+        ret, corners = cv.findChessboardCorners(img, (5, 5), None)
         corners2 = cv.cornerSubPix(gray, corners, (5, 5), (-1, -1), criteria)
 
         # Draw the corners on the image
-        cv.drawChessboardCorners(cropped, (5, 5), corners2, ret)
+        cv.drawChessboardCorners(img, (5, 5), corners2, ret)
 
         # Get the contour of the chessboard pattern
         rect = cv.boundingRect(corners2)
@@ -835,6 +832,10 @@ class YeadonModel:
         ratio =  np.linalg.norm(chessboard_contour[0] - chessboard_contour[1])
         ratio = 9.7/ratio
         return ratio
-
+    def _create_txt(self, file_name):
+        with open(file_name, "w") as file_object:
+            for key, value in self.keypoints.items():
+                if key[-1].isalpha():
+                    file_object.writelines("{} : {:.1f}\n".format(key, float(value * self.ratio)))
 if __name__ == "__main__":
     pass
