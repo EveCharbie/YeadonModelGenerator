@@ -34,7 +34,7 @@ class YeadonModel:
             The YeadonModel object with the keypoints of the image.
         """
         # front
-        undistorted_image = self._undistortion('img/chessboards/*', "img/al_front_t_double_top.jpg")
+        undistorted_image = self._undistortion('img/chessboards/*', "img/al_front_t.jpg")
         pil_im, image, im = self._pil_resize_remove_im(undistorted_image)
 
         edges = self._canny_edges(im, image)
@@ -54,14 +54,14 @@ class YeadonModel:
         self.ratio_r_side = self._get_ratio(im_r_side)
         # front T pose but with the hand to the top
         pil_up_im, image_up, im_up = self._create_resize_remove_im(
-            "/home/william/YeadonModelGenerator/img/alexandre_front_t.png")
+            "/home/william/YeadonModelGenerator/img/al_front_t_up.jpg")
         edges_up = self._canny_edges(im_up, image_up)
         predictions4, gt_anns4, image_meta4 = predictor.pil_image(pil_up_im)
         data_up = predictions4[0].data[:, 0:2]
         self.ratio_up = self._get_ratio(im_up)
         # front pike
         pil_pike_im, image_pike, im_pike = self._create_resize_remove_im(
-            "/home/william/YeadonModelGenerator/img/alexandre_pike.png")
+            "/home/william/YeadonModelGenerator/img/al_front_pike.jpg")
         edges_pike = self._canny_edges(im_pike, image_pike)
         predictions5, gt_anns5, image_meta5 = predictor.pil_image(pil_pike_im)
         data_pike = predictions5[0].data[:, 0:2]
@@ -160,11 +160,11 @@ class YeadonModel:
         body_parts_pos_pike = {k: data_pike[v] for k, v in body_parts_index_pike.items()}
         # left side pike
         body_parts_index_l_pike = {
-            "left_hip": 11,
-            "left_knee": 13,
-            "left_ankle": 15,
-            "left_heel": 19,
-            "left_toe_nail": 17,
+            "right_hip": 12,
+            "right_knee": 14,
+            "right_ankle": 16,
+            "right_heel": 22,
+            "right_toe_nail": 20,
         }
         body_parts_pos_l_pike = {k: data_l_pike[v] for k, v in body_parts_index_l_pike.items()}
         # front
@@ -382,9 +382,9 @@ class YeadonModel:
             "La3p": self._circle_perimeter(
                 self._get_maximum_start(body_parts_pos["left_maximum_forearm"], body_parts_pos["left_elbow"], edges)) * self.ratio,
             "La4p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_wrist"], body_parts_pos["left_maximum_forearm"], edges) * self.ratio, self._get_maximum_start(body_parts_pos_up["left_wrist"], body_parts_pos_up["left_elbow"], edges_up) * self.ratio_up),
-            "La5p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_base_of_thumb"], data[94], edges) * self.ratio, self._get_maximum_start(data_up[96], body_parts_pos_up["left_wrist"], edges_up) * self.ratio_up), #TODO not sure
-            "La6p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_knuckles"], body_parts_pos["left_wrist"], edges) * self.ratio, self._get_maximum_start(data_up[97], body_parts_pos_up["left_wrist"], edges_up) * self.ratio_up), #TODO not sure
-            "La7p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_nails"], body_parts_pos["left_wrist"], edges) * self.ratio, self._get_maximum_start(data_up[98], body_parts_pos_up["left_wrist"], edges_up) * self.ratio_up), #TODO not sure
+            "La5p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_base_of_thumb"], data[94], edges) * self.ratio, self._get_maximum_start(data_up[96], body_parts_pos_up["left_wrist"], edges_up) * self.ratio_up),
+            "La6p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_knuckles"], body_parts_pos["left_wrist"], edges) * self.ratio, self._get_maximum_start(data_up[97], body_parts_pos_up["left_wrist"], edges_up) * self.ratio_up),
+            "La7p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_nails"], body_parts_pos["left_wrist"], edges) * self.ratio, self._get_maximum_start(data_up[98], body_parts_pos_up["left_wrist"], edges_up) * self.ratio_up),
 
             "La4w": self._get_maximum_start(body_parts_pos["left_wrist"], body_parts_pos["left_elbow"], edges) * self.ratio,
             "La5w": self._get_maximum_start(body_parts_pos["left_base_of_thumb"], data[94], edges) * self.ratio,
@@ -407,9 +407,9 @@ class YeadonModel:
             "Lb3p": self._circle_perimeter(
                 self._get_maximum_start(body_parts_pos["right_maximum_forearm"], body_parts_pos["right_elbow"], edges)) * self.ratio,
             "Lb4p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["right_wrist"], body_parts_pos["right_elbow"], edges) * self.ratio, self._get_maximum_start(body_parts_pos_up["right_wrist"], body_parts_pos_up["right_elbow"], edges_up) * self.ratio_up),
-            "Lb5p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["right_base_of_thumb"], data[115], edges) * self.ratio, self._get_maximum_start(data_up[117], body_parts_pos_up["right_wrist"], edges_up) * self.ratio_up), #TODO not sure
-            "Lb6p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["right_knuckles"], body_parts_pos["right_wrist"], edges) * self.ratio, self._get_maximum_start(data_up[117], body_parts_pos_up["right_wrist"], edges_up) * self.ratio_up), #TODO not sure
-            "Lb7p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["right_nails"], body_parts_pos["right_wrist"], edges) * self.ratio, self._get_maximum_start(data_up[119], body_parts_pos_up["right_wrist"], edges_up) * self.ratio_up), #TODO not sure
+            "Lb5p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["right_base_of_thumb"], data[115], edges) * self.ratio, self._get_maximum_start(data_up[117], body_parts_pos_up["right_wrist"], edges_up) * self.ratio_up),
+            "Lb6p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["right_knuckles"], body_parts_pos["right_wrist"], edges) * self.ratio, self._get_maximum_start(data_up[117], body_parts_pos_up["right_wrist"], edges_up) * self.ratio_up),
+            "Lb7p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["right_nails"], body_parts_pos["right_wrist"], edges) * self.ratio, self._get_maximum_start(data_up[119], body_parts_pos_up["right_wrist"], edges_up) * self.ratio_up),
 
             "Lb4w": self._get_maximum_start(body_parts_pos["right_wrist"], body_parts_pos["right_elbow"], edges) * self.ratio,
             "Lb5w": self._get_maximum_start(body_parts_pos["right_base_of_thumb"], data[115], edges) * self.ratio,
@@ -664,7 +664,7 @@ class YeadonModel:
         """
 
 
-        r_ear, r_shoulder = data[4], data[6]
+        r_ear, r_shoulder = data[0], data[6]
         cropped_img = self._crop(edges, r_ear, r_shoulder)
         cropped_img[:int(len(cropped_img) / 2), :] = 0
         cropped_img[:, :int(len(cropped_img[0]) / 2)] = 0
@@ -688,7 +688,7 @@ class YeadonModel:
             The coordinates of the acromion in the image.
         """
 
-        l_ear, l_shoulder = data[3], data[5]
+        l_ear, l_shoulder = data[0], data[5]
         cropped_img = self._crop(edges, l_ear, l_shoulder)
         cropped_img[:int(len(cropped_img) / 2), :] = 0
         cropped_img[:, :int(len(cropped_img[0]) / 2)] = 0
@@ -845,7 +845,6 @@ class YeadonModel:
         def undistor(calibrated_image, H):
             height, width = calibrated_image.shape[:2]
 
-            # Define the corners of the original image
             original_corners = np.array([[0, 0], [width, 0], [0, height], [width, height]], dtype=np.float32)
 
             # Warp the corners using the homography matrix
@@ -857,18 +856,16 @@ class YeadonModel:
             min_y = int(min(warped_corners[:, 0, 1]))
             max_y = int(max(warped_corners[:, 0, 1]))
 
-            # Create an output canvas with the new dimensions
             output_width = max_x - min_x
             output_height = max_y - min_y
-            output_image = np.zeros((output_height, output_width, 3), dtype=np.uint8)
 
-            # Calculate the translation matrix to move the warped image into the output canvas
+            # Calculate the translation matrix to move the warped image
             translation_matrix = np.array([[1, 0, -min_x], [0, 1, -min_y], [0, 0, 1]], dtype=np.float32)
 
             # Combine the perspective transformation and translation
             transform_matrix = translation_matrix.dot(H)
 
-            # Warp the original image into the output canvas
+            # Warp the original image into the output
             output_image = cv.warpPerspective(calibrated_image, transform_matrix, (output_width, output_height))
             return output_image
 
