@@ -34,7 +34,7 @@ class YeadonModel:
             The YeadonModel object with the keypoints of the image.
         """
         # front
-        undistorted_image = self._undistortion('img/chessboards/*', "img/al_front_t.jpg")
+        undistorted_image = self._undistortion('img/william/chessboards/*', "img/william/wil_front_t.jpg")
         pil_im, image, im = self._pil_resize_remove_im(undistorted_image)
 
         edges = self._canny_edges(im, image)
@@ -44,40 +44,43 @@ class YeadonModel:
         # https://github.com/jin-s13/COCO-WholeBody/blob/master/imgs/Fig2_anno.png
         # as "predictions" is an array the index starts at 0 and not at 1 like in the github
         data = predictions[0].data[:, 0:2]
-        self.ratio, self.ratio2 = self._get_ratio(image, 1, 0)
-        self.bottom_ratio, self.bottom_ratio2 = self._get_ratio(image, 0, 1)
+        img = Image.fromarray(image)
+        img.save("test.jpg")
+        self.ratio, self.ratio2 = self._get_ratio(image, 0, 0)
+        #print(self.ratio)
+        self.bottom_ratio, self.bottom_ratio2 = self._get_ratio(image, 0, 0)
+
         # right side
-        #undistorted_r_image = self._undistortion('img/chessboards/*', "img/al_r_side.jpg")
-        pil_r_side_im, image_r_side, im_r_side = self._create_resize_remove_im("img/al_r_side.jpg")
-        #img = Image.fromarray(image_r_side)
-        #img.save("test2.jpg")
+        undistorted_r_image = self._undistortion('img/william/chessboards/*', "img/william/wil_r_side.jpg")
+        pil_r_side_im, image_r_side, im_r_side = self._pil_resize_remove_im(undistorted_r_image)
+
         edges_r_side = self._canny_edges(im_r_side, image_r_side)
         predictions2, gt_anns2, image_meta2 = predictor.pil_image(pil_r_side_im)
         data_r_side = predictions2[0].data[:, 0:2]
         self.ratio_r_side, self.ratio_r_side2 = self._get_ratio(image_r_side, 0,0)
         # front T pose but with the hand to the top
-        #undistorted_up_image = self._undistortion('img/chessboards/*', "img/al_front_t_up.jpg")
-        pil_up_im, image_up, im_up = self._create_resize_remove_im("img/al_front_t_up.jpg")
+        undistorted_up_image = self._undistortion('img/william/chessboards/*', "img/william/wil_front_t_up.jpg")
+        pil_up_im, image_up, im_up = self._pil_resize_remove_im(undistorted_up_image)
         edges_up = self._canny_edges(im_up, image_up)
         predictions4, gt_anns4, image_meta4 = predictor.pil_image(pil_up_im)
         data_up = predictions4[0].data[:, 0:2]
         self.ratio_up, self._ratio_up2 = self._get_ratio(image_up, 0, 0)
         # front pike
-        undistorted_pike_image = self._undistortion('img/chessboards/*', "img/al_front_pike.jpg")
-        pil_pike_im, image_pike, im_pike = self._pil_resize_remove_im(undistorted_pike_image)
+        #undistorted_pike_image = self._undistortion('img/chessboards/*', "img/al_front_pike.jpg")
+        pil_pike_im, image_pike, im_pike = self._create_resize_remove_im("img/william/wil_front_pike.jpg")
         edges_pike = self._canny_edges(im_pike, image_pike)
         predictions5, gt_anns5, image_meta5 = predictor.pil_image(pil_pike_im)
         data_pike = predictions5[0].data[:, 0:2]
-        self.ratio_pike, self.ratio_pike2 = self._get_ratio(image_pike, 1,0)
+        self.ratio_pike, self.ratio_pike2 = self._get_ratio(image_pike, 0,0)
         #self.ratio_pike, self.ratio_pike2 = self._get_ratio(image_pike, 0, 1)
         # right side pike
         #undistorted_r_pike_image = self._undistortion('img/chessboards/*', "img/al_r_pike.jpg")
-        pil_l_pike_im, image_l_pike, im_l_pike = self._create_resize_remove_im("img/al_r_pike_undist.png")#undistorted_r_pike_image)
+        pil_l_pike_im, image_l_pike, im_l_pike = self._create_resize_remove_im("img/william/wil_r_pike.jpg")#undistorted_r_pike_image)
         edges_l_pike = self._canny_edges(im_l_pike, image_l_pike)
         predictions6, gt_anns6, image_meta6 = predictor.pil_image(pil_l_pike_im)
         data_l_pike = predictions6[0].data[:, 0:2]
-        self.ratio_l_pike, self.ratio_l_pike2 = self._get_ratio(image_l_pike, 1, 0)
-        self.ratio_l_pike, self.ratio_l_pike2 = self._get_ratio(image_l_pike, 0, 1)
+        self.ratio_l_pike, self.ratio_l_pike2 = self._get_ratio(image_l_pike, 0, 0)
+        #self.ratio_l_pike, self.ratio_l_pike2 = self._get_ratio(image_l_pike, 0, 1)
         # front
         body_parts_index = {
             "nose": 74,
@@ -478,8 +481,10 @@ class YeadonModel:
             "Lk6d": self._get_maximum_start(body_parts_pos_pike["right_ankle"], body_parts_pos_pike["right_knee"], edges_pike) * self.ratio_pike,
         }
         print(self.ratio)
-        print(self._get_maximum_line(body_parts_pos["right_hip"], body_parts_pos["left_hip"], edges))
-        print(self._get_maximum_line(body_parts_pos["right_hip"], body_parts_pos["left_hip"], edges) * self.ratio)
+        print(self._get_maximum_start(body_parts_pos_r["right_hip"], body_parts_pos_r["right_umbiculus"], edges_r_side) * self.ratio_r_side)
+        print(self._get_maximum_start(body_parts_pos_r["right_umbiculus"], body_parts_pos_r["right_hip"], edges_r_side) * self.ratio_r_side)
+        print(self._get_maximum_start(body_parts_pos_r["right_lowest_front_rib"], body_parts_pos_r["right_umbiculus"], edges_r_side) * self.ratio_r_side)
+        print(self._get_maximum_start(body_parts_pos_r["right_nipple"], body_parts_pos_r["right_lowest_front_rib"], edges_r_side) * self.ratio_r_side)
 
 
         self._create_txt("alexandre.txt")
@@ -613,6 +618,58 @@ class YeadonModel:
         index = get_max_approx(r_side, l_side)
         return result[index][::-1]
 
+    def _get_maximum_pit(self, start, edges, img):
+        def pt_from(origin, angle, distance):
+            """
+            compute the point [x, y] that is 'distance' apart from the origin point
+            perpendicular
+            """
+            x = origin[1] + np.sin(angle) * distance
+            y = origin[0] + np.cos(angle) * distance
+            return np.array([int(y), int(x)])
+
+        def find_edge(p1, p2, angle_radians):
+            distance = 0
+            save = []
+            while True:
+                # as we want the width of the "start", we choose p1
+                x, y = pt_from(p1, angle_radians, distance)
+                if x < 0 or x >= edges.shape[0] or y < 0 or y >= edges.shape[1]:
+                    break
+
+                hit_zone = edges[x, y] == 255
+                if np.any(hit_zone):
+                    save.append((y, x))
+                    break
+
+                distance += 0.01
+            return save
+
+        point = start[0:2]
+        point = np.array([point[1], point[0]])
+        point2 = np.array([point[0] + 5, point[1]])
+        vector = np.array([point2[0] - point[0], point2[1] - point[1]])
+        angle_radians = np.arctan2(vector[1], vector[0])
+        max_save = find_edge(point, point2, angle_radians)
+        angle_radians_left = angle_radians
+        angle_radians_right = angle_radians
+        max_save_right = max_save
+        max_save_left = max_save
+
+        while True:
+            angle_radians_left += 0.01
+            max_last_right = find_edge(point, point2, angle_radians_left)
+            if (np.linalg.norm(max_last_right) < np.linalg.norm(max_save_right)):
+                break
+            max_save_right = max_last_right
+        while True:
+            angle_radians_right -= 0.01
+            max_last_left = find_edge(point, point2, angle_radians_right)
+            if (np.linalg.norm(max_last_left) < np.linalg.norm(max_save_left)):
+                break
+            max_save_left = max_last_left
+        return np.linalg.norm(max(max_save_left, max_last_right))
+
     def _crop(self, image, position_1, position_2):
         """Return the cropped image given two positions.
 
@@ -676,6 +733,8 @@ class YeadonModel:
         cropped_img[:int(len(cropped_img) / 2), :] = 0
         #cropped_img[:, :int(len(cropped_img[0]) / 2)] = 0
         acromion = np.array([r_ear[0] - (cropped_img.shape[0] - np.where(cropped_img == 255)[1][0]), r_ear[1] + np.where(cropped_img == 255)[0][0]])
+        if np.where(cropped_img == 255)[1][0] > cropped_img.shape[0] / 2:
+            acromion = np.array([r_ear[0] - (cropped_img.shape[0] - np.where(cropped_img == 255)[1][0]), r_ear[1] + np.where(cropped_img == 255)[0][0]])
         return acromion
 
     def _find_acromion_left(self, edges, data):
