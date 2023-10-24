@@ -58,7 +58,7 @@ class YeadonModel:
         data_r_side = predictions2[0].data[:, 0:2]
         self.ratio_r_side, self.ratio_r_side2 = self._get_ratio(image_r_side, 0,0)
         # front T pose but with the hand to the top
-        #undistorted_up_image = self._undistortion('img/chessboards/*', "img/al_front_t_up.jpg")
+        #undistorted_up_image = self._undistortion('img/william/chessboards/*', "img/william/wil_front_t_up.jpg")
         pil_up_im, image_up, im_up = self._create_resize_remove_im("img/al_front_t_up.jpg")
         edges_up = self._canny_edges(im_up, image_up)
         predictions4, gt_anns4, image_meta4 = predictor.pil_image(pil_up_im)
@@ -250,12 +250,6 @@ class YeadonModel:
         body_parts_pos_up["left_maximum_forearm"] = self._get_maximum_point(data_up[9], data_up[7], edges_up)
         body_parts_pos_up["right_maximum_calf"] = self._get_maximum_point(data_up[16], data_up[14], edges_up)
         body_parts_pos_up["left_maximum_calf"] = self._get_maximum_point(data_up[15], data_up[13], edges_up)
-        body_parts_pos_up["right_crotch"], body_parts_pos_up["left_crotch"] = self._get_crotch_right_left(edges_up, data_up)
-        body_parts_pos_up["right_mid_thigh"], body_parts_pos_up["left_mid_thigh"] = self._get_mid_thigh_right_left(data_up,
-                                                                                                             body_parts_pos_up[
-                                                                                                                 "right_crotch"],
-                                                                                                             body_parts_pos_up[
-                                                                                                                 "left_crotch"])
         # right side
         hand_part_pos_r = []
         for hand_position in hand_pos_r:
@@ -268,10 +262,6 @@ class YeadonModel:
         body_parts_pos_r["right_umbiculus"] = (
                                                       (right_lowest_front_rib_approx * 3) + (data_r_side[12] * 2)
                                               ) / 5
-        right_arch_approx = (data_r_side[20] + data_r_side[22]) / 2
-        body_parts_pos_r["right_arch"] = right_arch_approx
-        body_parts_pos_r["right_ball"] = (data_r_side[20] + right_arch_approx) / 2
-        body_parts_pos_r["right_mid_arm"] = (data_r_side[6] + data_r_side[8]) / 2
         # front pike
         point, dist = self._get_maximum_pit(data_pike[16], edges_pike)
         body_parts_pos_pike["right_toe_nail"] = np.array([point[0], point[1] - 2 / self.ratio_pike])
@@ -329,23 +319,23 @@ class YeadonModel:
             "Lk7": body_parts_pos["right_arch"],
             "Lk8": body_parts_pos["right_ball"],
             "Lk9": body_parts_pos["right_toe_nail"],
-            "Ls1L": abs(body_parts_pos["left_umbiculus"][1] - body_parts_pos["left_hip"][1]) * self.ratio,
+            "Ls1L": abs(body_parts_pos["left_umbiculus"][1] - body_parts_pos["left_hip"][1]) * self.ratio2,
             "Ls2L": abs(
                 body_parts_pos["left_lowest_front_rib"][1]
                 - body_parts_pos["left_hip"][1]
-            ) * self.ratio,
+            ) * self.ratio2,
             "Ls3L": abs(
                 body_parts_pos["left_nipple"][1] - body_parts_pos["left_hip"][1]
-            ) * self.ratio,
+            ) * self.ratio2,
             "Ls4L": abs(
                 body_parts_pos["left_shoulder"][1] - body_parts_pos["left_hip"][1]
-            ) * self.ratio,
-            "Ls5L": abs(body_parts_pos["left_acromion"][1] - body_parts_pos["left_hip"][1]) * self.ratio,
-            "Ls6L": abs(body_parts_pos["left_acromion"][1] - body_parts_pos["nose"][1]) * self.ratio,
-            "Ls7L": abs(body_parts_pos["left_acromion"][1] - body_parts_pos["left_ear"][1]) * self.ratio,
+            ) * self.ratio2,
+            "Ls5L": abs(body_parts_pos["left_acromion"][1] - body_parts_pos["left_hip"][1]) * self.ratio2,
+            "Ls6L": abs(body_parts_pos["left_acromion"][1] - body_parts_pos["nose"][1]) * self.ratio2,
+            "Ls7L": abs(body_parts_pos["left_acromion"][1] - body_parts_pos["left_ear"][1]) * self.ratio2,
             "Ls8L": abs(
                 body_parts_pos["left_acromion"][1] - body_parts_pos["top_of_head"][1]
-            ) * self.ratio,
+            ) * self.ratio2,
 
             "Ls0p": self._stadium_perimeter(
                 self._get_maximum_start(body_parts_pos["right_hip"], body_parts_pos["right_knee"], edges) * self.ratio,
@@ -429,7 +419,7 @@ class YeadonModel:
             "Lj3L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_knee"]) * self.bottom_ratio2,
             "Lj4L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_maximum_calf"]) * self.bottom_ratio2,
             "Lj5L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_ankle"]) * self.bottom_ratio2,
-            "Lj6L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_heel"]) * self.bottom_ratio2,
+            "Lj6L": 1,
             # not measured "Lj7L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_arch"]),
             "Lj8L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_ball"]) * self.bottom_ratio2,
             "Lj9L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_toe_nail"]) * self.bottom_ratio2,
@@ -458,7 +448,7 @@ class YeadonModel:
             "Lk3L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_knee"]) * self.bottom_ratio2,
             "Lk4L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_maximum_calf"]) * self.bottom_ratio2,
             "Lk5L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_ankle"]) * self.bottom_ratio2,
-            "Lk6L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_heel"]) * self.bottom_ratio2,
+            "Lk6L": 1,
             # not measured "Lk7L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_arch"]),
             "Lk8L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_ball"]) * self.bottom_ratio2,
             "Lk9L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_toe_nail"]) * self.bottom_ratio2,
