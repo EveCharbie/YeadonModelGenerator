@@ -34,7 +34,7 @@ class YeadonModel:
             The YeadonModel object with the keypoints of the image.
         """
         # front
-        undistorted_image = self._undistortion('img/william/chessboards/*', "img/william/william_front_t.jpg")
+        undistorted_image = self._undistortion('img/martin/chessboards/*', "img/martin/mar_front_t.jpg")
         pil_im, image, im = self._pil_resize_remove_im(undistorted_image)
 
         edges = self._canny_edges(im, image)
@@ -46,12 +46,11 @@ class YeadonModel:
         # as "predictions" is an array the index starts at 0 and not at 1 like in the github
         data = predictions[0].data[:, 0:2]
         image_chessboard = image.copy()
-        self.ratio, self.ratio2 = self._get_ratio(image_chessboard, 1, 0)
-        self.bottom_ratio, self.bottom_ratio2 = self._get_ratio(image_chessboard, 0, 1)
-
+        self.ratio, self.ratio2 = self._get_ratio(image_chessboard, 0, 0)
+        self.bottom_ratio, self.bottom_ratio2 = self._get_ratio(image_chessboard, 0, 0)
         # right side
         #undistorted_r_image = self._undistortion('img/chessboards/*', "img/al_r_side.jpg")
-        pil_r_side_im, image_r_side, im_r_side = self._create_resize_remove_im("img/william/william_r_side.jpg")
+        pil_r_side_im, image_r_side, im_r_side = self._create_resize_remove_im("img/martin/mar_r_side.jpg")
 
         edges_r_side = self._canny_edges(im_r_side, image_r_side)
         predictions2, gt_anns2, image_meta2 = predictor_simple.pil_image(pil_r_side_im)
@@ -60,19 +59,17 @@ class YeadonModel:
         self.ratio_r_side, self.ratio_r_side2 = self._get_ratio(image_r_side_chessboard, 0,0)
         # front T pose but with the hand to the top
         #undistorted_up_image = self._undistortion('img/william/chessboards/*', "img/william/wil_front_t_up.jpg")
-        pil_up_im, image_up, im_up = self._create_resize_remove_im("img/william/william_front_t_up.jpg")
+        pil_up_im, image_up, im_up = self._create_resize_remove_im("img/martin/mar_front_t_up.jpg")
         edges_up = self._canny_edges(im_up, image_up)
         predictions4, gt_anns4, image_meta4 = predictor.pil_image(pil_up_im)
         data_up = predictions4[0].data[:, 0:2]
         image_up_chessboard = image_up.copy()
-        print("data_up",data_up[96])
-        print(data_up[97])
-        print(data_up[98])
+
 
         self.ratio_up, self._ratio_up2 = self._get_ratio(image_up_chessboard, 0, 0)
         # front pike
         #undistorted_pike_image = self._undistortion('img/chessboards/*', "img/al_front_pike.jpg")
-        pil_pike_im, image_pike, im_pike = self._create_resize_remove_im("img/william/william_front_pike.jpg")
+        pil_pike_im, image_pike, im_pike = self._create_resize_remove_im("img/martin/mar_front_pike.jpg")
         img = Image.fromarray(image_pike)
         img.save("f_pike.jpg")
         edges_pike = self._canny_edges(im_pike, image_pike)
@@ -83,7 +80,7 @@ class YeadonModel:
         #self.ratio_pike, self.ratio_pike2 = self._get_ratio(image_pike, 0, 1)
         # right side pike
         #undistorted_r_pike_image = self._undistortion('img/chessboards/*', "img/al_r_pike.jpg")
-        pil_l_pike_im, image_l_pike, im_l_pike = self._create_resize_remove_im("img/william/william_r_pike.jpg")#undistorted_r_pike_image)
+        pil_l_pike_im, image_l_pike, im_l_pike = self._create_resize_remove_im("img/martin/mar_r_pike.jpg")#undistorted_r_pike_image)
         edges_l_pike = self._canny_edges(im_l_pike, image_l_pike)
         predictions6, gt_anns6, image_meta6 = predictor.pil_image(pil_l_pike_im)
         data_l_pike = predictions6[0].data[:, 0:2]
@@ -181,6 +178,12 @@ class YeadonModel:
         body_parts_pos["right_knuckles"] = np.mean(hand_part_pos[4:7], axis=0)
         body_parts_pos["left_nails"] = np.mean(hand_part_pos[8:11], axis=0)
         body_parts_pos["right_nails"] = np.mean(hand_part_pos[12:15], axis=0)
+        for hand_position in hand_pos:
+            if data[hand_position][0] < 0:
+                body_parts_pos["left_knuckles"] = data[100]
+                body_parts_pos["right_knuckles"] = data[121]
+                body_parts_pos["left_nails"] = data[102]
+                body_parts_pos["right_nails"] = data[123]
         left_lowest_front_rib_approx = (data[5] + data[11]) / 2
         body_parts_pos["left_lowest_front_rib"] = left_lowest_front_rib_approx
         right_lowest_front_rib_approx = (data[6] + data[12]) / 2
@@ -206,8 +209,10 @@ class YeadonModel:
         body_parts_pos["left_acromion"] = self._find_acromion_left(edges, data)
         body_parts_pos["right_acromion"] = self._find_acromion_right(edges, data)
         body_parts_pos["top_of_head"] = self._find_top_of_head(edges)
-        body_parts_pos["right_maximum_forearm"] = self._get_maximum_point(data[10], data[8], edges)
-        body_parts_pos["left_maximum_forearm"] = self._get_maximum_point(data[9], data[7], edges)
+        body_parts_pos["left_mid_elbow_wrist"] = (data[9] + data[7]) / 2
+        body_parts_pos["right_mid_elbow_wrist"] = (data[10] + data[8]) / 2
+        body_parts_pos["right_maximum_forearm"] = self._get_maximum_point(body_parts_pos["right_mid_elbow_wrist"], data[8], edges)
+        body_parts_pos["left_maximum_forearm"] = self._get_maximum_point(body_parts_pos["left_mid_elbow_wrist"], data[7], edges)
         body_parts_pos["right_maximum_calf"] = self._get_maximum_point(data[16], data[14], edges)
         body_parts_pos["left_maximum_calf"] = self._get_maximum_point(data[15], data[13], edges)
         body_parts_pos["right_crotch"], body_parts_pos["left_crotch"] = self._get_crotch_right_left(edges, data)
@@ -216,6 +221,15 @@ class YeadonModel:
                                                                                                                  "right_crotch"],
                                                                                                              body_parts_pos[
                                                                                                                  "left_crotch"])
+
+        body_parts_pos["left_crotch_width"] = self._get_maximum_start(body_parts_pos["left_crotch"], body_parts_pos["left_knee"], edges) * self.bottom_ratio
+        body_parts_pos["right_crotch_width"] = self._get_maximum_start(body_parts_pos["right_crotch"], body_parts_pos["right_knee"], edges) * self.bottom_ratio
+        print("l_crotch", body_parts_pos["left_crotch_width"])
+        print("r_crotch", body_parts_pos["right_crotch_width"])
+        if body_parts_pos["left_crotch_width"] > 30:
+            body_parts_pos["left_crotch_width"] /= 2
+        if body_parts_pos["right_crotch_width"] > 30:
+            body_parts_pos["right_crotch_width"] /= 2
         # print(body_parts_pos)
         # front up
         left_lowest_front_rib_approx = (data_up[5] + data_up[11]) / 2
@@ -252,6 +266,7 @@ class YeadonModel:
         body_parts_pos_r["right_umbiculus"] = (
                                                       (right_lowest_front_rib_approx * 3) + (data_r_side[12] * 2)
                                               ) / 5
+
         # front pike
         point, dist = self._get_maximum_pit(data_pike[16], edges_pike)
         body_parts_pos_pike["right_toe_nail"] = np.array([point[0], point[1] - 2 / self.ratio_pike])
@@ -371,7 +386,7 @@ class YeadonModel:
                 self._get_maximum_start(body_parts_pos["left_elbow"], body_parts_pos["left_mid_arm"], edges)) * self.ratio,
             "La3p": self._circle_perimeter(
                 self._get_maximum_start(body_parts_pos["left_maximum_forearm"], body_parts_pos["left_elbow"], edges)) * self.ratio,
-            "La4p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_wrist"], body_parts_pos["left_maximum_forearm"], edges) * self.ratio, self._get_maximum_start(body_parts_pos_up["left_wrist"], body_parts_pos_up["left_elbow"], edges_up) * self.ratio_up),
+            "La4p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_wrist"], body_parts_pos["left_elbow"], edges) * self.ratio, self._get_maximum_start(body_parts_pos_up["left_wrist"], body_parts_pos_up["left_elbow"], edges_up) * self.ratio_up),
             "La5p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_base_of_thumb"], data[94], edges) * self.ratio, 0),#self._get_maximum_start(data_up[96], body_parts_pos_up["left_wrist"], edges_up) * self.ratio_up),
             "La6p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_knuckles"], body_parts_pos["left_wrist"], edges) * self.ratio, 0),#self._get_maximum_start(data_up[97], body_parts_pos_up["left_wrist"], edges_up) * self.ratio_up),
             "La7p": self._stadium_perimeter(self._get_maximum_start(body_parts_pos["left_nails"], body_parts_pos["left_wrist"], edges) * self.ratio, 0),#self._get_maximum_start(data_up[98], body_parts_pos_up["left_wrist"], edges_up) * self.ratio_up),
@@ -418,7 +433,7 @@ class YeadonModel:
 
             # not measured "Lj0p":,
             "Lj1p": self._circle_perimeter(
-                self._get_maximum_start(body_parts_pos["left_crotch"], body_parts_pos["left_knee"], edges)) * self.bottom_ratio,
+                body_parts_pos["left_crotch_width"]),
             "Lj2p": self._circle_perimeter(
                 self._get_maximum_start(body_parts_pos["left_mid_thigh"], body_parts_pos["left_knee"], edges)) * self.bottom_ratio,
             "Lj3p": self._circle_perimeter(
@@ -447,7 +462,7 @@ class YeadonModel:
 
             # not measured "Lk0p":,
             "Lk1p": self._circle_perimeter(
-                self._get_maximum_start(body_parts_pos["right_crotch"], body_parts_pos["right_knee"], edges)) * self.bottom_ratio,
+                body_parts_pos["right_crotch_width"]),
             "Lk2p": self._circle_perimeter(
                 self._get_maximum_start(body_parts_pos["right_mid_thigh"], body_parts_pos["right_hip"], edges)) * self.bottom_ratio,
             "Lk3p": self._circle_perimeter(
@@ -485,7 +500,7 @@ class YeadonModel:
         print(self._verify_keypoints(self.keypoints["Lb6p"], self.keypoints["Lb6w"]))
         print(self._verify_keypoints(self.keypoints["Lb7p"], self.keypoints["Lb7w"]))
 
-        self._create_txt("alexandre.txt")
+        self._create_txt("martin.txt")
 
     def _get_maximum(self, start, end, edges, angle, is_start):
         def pt_from(origin, angle, distance):
