@@ -37,6 +37,7 @@ class YeadonModel:
         #undistorted_image = self._undistortion('img/martin/chessboards/*', "img/martin/mar_front_t.jpg")
         #undistorted_image = self._undistortion('img/william/chessboards/*', "img/william/william_front_t.jpg")
         undistorted_image = self._undistortion('img/chessboards/*', "img/al_front_t.jpg")
+
         pil_im, image, im = self._pil_resize_remove_im(undistorted_image)
 
         edges = self._canny_edges(im, image)
@@ -180,6 +181,9 @@ class YeadonModel:
         body_parts_pos_pike = {k: data_pike[v] for k, v in body_parts_index_pike.items()}
         # left side pike
         body_parts_index_l_pike = {
+            "right_ear": 4,
+            "right_shoulder": 6,
+            "right_elbow": 8,
             "right_hip": 12,
             "right_knee": 14,
             "right_ankle": 16,
@@ -223,8 +227,10 @@ class YeadonModel:
         body_parts_pos["right_ball"] = (data[20] + right_arch_approx) / 2
         body_parts_pos["left_mid_arm"] = (data[5] + data[7]) / 2
         body_parts_pos["right_mid_arm"] = (data[6] + data[8]) / 2
-        body_parts_pos["left_acromion"] = self._find_acromion_left(edges, data)
-        body_parts_pos["right_acromion"] = self._find_acromion_right(edges, data)
+        body_parts_pos["left_acromion"] = self._find_acromion_left(edges, data, 0)
+        body_parts_pos["right_acromion"] = self._find_acromion_right(edges, data, 0)
+        body_parts_pos["left_acromion_height"] = self._find_acromion_left(edges, data, 1)
+        body_parts_pos["right_acromion_height"] = self._find_acromion_right(edges, data, 1)
         body_parts_pos["top_of_head"] = self._find_top_of_head(edges)
         body_parts_pos["left_mid_elbow_wrist"] = (data[9] + data[7]) / 2
         body_parts_pos["right_mid_elbow_wrist"] = (data[10] + data[8]) / 2
@@ -266,8 +272,8 @@ class YeadonModel:
         body_parts_pos_up["right_ball"] = (data_up[20] + right_arch_approx) / 2
         body_parts_pos_up["left_mid_arm"] = (data_up[5] + data_up[7]) / 2
         body_parts_pos_up["right_mid_arm"] = (data_up[6] + data_up[8]) / 2
-        body_parts_pos_up["left_acromion"] = self._find_acromion_left(edges_up, data_up)
-        body_parts_pos_up["right_acromion"] = self._find_acromion_right(edges_up, data_up)
+        body_parts_pos_up["left_acromion"] = self._find_acromion_left(edges_up, data_up, 0)
+        body_parts_pos_up["right_acromion"] = self._find_acromion_right(edges_up, data_up, 0)
         body_parts_pos_up["top_of_head"] = self._find_top_of_head(edges_up)
         body_parts_pos_up["right_maximum_forearm"] = self._get_maximum_point(data_up[10], data_up[8], edges_up)
         body_parts_pos_up["left_maximum_forearm"] = self._get_maximum_point(data_up[9], data_up[7], edges_up)
@@ -350,11 +356,11 @@ class YeadonModel:
             "Ls4L": abs(
                 body_parts_pos["left_shoulder"][1] - body_parts_pos["left_hip"][1]
             ) * self.ratio2,
-            "Ls5L": abs(body_parts_pos["left_acromion"][1] - body_parts_pos["left_hip"][1]) * self.ratio2,
-            "Ls6L": abs(body_parts_pos["left_acromion"][1] - body_parts_pos["nose"][1]) * self.ratio2,
-            "Ls7L": np.linalg.norm(body_parts_pos["left_acromion"] - body_parts_pos["left_ear"]) * self.ratio2,
+            "Ls5L": abs(body_parts_pos["left_acromion_height"][1] - body_parts_pos["left_hip"][1]) * self.ratio2,
+            "Ls6L": abs(body_parts_pos["left_acromion_height"][1] - body_parts_pos["nose"][1]) * self.ratio2,
+            "Ls7L": np.linalg.norm(body_parts_pos["left_acromion_height"] - body_parts_pos["left_ear"]) * self.ratio2,
             "Ls8L": abs(
-                body_parts_pos["left_acromion"][1] - body_parts_pos["top_of_head"][1]
+                body_parts_pos["left_acromion_height"][1] - body_parts_pos["top_of_head"][1]
             ) * self.ratio2,
 
             "Ls0p": self._stadium_perimeter(
@@ -434,14 +440,14 @@ class YeadonModel:
             "Lb6w": self._get_maximum_start(body_parts_pos["right_knuckles"], body_parts_pos["right_wrist"], edges) * self.ratio,
             "Lb7w": self._get_maximum_start(body_parts_pos["right_nails"], body_parts_pos["right_wrist"], edges) * self.ratio,
 
-            "Lj1L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_crotch"]) * self.ratio2,
+            "Lj1L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_crotch"]) * self.bottom_ratio2,
             # Not needed"Lj2L": (np.linalg.norm(body_parts_pos["left_hip"] - body_par&ts_pos["left_knee"])) / 2,
-            "Lj3L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_knee"]) * self.ratio2,
-            "Lj4L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_maximum_calf"]) * self.ratio2,
-            "Lj5L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_ankle"]) * self.ratio2,
+            "Lj3L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_knee"]) * self.bottom_ratio2,
+            "Lj4L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_maximum_calf"]) * self.bottom_ratio2,
+            "Lj5L": np.linalg.norm(body_parts_pos["left_hip"] - body_parts_pos["left_ankle"]) * self.bottom_ratio2,
             "Lj6L": 1,
             # not measured "Lj7L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_arch"]),
-            "Lj8L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_ball"]) * self.ratio2,
+            "Lj8L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_ball"]) * self.bottom_ratio2,
             "Lj9L": np.linalg.norm(body_parts_pos_pike["right_ankle"] - body_parts_pos_pike["right_toe_nail"]) * self.ratio_pike,
 
             # not measured "Lj0p":,
@@ -462,14 +468,14 @@ class YeadonModel:
 
             "Lj6d": self._get_maximum_start(body_parts_pos_pike["right_ankle"], body_parts_pos_pike["right_knee"], edges_pike) * self.ratio_pike,
 
-            "Lk1L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_crotch"]) * self.ratio2,
+            "Lk1L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_crotch"]) * self.bottom_ratio2,
             # Not needed"Lk2L": (np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_knee"]) * self.ratio) / 2,
-            "Lk3L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_knee"]) * self.ratio2,
-            "Lk4L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_maximum_calf"]) * self.ratio2,
-            "Lk5L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_ankle"]) * self.ratio2,
+            "Lk3L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_knee"]) * self.bottom_ratio2,
+            "Lk4L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_maximum_calf"]) * self.bottom_ratio2,
+            "Lk5L": np.linalg.norm(body_parts_pos["right_hip"] - body_parts_pos["right_ankle"]) * self.bottom_ratio2,
             "Lk6L": 1,
             # not measured "Lk7L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_arch"]),
-            "Lk8L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_ball"]) * self.ratio2,
+            "Lk8L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_ball"]) * self.bottom_ratio2,
             "Lk9L": np.linalg.norm(body_parts_pos_pike["right_ankle"] - body_parts_pos_pike["right_toe_nail"]) * self.ratio_pike,
 
             # not measured "Lk0p":,
@@ -583,7 +589,7 @@ class YeadonModel:
             save_index = 0
             for i in range(len(top_arr)):
                 if norms[i] > max_norm:
-                    if norms[i] > norms[0] * 2:
+                    if norms[i] > norms[0] * 1.5:
                         break
                     max_norm = norms[i]
                     save_index = i
@@ -741,7 +747,7 @@ class YeadonModel:
         mid_thigh_left = (data[13][0:2] + l_crotch) / 2
         return mid_thigh_right, mid_thigh_left
 
-    def _find_acromion_right(self, edges, data):
+    def _find_acromion_right(self, edges, data, height):
         """Finds the acromion given an image and a set of keypoints.
 
         Parameters
@@ -760,13 +766,20 @@ class YeadonModel:
 
         r_ear, r_shoulder = data[0], data[6]
         cropped_img = self._crop(edges, r_ear, r_shoulder)
-        cropped_img[:int(len(cropped_img) / 2), :] = 0
-        #cropped_img[:, :int(len(cropped_img[0]) / 2)] = 0
-        reversed_image_array = np.fliplr(cropped_img)
+        if height:
+            r_ear, r_shoulder = data[0], data[6]
+            cropped_img = self._crop(edges, r_ear, r_shoulder)
+            cropped_img[:int(len(cropped_img) / 2), :] = 0
+            cropped_img[:, int(len(cropped_img[0]) / 2.5):] = 0
+            reversed_image_array = np.fliplr(cropped_img)
+        else:
+            cropped_img[:int(len(cropped_img) / 2), :] = 0
+            #cropped_img[:, :int(len(cropped_img[0]) / 2)] = 0
+            reversed_image_array = np.fliplr(cropped_img)
         acromion = np.array([r_ear[0] - (np.where(reversed_image_array == 255)[1][0]), r_ear[1] + np.where(reversed_image_array == 255)[0][0]])
         return acromion
 
-    def _find_acromion_left(self, edges, data):
+    def _find_acromion_left(self, edges, data, height):
         """Finds the acromion given an image and a set of keypoints.
 
         Parameters
@@ -781,13 +794,20 @@ class YeadonModel:
         numpy array
             The coordinates of the acromion in the image.
         """
-
-        l_ear, l_shoulder = data[0], data[5]
-        cropped_img = self._crop(edges, l_ear, l_shoulder)
-        cropped_img[:int(len(cropped_img) / 2), :] = 0
-        #cropped_img[:, :int(len(cropped_img[0]) / 2)] = 0
-        acromion = np.array(
-            [l_ear[0] + np.where(cropped_img == 255)[1][0], l_ear[1] + np.where(cropped_img == 255)[0][0]])
+        if height:
+            l_ear, l_shoulder = data[0], data[5]
+            cropped_img = self._crop(edges, l_ear, l_shoulder)
+            cropped_img[:int(len(cropped_img) / 2), :] = 0
+            cropped_img[:int(len(cropped_img[0]) / 1.5), :] = 0
+            reversed_image_array = np.fliplr(cropped_img)
+            acromion = np.array([l_ear[0] + np.where(reversed_image_array == 255)[1][0], l_ear[1] + np.where(reversed_image_array == 255)[0][0]])
+        else:
+            l_ear, l_shoulder = data[0], data[5]
+            cropped_img = self._crop(edges, l_ear, l_shoulder)
+            cropped_img[:int(len(cropped_img) / 2), :] = 0
+            #cropped_img[:, :int(len(cropped_img[0]) / 2)] = 0
+            acromion = np.array(
+                [l_ear[0] + np.where(cropped_img == 255)[1][0], l_ear[1] + np.where(cropped_img == 255)[0][0]])
         return acromion
 
     def _find_top_of_head(self, edges):
