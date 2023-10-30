@@ -34,9 +34,9 @@ class YeadonModel:
             The YeadonModel object with the keypoints of the image.
         """
         # front
-        #undistorted_image = self._undistortion('img/martin/chessboards/*', "img/martin/mar_front_t.jpg")
+        undistorted_image = self._undistortion('img/martin/chessboards/*', "img/martin/mar_front_t.jpg")
         #undistorted_image = self._undistortion('img/william/chessboards/*', "img/william/william_front_t.jpg")
-        undistorted_image = self._undistortion('img/chessboards/*', "img/al_front_t.jpg")
+        #undistorted_image = self._undistortion('img/chessboards/*', "img/al_front_t.jpg")
 
         pil_im, image, im = self._pil_resize_remove_im(undistorted_image)
 
@@ -54,9 +54,9 @@ class YeadonModel:
 
         # right side
         #undistorted_r_image = self._undistortion('img/chessboards/*', "img/al_r_side.jpg")
-        #pil_r_side_im, image_r_side, im_r_side = self._create_resize_remove_im("img/martin/mar_r_side.jpg")
+        pil_r_side_im, image_r_side, im_r_side = self._create_resize_remove_im("img/martin/mar_r_side.jpg")
         #pil_r_side_im, image_r_side, im_r_side = self._create_resize_remove_im("img/william/william_r_side.jpg")
-        pil_r_side_im, image_r_side, im_r_side = self._create_resize_remove_im("img/al_r_side.jpg")
+        #pil_r_side_im, image_r_side, im_r_side = self._create_resize_remove_im("img/al_r_side.jpg")
 
 
         edges_r_side = self._canny_edges(im_r_side, image_r_side)
@@ -66,9 +66,9 @@ class YeadonModel:
         self.ratio_r_side, self.ratio_r_side2 = self._get_ratio(image_r_side_chessboard, 0,0)
         # front T pose but with the hand to the top
         #undistorted_up_image = self._undistortion('img/william/chessboards/*', "img/william/wil_front_t_up.jpg")
-        #pil_up_im, image_up, im_up = self._create_resize_remove_im("img/martin/mar_front_t_up.jpg")
+        pil_up_im, image_up, im_up = self._create_resize_remove_im("img/martin/mar_front_t_up.jpg")
         #pil_up_im, image_up, im_up = self._create_resize_remove_im("img/william/william_front_t_up.jpg")
-        pil_up_im, image_up, im_up = self._create_resize_remove_im("img/al_front_t_up.jpg")
+        #pil_up_im, image_up, im_up = self._create_resize_remove_im("img/al_front_t_up.jpg")
 
         edges_up = self._canny_edges(im_up, image_up)
         predictions4, gt_anns4, image_meta4 = predictor.pil_image(pil_up_im)
@@ -81,9 +81,9 @@ class YeadonModel:
         self.ratio_up, self._ratio_up2 = self._get_ratio(image_up_chessboard, 0, 0)
         # front pike
         #undistorted_pike_image = self._undistortion('img/chessboards/*', "img/al_front_pike.jpg")
-        #pil_pike_im, image_pike, im_pike = self._create_resize_remove_im("img/martin/mar_front_pike.jpg")
+        pil_pike_im, image_pike, im_pike = self._create_resize_remove_im("img/martin/mar_front_pike.jpg")
         #pil_pike_im, image_pike, im_pike = self._create_resize_remove_im("img/william/william_front_pike.jpg")
-        pil_pike_im, image_pike, im_pike = self._create_resize_remove_im("img/al_front_pike.jpg")
+        #pil_pike_im, image_pike, im_pike = self._create_resize_remove_im("img/al_front_pike.jpg")
 
         img = Image.fromarray(image_pike)
         img.save("f_pike.jpg")
@@ -95,9 +95,9 @@ class YeadonModel:
         #self.ratio_pike, self.ratio_pike2 = self._get_ratio(image_pike, 0, 1)
         # right side pike
         #undistorted_r_pike_image = self._undistortion('img/chessboards/*', "img/al_r_pike.jpg")
-        #pil_l_pike_im, image_l_pike, im_l_pike = self._create_resize_remove_im("img/martin/mar_r_pike.jpg")
+        pil_l_pike_im, image_l_pike, im_l_pike = self._create_resize_remove_im("img/martin/mar_r_pike.jpg")
         #pil_l_pike_im, image_l_pike, im_l_pike = self._create_resize_remove_im("img/william/william_r_pike.jpg")
-        pil_l_pike_im, image_l_pike, im_l_pike = self._create_resize_remove_im("img/al_r_pike.jpg")
+        #pil_l_pike_im, image_l_pike, im_l_pike = self._create_resize_remove_im("img/al_r_pike.jpg")
 
         edges_l_pike = self._canny_edges(im_l_pike, image_l_pike)
         predictions6, gt_anns6, image_meta6 = predictor.pil_image(pil_l_pike_im)
@@ -109,6 +109,10 @@ class YeadonModel:
         body_parts_index = {
             "nose": 56,
             "nose_per": 80,
+            "left_knuckle": 100,
+            "right_knuckle": 121,
+            "left_nail": 102,
+            "right_nail": 123,
             "left_ear": 39,
             "right_ear": 23,
             "left_shoulder": 5,
@@ -395,8 +399,8 @@ class YeadonModel:
             "La3L": abs(body_parts_pos["left_shoulder"][0] - body_parts_pos["left_maximum_forearm"][0]) * self.ratio,
             "La4L": abs(body_parts_pos["left_shoulder"][0] - body_parts_pos["left_wrist"][0]) * self.ratio,
             "La5L": abs(body_parts_pos["left_wrist"][0] - body_parts_pos["left_base_of_thumb"][0]) * self.ratio,
-            "La6L": abs(body_parts_pos["left_wrist"][0] - body_parts_pos["left_knuckles"][0]) * self.ratio,
-            "La7L": abs(body_parts_pos["left_wrist"][0] - body_parts_pos["left_nails"][0]) * self.ratio,
+            "La6L": abs(body_parts_pos["left_wrist"][0] - body_parts_pos["left_knuckle"][0]) * self.ratio,
+            "La7L": abs(body_parts_pos["left_wrist"][0] - body_parts_pos["left_nail"][0]) * self.ratio,
 
             "La0p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["left_shoulder_perimeter_width"], body_parts_pos["left_elbow"], edges)) * self.ratio,
             "La1p": self._circle_perimeter(
@@ -420,8 +424,8 @@ class YeadonModel:
             "Lb3L": abs(body_parts_pos["right_shoulder"][0] - body_parts_pos["right_maximum_forearm"][0]) * self.ratio,
             "Lb4L": abs(body_parts_pos["right_shoulder"][0] - body_parts_pos["right_wrist"][0]) * self.ratio,
             "Lb5L": abs(body_parts_pos["right_wrist"][0] - body_parts_pos["right_base_of_thumb"][0]) * self.ratio,
-            "Lb6L": abs(body_parts_pos["right_wrist"][0] - body_parts_pos["right_knuckles"][0]) * self.ratio,
-            "Lb7L": abs(body_parts_pos["right_wrist"][0] - body_parts_pos["right_nails"][0]) * self.ratio,
+            "Lb6L": abs(body_parts_pos["right_wrist"][0] - body_parts_pos["right_knuckle"][0]) * self.ratio,
+            "Lb7L": abs(body_parts_pos["right_wrist"][0] - body_parts_pos["right_nail"][0]) * self.ratio,
 
             "Lb0p": self._circle_perimeter(self._get_maximum_start(body_parts_pos["right_shoulder_perimeter_width"], body_parts_pos["right_elbow"], edges)) * self.ratio,
             "Lb1p": self._circle_perimeter(
@@ -505,19 +509,7 @@ class YeadonModel:
 
             "Lk6d": self._get_maximum_start(body_parts_pos_pike["right_ankle"], body_parts_pos_pike["right_knee"], edges_pike) * self.ratio_pike,
         }
-        print(self._verify_keypoints(self.keypoints["Ls0p"], self.keypoints["Ls0w"]))
-        print(self._verify_keypoints(self.keypoints["Ls1p"], self.keypoints["Ls1w"]))
-        print(self._verify_keypoints(self.keypoints["Ls2p"], self.keypoints["Ls2w"]))
-        print(self._verify_keypoints(self.keypoints["Ls3p"], self.keypoints["Ls3w"]))
-        print(self._verify_keypoints(self.keypoints["La4p"], self.keypoints["La4w"]))
-        print(self._verify_keypoints(self.keypoints["La5p"], self.keypoints["La5w"]))
-        print(self._verify_keypoints(self.keypoints["La6p"], self.keypoints["La6w"]))
-        print(self._verify_keypoints(self.keypoints["La7p"], self.keypoints["La7w"]))
-        print(self._verify_keypoints(self.keypoints["Lb4p"], self.keypoints["Lb4w"]))
-        print(self._verify_keypoints(self.keypoints["Lb5p"], self.keypoints["Lb5w"]))
-        print(self._verify_keypoints(self.keypoints["Lb6p"], self.keypoints["Lb6w"]))
-        print(self._verify_keypoints(self.keypoints["Lb7p"], self.keypoints["Lb7w"]))
-
+        self._verify_keypoints()
         self._create_txt("alexandre.txt")
 
     def _get_maximum(self, start, end, edges, angle, is_start):
@@ -1036,11 +1028,36 @@ class YeadonModel:
             for key, value in self.keypoints.items():
                 if key[-1].isalpha():
                     file_object.writelines("{} : {:.1f}\n".format(key, float(value)))
-    def _verify_keypoints(self, perimeter, width):
-        ratio = perimeter / width
-        return 2 < ratio < np.pi
+    def _verify_keypoints(self):
+        def loop(keypoint_perim, keypoint_width):
+            if keypoint_perim / keypoint_width <= 2:
+                return (keypoint_perim / 2) - 0.1
+            if keypoint_perim / keypoint_width >= np.pi:
+                return (keypoint_perim / np.pi) + 0.1
+            return keypoint_width
 
+        self.keypoints["Ls0w"] = loop(self.keypoints["Ls0p"], self.keypoints["Ls0w"])
+        self.keypoints["Ls1w"] = loop(self.keypoints["Ls1p"], self.keypoints["Ls1w"])
+        self.keypoints["Ls2w"] = loop(self.keypoints["Ls2p"], self.keypoints["Ls2w"])
+        self.keypoints["Ls3w"] = loop(self.keypoints["Ls3p"], self.keypoints["Ls3w"])
 
+        self.keypoints["La4w"] = loop(self.keypoints["La4p"], self.keypoints["La4w"])
+        self.keypoints["La5w"] = loop(self.keypoints["La5p"], self.keypoints["La5w"])
+        self.keypoints["La6w"] = loop(self.keypoints["La6p"], self.keypoints["La6w"])
+        self.keypoints["La7w"] = loop(self.keypoints["La7p"], self.keypoints["La7w"])
+
+        self.keypoints["Lb4w"] = loop(self.keypoints["Lb4p"], self.keypoints["Lb4w"])
+        self.keypoints["Lb5w"] = loop(self.keypoints["Lb5p"], self.keypoints["Lb5w"])
+        self.keypoints["Lb6w"] = loop(self.keypoints["Lb6p"], self.keypoints["Lb6w"])
+        self.keypoints["Lb7w"] = loop(self.keypoints["Lb7p"], self.keypoints["Lb7w"])
+
+        self.keypoints["Lj6d"] = loop(self.keypoints["Lj6p"], self.keypoints["Lj6d"])
+        self.keypoints["Lj8w"] = loop(self.keypoints["Lj8p"], self.keypoints["Lj8w"])
+        self.keypoints["Lj9w"] = loop(self.keypoints["Lj9p"], self.keypoints["Lj9w"])
+
+        self.keypoints["Lk6d"] = loop(self.keypoints["Lk6p"], self.keypoints["Lk6d"])
+        self.keypoints["Lk8w"] = loop(self.keypoints["Lk8p"], self.keypoints["Lk8w"])
+        self.keypoints["Lk9w"] = loop(self.keypoints["Lk9p"], self.keypoints["Lk9w"])
 
 if __name__ == "__main__":
     pass
