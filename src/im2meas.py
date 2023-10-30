@@ -48,9 +48,20 @@ class YeadonModel:
         # https://github.com/jin-s13/COCO-WholeBody/blob/master/imgs/Fig2_anno.png
         # as "predictions" is an array the index starts at 0 and not at 1 like in the github
         data = predictions[0].data[:, 0:2]
+
+        edges = self._better_edges(edges, data)
         image_chessboard = image.copy()
-        self.ratio, self.ratio2 = self._get_ratio(image_chessboard, 0, 0)
-        self.bottom_ratio, self.bottom_ratio2 = self._get_ratio(image_chessboard, 0, 0)
+        img = Image.fromarray(image_chessboard)
+        img.save("front_t.jpg")
+
+        self.ratio, self.ratio2 = self._get_ratio(image_chessboard, 1, 0)
+        self.bottom_ratio, self.bottom_ratio2 = self._get_ratio(image_chessboard, 0, 1)
+
+        print("self.ratio", self.ratio)
+        print("self.ratio2", self.ratio2)
+        print("self.bottom_ratio", self.bottom_ratio)
+        print("self.bottom_ratio2", self.bottom_ratio2)
+
 
         # right side
         #undistorted_r_image = self._undistortion('img/chessboards/*', "img/al_r_side.jpg")
@@ -74,9 +85,7 @@ class YeadonModel:
         predictions4, gt_anns4, image_meta4 = predictor.pil_image(pil_up_im)
         data_up = predictions4[0].data[:, 0:2]
         image_up_chessboard = image_up.copy()
-        print("data_up",data_up[96])
-        print(data_up[97])
-        print(data_up[98])
+
 
         self.ratio_up, self._ratio_up2 = self._get_ratio(image_up_chessboard, 0, 0)
         # front pike
@@ -85,8 +94,7 @@ class YeadonModel:
         #pil_pike_im, image_pike, im_pike = self._create_resize_remove_im("img/william/william_front_pike.jpg")
         #pil_pike_im, image_pike, im_pike = self._create_resize_remove_im("img/al_front_pike.jpg")
 
-        img = Image.fromarray(image_pike)
-        img.save("f_pike.jpg")
+
         edges_pike = self._canny_edges(im_pike, image_pike)
         predictions5, gt_anns5, image_meta5 = predictor.pil_image(pil_pike_im)
         data_pike = predictions5[0].data[:, 0:2]
@@ -300,7 +308,6 @@ class YeadonModel:
         body_parts_pos_l_pike["right_heel"] = self._get_maximum_point(data_l_pike[16], body_parts_pos_l_pike["right_toe_nail"], edges_l_pike)
         body_parts_pos_l_pike["right_ball"] = np.array([body_parts_pos_l_pike["right_toe_nail"][0], body_parts_pos_l_pike["right_toe_nail"][1] - 3 / self.ratio_l_pike])
         body_parts_pos_l_pike["right_arch"] = (body_parts_pos_l_pike["right_heel"] + body_parts_pos_l_pike["right_ball"]) / 2
-        print(self._get_maximum_start(data_up[96], body_parts_pos_up["left_wrist"], edges_up) * self.ratio_up)
 
         # print(body_parts_pos_r)
         self.keypoints = {
@@ -349,18 +356,18 @@ class YeadonModel:
             "Lk7": body_parts_pos["right_arch"],
             "Lk8": body_parts_pos["right_ball"],
             "Lk9": body_parts_pos["right_toe_nail"],
-            "Ls1L": abs(body_parts_pos["left_umbiculus"][1] - body_parts_pos["left_hip"][1]) * self.ratio2,
+            "Ls1L": abs(body_parts_pos["right_umbiculus"][1] - body_parts_pos["right_hip"][1]) * self.ratio2,
             "Ls2L": abs(
-                body_parts_pos["left_lowest_front_rib"][1]
-                - body_parts_pos["left_hip"][1]
+                body_parts_pos["right_lowest_front_rib"][1]
+                - body_parts_pos["right_hip"][1]
             ) * self.ratio2,
             "Ls3L": abs(
-                body_parts_pos["left_nipple"][1] - body_parts_pos["left_hip"][1]
+                body_parts_pos["right_nipple"][1] - body_parts_pos["right_hip"][1]
             ) * self.ratio2,
             "Ls4L": abs(
-                body_parts_pos["left_shoulder"][1] - body_parts_pos["left_hip"][1]
+                body_parts_pos["right_shoulder"][1] - body_parts_pos["right_hip"][1]
             ) * self.ratio2,
-            "Ls5L": abs(body_parts_pos["left_acromion_height"][1] - body_parts_pos["left_hip"][1]) * self.ratio2,
+            "Ls5L": abs(body_parts_pos["right_acromion_height"][1] - body_parts_pos["right_hip"][1]) * self.ratio2,
             "Ls6L": abs(body_parts_pos["left_acromion_height"][1] - body_parts_pos["nose"][1]) * self.ratio2,
             "Ls7L": np.linalg.norm(body_parts_pos["left_acromion_height"] - body_parts_pos["left_ear"]) * self.ratio2,
             "Ls8L": abs(
@@ -989,13 +996,20 @@ class YeadonModel:
         H, _ = cv.findHomography(corners2, corners)
         undistorted_image = undistor(calibrated_image, H)
         return undistorted_image
+    def _better_edges(self, edges, data):
+        crotch_zone = self._crop(edges, data[12], data[13])
+        height = np.array([np.where(crotch_zone != 0)[1][0], np.where(crotch_zone != 0)[0][1]])
+        crotch = np.array([round(data[12][0] + height[0]), round(data[12][1] + height[1])])
+        crotch_approx = np.array([round(data[12][0] + height[0]), round(data[12][1] + height[1] - 5)])
+        cv.line(edges, crotch, crotch_approx, (0, 255, 0), 7)
+        return edges
 
 
     def _get_ratio(self, img, top, bot):
         if top:
-            img = self._crop(img, [0,0], [img.shape[0], img.shape[0] / 2])
+            img = self._crop(img, [img.shape[0] / 2.5, 0], [img.shape[0], img.shape[0] / 1.5])
         if bot:
-            img = self._crop(img, [0, img.shape[0]], [img.shape[1], img.shape[0] / 2])
+            img = self._crop(img, [0, img.shape[0]], [img.shape[1] / 2, img.shape[0] / 2])
 
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
