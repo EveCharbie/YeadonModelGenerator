@@ -601,8 +601,7 @@ class YeadonModel:
 
         def vector_angle_plus(p1, p2):
             vector = np.array([p2[0] - p1[0], p2[1] - p1[1]])
-            angle_radians = np.arctan2(vector[1], vector[0]) + np.pi / 2
-            return angle_radians
+            return np.arctan2(vector[1], vector[0]) + np.pi / 2
 
         def vector_angle_minus(p1, p2):
             vector = np.array([p2[0] - p1[0], p2[1] - p1[1]])
