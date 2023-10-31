@@ -26,11 +26,9 @@ def find_edge(p1, p2, angle_radians, edges):
 
 
 def get_points(start, end):
-    p1 = start[0:2]
-    p1 = np.array([p1[1], p1[0]])
-    p2 = end[0:2]
-    p2 = np.array([p2[1], p2[0]])
-    return np.array([p1, p2])
+    p1 = np.array([start[0:2][1], start[0:2][0]])
+    p2 = np.array([end[0:2][1], end[0:2][0]])
+    return p1, p2, np.array([p2[0] - p1[0], p2[1] - p1[1]])
 
 
 def get_max_approx(top_arr, bottom_arr):
@@ -50,15 +48,12 @@ def get_max_approx(top_arr, bottom_arr):
     return save_index
 
 
-def vector_angle_plus(p1, p2):
-    vector = np.array([p2[0] - p1[0], p2[1] - p1[1]])
-    return np.arctan2(vector[1], vector[0]) + np.pi / 2
+def vector_angle(vector, plus):
+    if plus:
+        return np.arctan2(vector[1], vector[0]) + np.pi / 2
+    else:
+        return np.arctan2(vector[1], vector[0]) - np.pi / 2
 
-
-def vector_angle_minus(p1, p2):
-    vector = np.array([p2[0] - p1[0], p2[1] - p1[1]])
-    angle_radians = np.arctan2(vector[1], vector[0]) - np.pi / 2
-    return angle_radians
 
 
 def get_maximum_range(angle_radians, result, edges):
@@ -84,8 +79,7 @@ def get_maximum_range(angle_radians, result, edges):
 
 def _get_maximum(start, end, edges, angle, is_start):
 
-    p1, p2 = get_points(start, end)
-    vector = np.array([p2[0] - p1[0], p2[1] - p1[1]])
+    p1, p2, vector = get_points(start, end)
     angle_radians = np.arctan2(vector[1], vector[0]) - angle
     max1 = find_edge(p1, p2, angle_radians, edges)
     angle_radians = (np.arctan2(vector[1], vector[0]) + angle) * is_start
@@ -101,16 +95,16 @@ def get_maximum_start(start, end, edges):
 def get_maximum_point(start, end, edges):
 
     # get the maximums for calf and forearm
-    p1, p2 = get_points(start, end)
+    p1, p2, vector = get_points(start, end)
     # create an array with 100 points between start and end
     x_values = np.linspace(p1[1], p2[1], 100)
     y_values = np.linspace(p1[0], p2[0], 100)
     result = [(y, x) for x, y in zip(x_values, y_values)]
     # set the angle in the direction of the edges
-    angle_radians = vector_angle_plus(p1, p2)
+    angle_radians = vector_angle(vector, 1)
     r_side = get_maximum_range(angle_radians, result, edges)
     # set the angle in the direction of other side
-    angle_radians = vector_angle_minus(p1, p2)
+    angle_radians = vector_angle(vector, 0)
     l_side = get_maximum_range(angle_radians, result, edges)
     # get the index of the max
     index = get_max_approx(r_side, l_side)
