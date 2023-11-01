@@ -62,7 +62,7 @@ def create_resize_remove_im(impath):
 
 
 def pil_resize_remove_im(undistorted_image):
-    pil_im = Image.fromarray(undistorted_image.astype('uint8'), 'RGB')
+    pil_im = Image.fromarray(undistorted_image.astype("uint8"), "RGB")
     pil_im = _resize(pil_im)
     image = np.asarray(pil_im)
     im = remove(image)
@@ -74,8 +74,13 @@ def undistortion(chessboard_images_path, img_with_chessboard_pathc):
         CHECKERBOARD = (5, 5)
         criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.1)
         gray_image = cv.cvtColor(undistorted_image, cv.COLOR_BGR2GRAY)
-        ret, corners = cv.findChessboardCorners(gray_image, CHECKERBOARD,
-                                                cv.CALIB_CB_ADAPTIVE_THRESH + cv.CALIB_CB_FAST_CHECK + cv.CALIB_CB_NORMALIZE_IMAGE)
+        ret, corners = cv.findChessboardCorners(
+            gray_image,
+            CHECKERBOARD,
+            cv.CALIB_CB_ADAPTIVE_THRESH
+            + cv.CALIB_CB_FAST_CHECK
+            + cv.CALIB_CB_NORMALIZE_IMAGE,
+        )
         if ret == True:
             corners2 = cv.cornerSubPix(gray_image, corners, (3, 3), (-1, -1), criteria)
         if draw:
@@ -91,8 +96,12 @@ def undistortion(chessboard_images_path, img_with_chessboard_pathc):
         image_points = []
 
         # Define the 3D coordinates of the chessboard corners (assuming a flat board)
-        object_points_pattern = np.zeros((chessboard_size[0] * chessboard_size[1], 3), np.float32)
-        object_points_pattern[:, :2] = np.mgrid[0:chessboard_size[0], 0:chessboard_size[1]].T.reshape(-1, 2)
+        object_points_pattern = np.zeros(
+            (chessboard_size[0] * chessboard_size[1], 3), np.float32
+        )
+        object_points_pattern[:, :2] = np.mgrid[
+            0 : chessboard_size[0], 0 : chessboard_size[1]
+        ].T.reshape(-1, 2)
 
         for chessboard_image in chessboard_images:
             img = cv.imread(chessboard_image)
@@ -112,21 +121,26 @@ def undistortion(chessboard_images_path, img_with_chessboard_pathc):
         image_size = (img_with_chessboard.shape[1], img_with_chessboard.shape[0])
 
         if object_points and image_points:
-            ret, camera_matrix, distortion_coeffs, rvecs, tvecs = cv.calibrateCamera(object_points, image_points,
-                                                                                     image_size, None, None)
+            ret, camera_matrix, distortion_coeffs, rvecs, tvecs = cv.calibrateCamera(
+                object_points, image_points, image_size, None, None
+            )
         else:
             camera_matrix = None
             distortion_coeffs = None
 
         if camera_matrix is not None:
-            undistorted_image = cv.undistort(img_with_chessboard, camera_matrix, distortion_coeffs)
+            undistorted_image = cv.undistort(
+                img_with_chessboard, camera_matrix, distortion_coeffs
+            )
         else:
             undistorted_image = None
             print("Camera calibration failed. Check your calibration images.")
 
         mean_error = 0
         for i in range(len(object_points)):
-            imgpoints2, _ = cv.projectPoints(object_points[i], rvecs[i], tvecs[i], camera_matrix, distortion_coeffs)
+            imgpoints2, _ = cv.projectPoints(
+                object_points[i], rvecs[i], tvecs[i], camera_matrix, distortion_coeffs
+            )
         error = cv.norm(image_points[i], imgpoints2, cv.NORM_L2) / len(imgpoints2)
         mean_error += error
 
@@ -137,7 +151,9 @@ def undistortion(chessboard_images_path, img_with_chessboard_pathc):
     def undistor(calibrated_image, H):
         height, width = calibrated_image.shape[:2]
 
-        original_corners = np.array([[0, 0], [width, 0], [0, height], [width, height]], dtype=np.float32)
+        original_corners = np.array(
+            [[0, 0], [width, 0], [0, height], [width, height]], dtype=np.float32
+        )
 
         # Warp the corners using the homography matrix
         warped_corners = cv.perspectiveTransform(original_corners.reshape(-1, 1, 2), H)
@@ -152,22 +168,28 @@ def undistortion(chessboard_images_path, img_with_chessboard_pathc):
         output_height = max_y - min_y
 
         # Calculate the translation matrix to move the warped image
-        translation_matrix = np.array([[1, 0, -min_x], [0, 1, -min_y], [0, 0, 1]], dtype=np.float32)
+        translation_matrix = np.array(
+            [[1, 0, -min_x], [0, 1, -min_y], [0, 0, 1]], dtype=np.float32
+        )
 
         # Combine the perspective transformation and translation
         transform_matrix = translation_matrix.dot(H)
 
         # Warp the original image into the output
-        output_image = cv.warpPerspective(calibrated_image, transform_matrix, (output_width, output_height))
+        output_image = cv.warpPerspective(
+            calibrated_image, transform_matrix, (output_width, output_height)
+        )
         return output_image
 
     chessboard_images = glob.glob(chessboard_images_path)
-    pil_im = PIL.Image.open(img_with_chessboard_pathc).convert('RGB')
+    pil_im = PIL.Image.open(img_with_chessboard_pathc).convert("RGB")
     img_with_chessboard = np.asarray(pil_im)
     # get the camera matrix and the distortion_coef as well a the image calibrated
-    calibrated_image, camera_matrix, distortion_coeffs = recalibrate_image(chessboard_images, img_with_chessboard)
+    calibrated_image, camera_matrix, distortion_coeffs = recalibrate_image(
+        chessboard_images, img_with_chessboard
+    )
     # transform the image into pil image to use the resize function
-    PIL_image = Image.fromarray(calibrated_image.astype('uint8'), 'RGB')
+    PIL_image = Image.fromarray(calibrated_image.astype("uint8"), "RGB")
     calibrated_image = np.asarray(_resize(PIL_image))
     # get the corners for the two chessboards
     undistorted_image2, corners = find_chessboard(calibrated_image.copy(), 1)
@@ -176,13 +198,20 @@ def undistortion(chessboard_images_path, img_with_chessboard_pathc):
     undistorted_image = undistor(calibrated_image, H)
     return undistorted_image
 
+
 def better_edges(edges, data):
     crotch_zone = _crop(edges, data[12], data[13])
-    height = np.array([np.where(crotch_zone != 0)[1][0], np.where(crotch_zone != 0)[0][1]])
+    height = np.array(
+        [np.where(crotch_zone != 0)[1][0], np.where(crotch_zone != 0)[0][1]]
+    )
     crotch = np.array([round(data[12][0] + height[0]), round(data[12][1] + height[1])])
-    crotch_approx = np.array([round(data[12][0] + height[0]), round(data[12][1] + height[1] - 5)])
+    crotch_approx = np.array(
+        [round(data[12][0] + height[0]), round(data[12][1] + height[1] - 5)]
+    )
     cv.line(edges, crotch, crotch_approx, (0, 255, 0), 7)
     return edges
+
+
 def get_ratio(img, top, bot):
     if top:
         img = _crop(img, [img.shape[0] / 2.5, 0], [img.shape[0], img.shape[0] / 1.5])
@@ -203,7 +232,9 @@ def get_ratio(img, top, bot):
     # Get the contour of the chessboard pattern
     rect = cv.boundingRect(corners2)
     x, y, w, h = rect
-    chessboard_contour = np.array([[[x, y]], [[x + w, y]], [[x + w, y + h]], [[x, y + h]]])
+    chessboard_contour = np.array(
+        [[[x, y]], [[x + w, y]], [[x + w, y + h]], [[x, y + h]]]
+    )
 
     # Draw the contour on the image
     cv.drawContours(img, [chessboard_contour], -1, (255, 0, 0), 1)
@@ -212,6 +243,6 @@ def get_ratio(img, top, bot):
     ratio2 = np.linalg.norm(chessboard_contour[0] - chessboard_contour[3])
     print(ratio)
     print(ratio2)
-    ratio = 9.8/ratio
-    ratio2 = 9.8/ratio2
+    ratio = 9.8 / ratio
+    ratio2 = 9.8 / ratio2
     return ratio, ratio2

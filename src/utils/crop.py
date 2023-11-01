@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def _crop(image, position_1, position_2):
     """Return the cropped image given two positions.
 

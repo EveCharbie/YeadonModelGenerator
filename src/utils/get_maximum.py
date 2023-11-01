@@ -9,6 +9,8 @@ def pt_from(origin, angle, distance):
     x = origin[1] + np.sin(angle) * distance
     y = origin[0] + np.cos(angle) * distance
     return np.array([int(y), int(x)])
+
+
 def find_edge(p1, angle_radians, edges, save):
     distance = 0
     while True:
@@ -25,7 +27,9 @@ def find_edge(p1, angle_radians, edges, save):
 
 
 def get_points(start, end):
-    p1, p2 = np.array([start[0:2][1], start[0:2][0]]), np.array([end[0:2][1], end[0:2][0]])
+    p1, p2 = np.array([start[0:2][1], start[0:2][0]]), np.array(
+        [end[0:2][1], end[0:2][0]]
+    )
     return p1, p2, np.array([p2[0] - p1[0], p2[1] - p1[1]])
 
 
@@ -53,7 +57,6 @@ def vector_angle(vector, plus):
         return np.arctan2(vector[1], vector[0]) - np.pi / 2
 
 
-
 def get_maximum_range(angle_radians, result, edges):
     save = []
     # for all the points between p1 and p2
@@ -74,8 +77,8 @@ def get_maximum_range(angle_radians, result, edges):
             distance += 0.01
     return save
 
-def _get_maximum(start, end, edges, angle, is_start):
 
+def _get_maximum(start, end, edges, angle, is_start):
     p1, p2, vector = get_points(start, end)
     angle_radians = np.arctan2(vector[1], vector[0]) - angle
     max1 = find_edge(p1, angle_radians, edges, save=[])
@@ -83,14 +86,16 @@ def _get_maximum(start, end, edges, angle, is_start):
     max2 = find_edge(p1, angle_radians, edges, save=[])
     return np.linalg.norm(np.array(max1) - np.array(max2))
 
+
 def get_maximum_line(start, end, edges):
     return _get_maximum(start, end, edges, 0, -1)
+
 
 def get_maximum_start(start, end, edges):
     return _get_maximum(start, end, edges, np.pi / 2, 1)
 
-def get_maximum_point(start, end, edges):
 
+def get_maximum_point(start, end, edges):
     # get the maximums for calf and forearm
     p1, p2, vector = get_points(start, end)
     # create an array with 100 points between start and end
@@ -107,8 +112,8 @@ def get_maximum_point(start, end, edges):
     index = get_max_approx(r_side, l_side)
     return result[index][::-1]
 
-def get_maximum_pit(start, edges):
 
+def get_maximum_pit(start, edges):
     point = np.array([start[0:2][1], start[0:2][0]])
     point2 = np.array([point[0] + 5, point[1]])
     vector = np.array([point2[0] - point[0], point2[1] - point[1]])
@@ -122,18 +127,18 @@ def get_maximum_pit(start, edges):
     while True:
         angle_radians_left += 0.01
         max_last_right = find_edge(point, angle_radians_left, edges, save=[])
-        if (np.linalg.norm(max_last_right) < np.linalg.norm(max_save_right)):
+        if np.linalg.norm(max_last_right) < np.linalg.norm(max_save_right):
             break
         max_save_right = max_last_right
     while True:
         angle_radians_right -= 0.01
         max_last_left = find_edge(point, angle_radians_right, edges, save=[])
-        if (np.linalg.norm(max_last_left) < np.linalg.norm(max_save_left)):
+        if np.linalg.norm(max_last_left) < np.linalg.norm(max_save_left):
             break
         max_save_left = max_last_left
     delta = np.linalg.norm(abs(np.array(max_last_left) - np.array(max_last_right)))
     distance = np.linalg.norm(max(max_save_left, max_last_right))
     point = max(max_save_left, max_last_right)
-    #if distance * 0.05 < delta:
+    # if distance * 0.05 < delta:
     #    return 0, 0
     return point[0], int(distance)

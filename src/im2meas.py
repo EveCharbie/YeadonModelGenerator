@@ -51,8 +51,8 @@ class YeadonModel:
         img = Image.fromarray(image_chessboard)
         img.save("front_t.jpg")
 
-        self.ratio, self.ratio2 = get_ratio(image_chessboard, 1, 0)
-        self.bottom_ratio, self.bottom_ratio2 = get_ratio(image_chessboard, 0, 1)
+        self.ratio, self.ratio2 = get_ratio(image_chessboard, 0, 0)
+        self.bottom_ratio, self.bottom_ratio2 = get_ratio(image_chessboard, 0, 0)
 
         print("self.ratio", self.ratio)
         print("self.ratio2", self.ratio2)
