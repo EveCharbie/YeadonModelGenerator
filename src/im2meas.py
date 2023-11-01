@@ -1,6 +1,4 @@
-import cv2 as cv
 import openpifpaf
-from PIL import Image
 
 import matplotlib.pyplot as plt
 

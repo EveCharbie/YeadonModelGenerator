@@ -109,7 +109,9 @@ def get_maximum_point(start, end, edges):
 
 def get_maximum_pit(start, edges):
 
-    point, point2, vector = get_points(start, np.array([start[0:2][0] + 5, start[0:2][1]]))
+    point = np.array([start[0:2][1], start[0:2][0]])
+    point2 = np.array([point[0] + 5, point[1]])
+    vector = np.array([point2[0] - point[0], point2[1] - point[1]])
     angle_radians = np.arctan2(vector[1], vector[0])
     max_save = find_edge(point, angle_radians, edges, save=[])
     angle_radians_left = angle_radians
