@@ -26,8 +26,7 @@ def find_edge(p1, p2, angle_radians, edges):
 
 
 def get_points(start, end):
-    p1 = np.array([start[0:2][1], start[0:2][0]])
-    p2 = np.array([end[0:2][1], end[0:2][0]])
+    p1, p2 = np.array([start[0:2][1], start[0:2][0]]), np.array([end[0:2][1], end[0:2][0]])
     return p1, p2, np.array([p2[0] - p1[0], p2[1] - p1[1]])
 
 
@@ -62,7 +61,6 @@ def get_maximum_range(angle_radians, result, edges):
     for point in result:
         distance = 0
         while True:
-
             x, y = pt_from(point, angle_radians, distance)
             if x < 0 or x >= edges.shape[0] or y < 0 or y >= edges.shape[1]:
                 break
@@ -112,10 +110,7 @@ def get_maximum_point(start, end, edges):
 
 def get_maximum_pit(start, edges):
 
-    point = start[0:2]
-    point = np.array([point[1], point[0]])
-    point2 = np.array([point[0] + 5, point[1]])
-    vector = np.array([point2[0] - point[0], point2[1] - point[1]])
+    point, point2, vector = get_points(start, np.array([start[0:2][0] + 5, start[0:2][1]]))
     angle_radians = np.arctan2(vector[1], vector[0])
     max_save = find_edge(point, point2, angle_radians, edges)
     angle_radians_left = angle_radians
