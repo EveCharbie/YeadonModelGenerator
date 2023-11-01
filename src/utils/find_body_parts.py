@@ -1,6 +1,7 @@
 import numpy as np
 
 from src.utils.crop import _crop
+from src.utils.get_maximum import *
 
 def find_acromion_right(edges, ear, shoulder, height):
     """Finds the acromion given an image and a set of keypoints.
@@ -50,7 +51,7 @@ def find_acromion_left(edges, data, height):
         cropped_img = np.fliplr(cropped_img)
     acromion = np.array([l_ear[0] + np.where(cropped_img == 255)[1][0], l_ear[1] + np.where(cropped_img == 255)[0][0]])
     return acromion
-def find_top_of_head(edges):
+def find_top_of_head(data, edges):
     """Finds the top of the head given an image.
 
     Parameters
@@ -64,11 +65,13 @@ def find_top_of_head(edges):
         The coordinates of the top of the head in the image.
     """
     # the first pixel from top to bottom to find the top_of_head
-    top_of_head = [
-        np.where(edges != 0)[1][0],
-        np.where(edges != 0)[0][0],
-    ]
-    return top_of_head
+    nose = data[0]
+    point = np.array([nose[1], nose[0]])
+    point2 = np.array([point[0] - 5, point[1]])
+    vector = np.array([point2[0] - point[0], point2[1] - point[1]])
+    angle_radians = np.arctan2(vector[1], vector[0])
+    top_of_head = find_edge(point, angle_radians, edges, save=[])
+    return top_of_head[0]
 def get_crotch_right_left(edges, data):
 
     # crop the image to see the right hip to the left knee

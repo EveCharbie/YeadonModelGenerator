@@ -31,9 +31,9 @@ class YeadonModel:
             The YeadonModel object with the keypoints of the image.
         """
         # front
-        #undistorted_image = _undistortion('img/martin/chessboards/*', "img/martin/mar_front_t.jpg")
+        #undistorted_image = undistortion('img/martin/chessboards/*', "img/martin/mar_front_t.jpg")
         undistorted_image = undistortion('img/william/chessboards/*', "img/william/william_front_t.jpg")
-        #undistorted_image = _undistortion('img/chessboards/*', "img/al_front_t.jpg")
+        #undistorted_image = undistortion('img/chessboards/*', "img/al_front_t.jpg")
 
         pil_im, image, im = pil_resize_remove_im(undistorted_image)
 
@@ -51,8 +51,8 @@ class YeadonModel:
         img = Image.fromarray(image_chessboard)
         img.save("front_t.jpg")
 
-        self.ratio, self.ratio2 = get_ratio(image_chessboard, 0, 0)
-        self.bottom_ratio, self.bottom_ratio2 = get_ratio(image_chessboard, 0, 0)
+        self.ratio, self.ratio2 = get_ratio(image_chessboard, 1, 0)
+        self.bottom_ratio, self.bottom_ratio2 = get_ratio(image_chessboard, 0, 1)
 
         print("self.ratio", self.ratio)
         print("self.ratio2", self.ratio2)
@@ -64,7 +64,7 @@ class YeadonModel:
         #undistorted_r_image = _undistortion('img/chessboards/*', "img/al_r_side.jpg")
         #pil_r_side_im, image_r_side, im_r_side = create_resize_remove_im("img/martin/mar_r_side.jpg")
         pil_r_side_im, image_r_side, im_r_side = create_resize_remove_im("img/william/william_r_side.jpg")
-        #pil_r_side_im, image_r_side, im_r_side = create_resize_remove_im("img/al_r_side.jpg")
+        #pil_r_side_im, image_r_side, im_r_side = create_resize_remove_im("img/al_r_side2.jpg")
 
 
         edges_r_side = canny_edges(im_r_side, image_r_side)
@@ -240,7 +240,7 @@ class YeadonModel:
         body_parts_pos["right_acromion"] = find_acromion_right(edges, data[0], data[6], 0)
         body_parts_pos["left_acromion_height"] = find_acromion_left(edges, data, 1)
         body_parts_pos["right_acromion_height"] = find_acromion_right(edges, data[0], data[6], 1)
-        body_parts_pos["top_of_head"] = find_top_of_head(edges)
+        body_parts_pos["top_of_head"] = find_top_of_head(data, edges)
         body_parts_pos["left_mid_elbow_wrist"] = (data[9] + data[7]) / 2
         body_parts_pos["right_mid_elbow_wrist"] = (data[10] + data[8]) / 2
         body_parts_pos["right_maximum_forearm"] = get_maximum_point(body_parts_pos["right_mid_elbow_wrist"], data[8], edges)
@@ -259,35 +259,6 @@ class YeadonModel:
             body_parts_pos["left_crotch_width"] /= 2
         if body_parts_pos["right_crotch_width"] > 30:
             body_parts_pos["right_crotch_width"] /= 2
-        # print(body_parts_pos)
-        # front up
-        left_lowest_front_rib_approx = (data_up[5] + data_up[11]) / 2
-        body_parts_pos_up["left_lowest_front_rib"] = left_lowest_front_rib_approx
-        right_lowest_front_rib_approx = (data_up[6] + data_up[12]) / 2
-        body_parts_pos_up["right_lowest_front_rib"] = right_lowest_front_rib_approx
-        body_parts_pos_up["left_nipple"] = (left_lowest_front_rib_approx + data_up[5]) / 2
-        body_parts_pos_up["right_nipple"] = (right_lowest_front_rib_approx + data_up[6]) / 2
-        body_parts_pos_up["left_umbiculus"] = (
-                                                   (left_lowest_front_rib_approx * 3) + (data_up[11] * 2)
-                                           ) / 5
-        body_parts_pos_up["right_umbiculus"] = (
-                                                    (right_lowest_front_rib_approx * 3) + (data_up[12] * 2)
-                                            ) / 5
-        left_arch_approx = (data_up[17] + data_up[19]) / 2
-        body_parts_pos_up["left_arch"] = left_arch_approx
-        right_arch_approx = (data_up[20] + data_up[22]) / 2
-        body_parts_pos_up["right_arch"] = right_arch_approx
-        body_parts_pos_up["left_ball"] = (data_up[17] + left_arch_approx) / 2
-        body_parts_pos_up["right_ball"] = (data_up[20] + right_arch_approx) / 2
-        body_parts_pos_up["left_mid_arm"] = (data_up[5] + data_up[7]) / 2
-        body_parts_pos_up["right_mid_arm"] = (data_up[6] + data_up[8]) / 2
-        body_parts_pos_up["left_acromion"] = find_acromion_left(edges_up, data_up, 0)
-        body_parts_pos_up["right_acromion"] = find_acromion_right(edges_up, data_up[0], data_up[6], 0)
-        body_parts_pos_up["top_of_head"] = find_top_of_head(edges_up)
-        body_parts_pos_up["right_maximum_forearm"] = get_maximum_point(data_up[10], data_up[8], edges_up)
-        body_parts_pos_up["left_maximum_forearm"] = get_maximum_point(data_up[9], data_up[7], edges_up)
-        body_parts_pos_up["right_maximum_calf"] = get_maximum_point(data_up[16], data_up[14], edges_up)
-        body_parts_pos_up["left_maximum_calf"] = get_maximum_point(data_up[15], data_up[13], edges_up)
         # right side
         right_lowest_front_rib_approx = np.array([data_r_side[12][0],(data_r_side[6][1] + data_r_side[12][1]) / 2])
         body_parts_pos_r["right_lowest_front_rib"] = right_lowest_front_rib_approx
