@@ -9,9 +9,8 @@ def pt_from(origin, angle, distance):
     x = origin[1] + np.sin(angle) * distance
     y = origin[0] + np.cos(angle) * distance
     return np.array([int(y), int(x)])
-def find_edge(p1, p2, angle_radians, edges):
+def find_edge(p1, angle_radians, edges, save):
     distance = 0
-    save = []
     while True:
         # as we want the width of the "start", we choose p1
         x, y = pt_from(p1, angle_radians, distance)
@@ -79,9 +78,9 @@ def _get_maximum(start, end, edges, angle, is_start):
 
     p1, p2, vector = get_points(start, end)
     angle_radians = np.arctan2(vector[1], vector[0]) - angle
-    max1 = find_edge(p1, p2, angle_radians, edges)
+    max1 = find_edge(p1, angle_radians, edges, save=[])
     angle_radians = (np.arctan2(vector[1], vector[0]) + angle) * is_start
-    max2 = find_edge(p1, p2, angle_radians, edges)
+    max2 = find_edge(p1, angle_radians, edges, save=[])
     return np.linalg.norm(np.array(max1) - np.array(max2))
 
 def get_maximum_line(start, end, edges):
@@ -112,7 +111,7 @@ def get_maximum_pit(start, edges):
 
     point, point2, vector = get_points(start, np.array([start[0:2][0] + 5, start[0:2][1]]))
     angle_radians = np.arctan2(vector[1], vector[0])
-    max_save = find_edge(point, point2, angle_radians, edges)
+    max_save = find_edge(point, angle_radians, edges, save=[])
     angle_radians_left = angle_radians
     angle_radians_right = angle_radians
     max_save_right = max_save
@@ -120,13 +119,13 @@ def get_maximum_pit(start, edges):
 
     while True:
         angle_radians_left += 0.01
-        max_last_right = find_edge(point, point2, angle_radians_left, edges)
+        max_last_right = find_edge(point, angle_radians_left, edges, save=[])
         if (np.linalg.norm(max_last_right) < np.linalg.norm(max_save_right)):
             break
         max_save_right = max_last_right
     while True:
         angle_radians_right -= 0.01
-        max_last_left = find_edge(point, point2, angle_radians_right, edges)
+        max_last_left = find_edge(point, angle_radians_right, edges, save=[])
         if (np.linalg.norm(max_last_left) < np.linalg.norm(max_save_left)):
             break
         max_save_left = max_last_left

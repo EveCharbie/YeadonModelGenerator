@@ -239,9 +239,9 @@ class YeadonModel:
         body_parts_pos["left_mid_arm"] = (data[5] + data[7]) / 2
         body_parts_pos["right_mid_arm"] = (data[6] + data[8]) / 2
         body_parts_pos["left_acromion"] = find_acromion_left(edges, data, 0)
-        body_parts_pos["right_acromion"] = find_acromion_right(edges, data, 0)
+        body_parts_pos["right_acromion"] = find_acromion_right(edges, data[0], data[6], 0)
         body_parts_pos["left_acromion_height"] = find_acromion_left(edges, data, 1)
-        body_parts_pos["right_acromion_height"] = find_acromion_right(edges, data, 1)
+        body_parts_pos["right_acromion_height"] = find_acromion_right(edges, data[0], data[6], 1)
         body_parts_pos["top_of_head"] = find_top_of_head(edges)
         body_parts_pos["left_mid_elbow_wrist"] = (data[9] + data[7]) / 2
         body_parts_pos["right_mid_elbow_wrist"] = (data[10] + data[8]) / 2
@@ -284,7 +284,7 @@ class YeadonModel:
         body_parts_pos_up["left_mid_arm"] = (data_up[5] + data_up[7]) / 2
         body_parts_pos_up["right_mid_arm"] = (data_up[6] + data_up[8]) / 2
         body_parts_pos_up["left_acromion"] = find_acromion_left(edges_up, data_up, 0)
-        body_parts_pos_up["right_acromion"] = find_acromion_right(edges_up, data_up, 0)
+        body_parts_pos_up["right_acromion"] = find_acromion_right(edges_up, data_up[0], data_up[6], 0)
         body_parts_pos_up["top_of_head"] = find_top_of_head(edges_up)
         body_parts_pos_up["right_maximum_forearm"] = get_maximum_point(data_up[10], data_up[8], edges_up)
         body_parts_pos_up["left_maximum_forearm"] = get_maximum_point(data_up[9], data_up[7], edges_up)
