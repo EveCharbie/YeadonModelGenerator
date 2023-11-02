@@ -42,8 +42,8 @@ def get_max_approx(top_arr, bottom_arr):
     max_norm = norms[0]
     save_index = 0
     for i in range(len(top_arr)):
-        if norms[i] > max_norm:
-            if norms[i] > norms[0] * 1.5:
+        if norms[i] >= max_norm:
+            if norms[i] > norms[0] * 1.6:
                 break
             max_norm = norms[i]
             save_index = i
