@@ -34,22 +34,27 @@ def _resize(im):
 
 def canny_edges(im, image):
     grayscale_image = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
-    # thresh = cv.adaptiveThreshold(grayscale_image, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2)
 
     edged = cv.Canny(grayscale_image, 10, 30)
-    # laplacian = cv.Laplacian(thresh, cv.CV_64F)
-    # laplacian = np.uint8(np.absolute(laplacian))
-    # define a (3, 3) structuring element
     kernel = cv.getStructuringElement(cv.MORPH_RECT, (3, 3))
 
     # apply the dilation operation to the edged image
-    dilate = cv.dilate(edged, kernel, iterations=2)
+    dilate = cv.dilate(edged, kernel, iterations=1)
 
-    # find the contours in the dilated image
     contours, _ = cv.findContours(dilate, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     edges = np.zeros(image.shape)
     # draw the contours on a copy of the original image
-    cv.drawContours(edges, contours, -1, (0, 255, 0), 3)
+    cv.drawContours(edges, contours, -1, (0, 255, 0), 2)
+    return edges
+def thresh(im, image):
+    grayscale_image = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
+    _, binary_silhouette = cv.threshold(grayscale_image, 10, 255, cv.THRESH_BINARY)
+
+    # find the contours in the grayscaled image
+    contours, _ = cv.findContours(binary_silhouette, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    edges = np.zeros(image.shape)
+    # draw the contours on a copy of the original image
+    cv.drawContours(edges, contours, -1, (0, 255, 0), 2)
     return edges
 
 
