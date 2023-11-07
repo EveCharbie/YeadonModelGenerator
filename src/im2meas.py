@@ -35,7 +35,7 @@ class YeadonModel:
         #undistorted_image = undistortion('img/william/chessboards/*', "img/william/william_front_t.jpg")
         #undistorted_image = undistortion('img/chessboards/*', "img/al_front_t.jpg")
 
-        pil_im, image, im = create_resize_remove_im("img/martin/mar_front_t.jpg")
+        pil_im, image, im = create_resize_remove_im("img/al_front_t.jpg")
         edges = thresh(im, image)
         edges_short = canny_edges(im, image)
         predictor = openpifpaf.Predictor(checkpoint="shufflenetv2k30-wholebody")
@@ -68,9 +68,9 @@ class YeadonModel:
 
         # right side
         #undistorted_r_image = _undistortion('img/chessboards/*', "img/al_r_side.jpg")
-        pil_r_side_im, image_r_side, im_r_side = create_resize_remove_im("img/martin/mar_r_side.jpg")
+        #pil_r_side_im, image_r_side, im_r_side = create_resize_remove_im("img/martin/mar_r_side.jpg")
         #pil_r_side_im, image_r_side, im_r_side = create_resize_remove_im("img/william/william_r_side.jpg")
-        #pil_r_side_im, image_r_side, im_r_side = create_resize_remove_im("img/al_r_side2.jpg")
+        pil_r_side_im, image_r_side, im_r_side = create_resize_remove_im("img/al_r_side2.jpg")
 
 
         edges_r_side = thresh(im_r_side, image_r_side)
@@ -80,9 +80,9 @@ class YeadonModel:
         self.ratio_r_side, self.ratio_r_side2 = get_ratio(image_r_side_chessboard, 0,0)
         # front T pose but with the hand to the top
         #undistorted_up_image = _undistortion('img/william/chessboards/*', "img/william/wil_front_t_up.jpg")
-        pil_up_im, image_up, im_up = create_resize_remove_im("img/martin/mar_front_t_up.jpg")
+        #pil_up_im, image_up, im_up = create_resize_remove_im("img/martin/mar_front_t_up.jpg")
         #pil_up_im, image_up, im_up = create_resize_remove_im("img/william/william_front_t_up.jpg")
-        #pil_up_im, image_up, im_up = create_resize_remove_im("img/al_front_t_up.jpg")
+        pil_up_im, image_up, im_up = create_resize_remove_im("img/al_front_t_up.jpg")
 
         edges_up = thresh(im_up, image_up)
         predictions4, gt_anns4, image_meta4 = predictor.pil_image(pil_up_im)
@@ -93,9 +93,9 @@ class YeadonModel:
         self.ratio_up, self.ratio_up2 = get_ratio(image_up_chessboard, 0, 0)
         # front pike
         #undistorted_pike_image = _undistortion('img/chessboards/*', "img/al_front_pike.jpg")
-        pil_pike_im, image_pike, im_pike = create_resize_remove_im("img/martin/mar_front_pike.jpg")
+        #pil_pike_im, image_pike, im_pike = create_resize_remove_im("img/martin/mar_front_pike.jpg")
         #pil_pike_im, image_pike, im_pike = create_resize_remove_im("img/william/william_front_pike.jpg")
-        #pil_pike_im, image_pike, im_pike = create_resize_remove_im("img/al_front_pike.jpg")
+        pil_pike_im, image_pike, im_pike = create_resize_remove_im("img/al_front_pike.jpg")
 
 
         edges_pike = thresh(im_pike, image_pike)
@@ -106,9 +106,9 @@ class YeadonModel:
         #self.ratio_pike, self.ratio_pike2 = get_ratio(image_pike, 0, 1)
         # right side pike
         #undistorted_r_pike_image = _undistortion('img/chessboards/*', "img/al_r_pike.jpg")
-        pil_l_pike_im, image_l_pike, im_l_pike = create_resize_remove_im("img/martin/mar_r_pike.jpg")
+        #pil_l_pike_im, image_l_pike, im_l_pike = create_resize_remove_im("img/martin/mar_r_pike.jpg")
         #pil_l_pike_im, image_l_pike, im_l_pike = create_resize_remove_im("img/william/william_r_pike.jpg")
-        #pil_l_pike_im, image_l_pike, im_l_pike = create_resize_remove_im("img/al_r_pike.jpg")
+        pil_l_pike_im, image_l_pike, im_l_pike = create_resize_remove_im("img/al_r_pike.jpg")
 
         edges_l_pike = canny_edges(im_l_pike, image_l_pike)
         predictions6, gt_anns6, image_meta6 = predictor.pil_image(pil_l_pike_im)
@@ -118,14 +118,16 @@ class YeadonModel:
         #self.ratio_l_pike, self.ratio_l_pike2 = get_ratio(image_l_pike, 0, 1)
         # front
         body_parts_index = {
-            "nose": 56,
-            "nose_per": 80,
+            "nose": 0,
+            "nose_per": 56,
             "left_knuckle": 100,
             "right_knuckle": 121,
             "left_nail": 102,
             "right_nail": 123,
-            "left_ear": 39,
-            "right_ear": 23,
+            #"left_ear": 39,
+            #"right_ear": 23,
+            "left_ear": 3,
+            "right_ear": 4,
             "left_shoulder": 5,
             "right_shoulder": 6,
             "left_elbow": 7,
@@ -271,7 +273,7 @@ class YeadonModel:
         print("right_shoulder_perimeter_width", get_maximum_start(body_parts_pos["right_shoulder_perimeter_width"], body_parts_pos["right_elbow"], edges))
         print("La0p",circle_perimeter(get_maximum_start(body_parts_pos["left_shoulder_perimeter_width"], body_parts_pos["left_shoulder_perimeter_width"] + np.array([1,0]), edges)) * self.ratio)
         print("Lb0p",circle_perimeter(get_maximum_start(body_parts_pos["right_shoulder_perimeter_width"], body_parts_pos["right_shoulder_perimeter_width"] + np.array([-1,0]), edges)) * self.ratio)
-
+        hand_pos_grp = find_hand_pos_grp(data, 0) * self.ratio2
         # right side
         right_lowest_front_rib_approx = np.array([data_r_side[12][0],(data_r_side[6][1] + data_r_side[12][1]) / 2])
         body_parts_pos_r["right_lowest_front_rib"] = right_lowest_front_rib_approx

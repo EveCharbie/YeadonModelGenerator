@@ -53,8 +53,7 @@ def find_acromion_left(edges, data, height):
     cropped_img = _crop(edges, l_ear, l_shoulder)
     cropped_img[: int(len(cropped_img) / 2), :] = 0
     if height:
-        cropped_img[: int(len(cropped_img[0]) / 1.5), :] = 0
-        cropped_img = np.fliplr(cropped_img)
+        cropped_img[:,:int(len(cropped_img[0])/1.5)] = 0
     acromion = np.array(
         [
             l_ear[0] + np.where(cropped_img == 255)[1][0],
@@ -106,3 +105,12 @@ def get_mid_thigh_right_left(data, r_crotch, l_crotch):
         data[13][0:2] + l_crotch
     ) / 2
     return mid_thigh_right, mid_thigh_left
+def find_hand_pos_grp(data, pike):
+    r_hand = data[121].astype(int)
+    r_wrist = data[10].astype(int)
+    r_knee = data[14].astype(int)
+    point = (r_wrist + r_hand) / 2
+    if pike:
+        return abs(r_knee[0] - point[0])
+    else:
+        return abs(r_knee[1] - point[1])
