@@ -251,3 +251,37 @@ def get_ratio(img, top, bot):
     ratio = 9.8 / ratio
     ratio2 = 9.8 / ratio2
     return ratio, ratio2
+def get_ratio2(img, top, bot):
+    if top:
+        img = _crop(img, [img.shape[0] / 2.5, 0], [img.shape[0], img.shape[0] / 1.5])
+    if bot:
+        img = _crop(img, [0, img.shape[0]], [img.shape[1], img.shape[0] / 2])
+
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+
+    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+
+    # Find the chessboard corners
+    ret, corners = cv.findChessboardCorners(img, (5, 5), None)
+    corners2 = cv.cornerSubPix(gray, corners, (5, 5), (-1, -1), criteria)
+
+    # Draw the corners on the image
+    cv.drawChessboardCorners(img, (5, 5), corners2, ret)
+
+    # Get the contour of the chessboard pattern
+    rect = cv.boundingRect(corners2)
+    x, y, w, h = rect
+    chessboard_contour = np.array(
+        [[[x, y]], [[x + w, y]], [[x + w, y + h]], [[x, y + h]]]
+    )
+
+    # Draw the contour on the image
+    cv.drawContours(img, [chessboard_contour], -1, (255, 0, 0), 1)
+
+    ratio = np.linalg.norm(chessboard_contour[0] - chessboard_contour[1])
+    ratio2 = np.linalg.norm(chessboard_contour[0] - chessboard_contour[3])
+    print(ratio)
+    print(ratio2)
+    ratio = 11 / ratio
+    ratio2 = 11 / ratio2
+    return ratio, ratio2
