@@ -68,7 +68,9 @@ def find_top_of_head(data, edges):
 
     Parameters
     ----------
-    image : numpy array
+    data : numpy array
+        The keypoints of the image
+    edges : numpy array
         The image to be processed.
 
     Returns

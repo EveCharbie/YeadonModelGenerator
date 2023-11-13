@@ -87,15 +87,61 @@ def _get_maximum(start, end, edges, angle, is_start):
     return np.linalg.norm(np.array(max1) - np.array(max2))
 
 
-def get_maximum_line(start, end, edges):
+def max_line(start, end, edges):
+    """
+    give the longest distance given 2 two points, it stops when it hit a coloured pixel.
+    the two point gives the direction.
+    Parameters
+    ----------
+    start: numpy array
+        the first point
+    end: numpy array
+        the second point
+    edges: numpy array
+        the edge of the body
+    Returns
+    -------
+    int
+        the max distance
+    """
     return _get_maximum(start, end, edges, 0, -1)
 
 
-def get_maximum_start(start, end, edges):
+def max_perp(start, end, edges):
+    """
+    from 2 points it will give the longest perpendicular between the two point.
+    Parameters
+    ----------
+    start: numpy array
+        the first point
+    end: numpy array
+        the second point
+    edges: numpy array
+        the edge of the body
+    Returns
+    -------
+    int
+        the max perpendicular
+    """
     return _get_maximum(start, end, edges, np.pi / 2, 1)
 
 
-def get_maximum_point(start, end, edges):
+def get_max_pt(start, end, edges):
+    """
+    from 2 points it will give the point where the longest perpendicular is between the two point.
+    Parameters
+    ----------
+    start: numpy array
+        the first point
+    end: numpy array
+        the second point
+    edges: numpy array
+        the edge of the body
+    Returns
+    -------
+    numpy array
+        the coordinates of the max perpendicular
+    """
     # get the maximums for calf and forearm
     p1, p2, vector = get_points(start, end)
     # create an array with 100 points between start and end
