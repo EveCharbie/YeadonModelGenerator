@@ -130,11 +130,11 @@ def undistortion(chessboard_images_path, img_with_chessboard_path):
     img_with_chessboard = np.asarray(pil_im)
     # get the camera matrix and the distortion_coef and the calibrated image
     calibrated_image, camera_matrix, distortion_coeffs = recalibrate_image(chessboard_images, img_with_chessboard)
-    height, width = calibrated_image.shape[:2]
-    # get the new camera matrix
+    height, width = img_with_chessboard.shape[:2]
+    # get the new camera matrix (alpha 0 will destroy some pixel)
     new_camera_matrix, roi = cv.getOptimalNewCameraMatrix(camera_matrix, distortion_coeffs, (width, height), 1, (width, height))
     # Undistort the image
-    undistorted_img = cv.undistort(calibrated_image, camera_matrix, distortion_coeffs, None, new_camera_matrix)
+    undistorted_img = cv.undistort(img_with_chessboard, camera_matrix, distortion_coeffs, None, new_camera_matrix)
     return undistorted_img
 
 
