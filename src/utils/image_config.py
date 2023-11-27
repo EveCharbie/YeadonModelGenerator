@@ -48,7 +48,7 @@ def canny_edges(im, image):
     return edges
 def thresh(im, image):
     grayscale_image = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
-    _, binary_silhouette = cv.threshold(grayscale_image, 10, 255, cv.THRESH_BINARY)
+    _, binary_silhouette = cv.threshold(grayscale_image, 3, 255, cv.THRESH_BINARY)
 
     # find the contours in the grayscaled image
     contours, _ = cv.findContours(binary_silhouette, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
@@ -156,7 +156,7 @@ def get_ratio(img, top, bot):
     if top:
         img = _crop(img, [img.shape[0] / 2.5, 0], [img.shape[0], img.shape[0] / 1.5])
     if bot:
-        img = _crop(img, [0, img.shape[0]], [img.shape[1] / 2, img.shape[0] / 2])
+        img = _crop(img, [0, img.shape[0]], [img.shape[1], img.shape[0] / 1.5])
 
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
@@ -170,17 +170,14 @@ def get_ratio(img, top, bot):
     cv.drawChessboardCorners(img, (5, 5), corners2, ret)
 
     # Get the contour of the chessboard pattern
-    rect = cv.boundingRect(corners2)
-    x, y, w, h = rect
-    chessboard_contour = np.array(
-        [[[x, y]], [[x + w, y]], [[x + w, y + h]], [[x, y + h]]]
-    )
+    hull = cv.convexHull(corners2)
+    epsilon = 0.02 * cv.arcLength(hull, True)
+    corners_hull = cv.approxPolyDP(hull, epsilon, True)
+    chessboard_contour = corners_hull[:4, 0, :]
+    cv.drawContours(img, [chessboard_contour.astype(int)], -1, (255, 0, 0), 1)
 
-    # Draw the contour on the image
-    cv.drawContours(img, [chessboard_contour], -1, (255, 0, 0), 1)
-
-    ratio = np.linalg.norm(chessboard_contour[0] - chessboard_contour[1])
-    ratio2 = np.linalg.norm(chessboard_contour[0] - chessboard_contour[3])
+    ratio = np.linalg.norm(chessboard_contour[0] - chessboard_contour[3])
+    ratio2 = np.linalg.norm(chessboard_contour[0] - chessboard_contour[1])
     print(ratio)
     print(ratio2)
     ratio = 9.8 / ratio
@@ -190,7 +187,7 @@ def get_ratio2(img, top, bot):
     if top:
         img = _crop(img, [img.shape[0] / 2.5, 0], [img.shape[0], img.shape[0] / 1.5])
     if bot:
-        img = _crop(img, [0, img.shape[0]], [img.shape[1], img.shape[0] / 2])
+        img = _crop(img, [0, img.shape[0]], [img.shape[1], img.shape[0] / 1.5])
 
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
@@ -204,19 +201,30 @@ def get_ratio2(img, top, bot):
     cv.drawChessboardCorners(img, (5, 5), corners2, ret)
 
     # Get the contour of the chessboard pattern
-    rect = cv.boundingRect(corners2)
-    x, y, w, h = rect
-    chessboard_contour = np.array(
-        [[[x, y]], [[x + w, y]], [[x + w, y + h]], [[x, y + h]]]
-    )
+    hull = cv.convexHull(corners2)
+    epsilon = 0.02 * cv.arcLength(hull, True)
+    corners_hull = cv.approxPolyDP(hull, epsilon, True)
+    chessboard_contour = corners_hull[:4, 0, :]
+    cv.drawContours(img, [chessboard_contour.astype(int)], -1, (255, 0, 0), 1)
 
-    # Draw the contour on the image
-    cv.drawContours(img, [chessboard_contour], -1, (255, 0, 0), 1)
-
-    ratio = np.linalg.norm(chessboard_contour[0] - chessboard_contour[1])
-    ratio2 = np.linalg.norm(chessboard_contour[0] - chessboard_contour[3])
+    ratio = np.linalg.norm(chessboard_contour[0] - chessboard_contour[3])
+    ratio2 = np.linalg.norm(chessboard_contour[0] - chessboard_contour[1])
     print(ratio)
     print(ratio2)
-    ratio = 11 / ratio
-    ratio2 = 11 / ratio2
+    ratio = 9.8 / ratio
+    ratio2 = 9.8 / ratio2
     return ratio, ratio2
+
+def get_new_ratio(origin, depth, width1):
+    """
+    origin is the real distance between the camera and the person
+    depth is the real distance between the wall and the person
+    width is the real distance two chessboard in the wall
+    """
+    mediatrice = origin + depth
+    res1 = (depth*width1/ mediatrice)
+    return res1
+
+def get_ratio3(img):
+
+    return 0.3397634422772799, 0.3397634422772799
