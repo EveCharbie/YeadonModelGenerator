@@ -245,6 +245,7 @@ class YeadonModel:
         bdy_part_pike["right_toe_nail"] = np.array([point[0], point[1] - 2 / self.ratio_pike])
         bdy_part_pike["right_ball"] = get_max_pt(data_pike[16], bdy_part_pike["right_toe_nail"], edges_pike)
         bdy_part_pike["right_arch"] = (data_pike[16] + bdy_part_pike["right_ball"]) / 2
+
         # left side pike
         bdy_part_r_pike["right_toe_nail"], dist = get_maximum_pit(data_l_pike[16], edges_l_pike)
         bdy_part_r_pike["right_heel"] = get_max_pt(data_l_pike[16], bdy_part_r_pike["right_toe_nail"], edges_l_pike)

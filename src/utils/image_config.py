@@ -216,15 +216,14 @@ def get_ratio2(img: np.ndarray, top: int, bot: int):
     ratio2 = 9.8 / ratio2
     return ratio, ratio2
 
-def get_new_ratio(origin: int, depth: int, width1: int):
+def get_new_ratio(origin: int, depth: int, width: int, pixel_width: int):
     """
     origin is the real distance between the camera and the person
     depth is the real distance between the wall and the person
     width is the real distance two chessboard in the wall
     """
-    mediatrice = origin + depth
-    res1 = (depth*width1/ mediatrice)
-    return res1
+    res = (depth * width / origin)
+    return res / pixel_width
 
 def get_ratio3(img):
 
