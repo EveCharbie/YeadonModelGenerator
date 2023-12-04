@@ -120,13 +120,17 @@ def get_max_pt(start, end, edges):
     Get the point where the maximum perpendicular distance occurs between two edges.
     """
     p1, p2, vector = get_points(start, end)
+    # create an array with 100 points between start and end
     x_values = np.linspace(p1[1], p2[1], 100)
     y_values = np.linspace(p1[0], p2[0], 100)
     result = [(y, x) for x, y in zip(x_values, y_values)]
+    # set the angle in the direction of the edges
     angle_radians = vector_angle(vector, 1)
     r_side = get_maximum_range(angle_radians, result, edges)
+    # set the angle in the direction of other side
     angle_radians = vector_angle(vector, 0)
     l_side = get_maximum_range(angle_radians, result, edges)
+    # get the index of the max
     index = get_max_approx(r_side, l_side)
     return result[index][::-1]
 
