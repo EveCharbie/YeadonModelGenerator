@@ -209,8 +209,8 @@ class YeadonModel:
         bdy_part["right_ball"] = (data[20] + right_arch_approx) / 2
         bdy_part["left_mid_arm"] = (data[5] + data[7]) / 2
         bdy_part["right_mid_arm"] = (data[6] + data[8]) / 2
-        bdy_part["left_shoulder_perimeter_width"] = (data[5] * 1.5 + bdy_part["left_mid_arm"]) / 2.5
-        bdy_part["right_shoulder_perimeter_width"] =(data[6] * 1.5 + bdy_part["right_mid_arm"]) / 2.5
+        bdy_part["left_shoulder_perimeter_width"] = (data[5] * 1.3 + bdy_part["left_mid_arm"]) / 2.3
+        bdy_part["right_shoulder_perimeter_width"] =(data[6] * 1.3 + bdy_part["right_mid_arm"]) / 2.3
         bdy_part["left_acromion"] = find_acromion_left(edges, data, 0)
         bdy_part["right_acromion"] = find_acromion_right(edges, data[0], data[6], 0)
         bdy_part["left_acromion_height"] = find_acromion_left(edges, data, 1)
