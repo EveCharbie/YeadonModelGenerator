@@ -1,17 +1,17 @@
 import numpy as np
 
 
-def stad_p(width, depth):
+def stad_p(width: float, depth: float):
     """
     calculate the perimeter of a stadium
     Parameters
     ----------
-    width: int
-    depth: int
+    width: float
+    depth: float
 
     Returns
     -------
-    int
+    float
     """
     #radius = depth / 2
     #a = width - depth
@@ -20,28 +20,28 @@ def stad_p(width, depth):
     return perimeter
 
 
-def circle_p(diag):
+def circle_p(diag: float):
     """
     calculate the perimeter of a circle
     Parameters
     ----------
-    diag: int
+    diag: float
     Returns
     -------
-    int
+    float
     """
     r = diag / 2
     return 2 * np.pi * r
-def circle_p2(diag, depth):
+def circle_p2(diag: float, depth: float):
     """
     calculate the perimeter of a circle
     Parameters
     ----------
-    diag: int
-    depth: int
+    diag: float
+    depth: float
     Returns
     -------
-    int
+    float
     """
     res = 2 * ((diag + depth)/2)
     return res

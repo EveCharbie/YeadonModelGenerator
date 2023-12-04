@@ -32,7 +32,7 @@ def _resize(im):
     return im.resize((y_resize, x_resize))
 
 
-def canny_edges(im, image):
+def canny_edges(im: np.ndarray, image: np.ndarray):
     grayscale_image = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
 
     edged = cv.Canny(grayscale_image, 10, 30)
@@ -46,19 +46,20 @@ def canny_edges(im, image):
     # draw the contours on a copy of the original image
     cv.drawContours(edges, contours, -1, (0, 255, 0), 2)
     return edges
-def thresh(im, image):
+def thresh(im: np.ndarray, image: np.ndarray, line_size):
     grayscale_image = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
-    _, binary_silhouette = cv.threshold(grayscale_image, 3, 255, cv.THRESH_BINARY)
+    _, binary_silhouette = cv.threshold(grayscale_image, 5, 255, cv.THRESH_BINARY)
 
     # find the contours in the grayscaled image
     contours, _ = cv.findContours(binary_silhouette, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     edges = np.zeros(image.shape)
     # draw the contours on a copy of the original image
-    cv.drawContours(edges, contours, -1, (0, 255, 0), 2)
+    cv.drawContours(edges, contours, -1, (0, 255, 0), line_size)
+    cv.drawContours(image, contours, -1, (0, 255, 0), line_size)
     return edges
 
 
-def create_resize_remove_im(impath):
+def create_resize_remove_im(impath: str):
     pil_im = PIL.Image.open(impath).convert("RGB")
     pil_im = _resize(pil_im)
     image = np.asarray(pil_im)
@@ -66,7 +67,7 @@ def create_resize_remove_im(impath):
     return pil_im, image, im
 
 
-def pil_resize_remove_im(undistorted_image):
+def pil_resize_remove_im(undistorted_image: np.ndarray):
     pil_im = Image.fromarray(undistorted_image.astype("uint8"), "RGB")
     pil_im = _resize(pil_im)
     image = np.asarray(pil_im)
@@ -74,7 +75,7 @@ def pil_resize_remove_im(undistorted_image):
     return pil_im, image, im
 
 
-def undistortion(chessboard_images_path, img_with_chessboard_path):
+def undistortion(chessboard_images_path: str, img_with_chessboard_path: str):
     def recalibrate_image(chessboard_images, img_with_chessboard):
         chessboard_size = (5, 5)
 
@@ -139,7 +140,7 @@ def undistortion(chessboard_images_path, img_with_chessboard_path):
 
 
 
-def better_edges(edges, data):
+def better_edges(edges: np.ndarray, data: np.ndarray):
     crotch_zone = _crop(edges, data[12], data[13])
     height = np.array(
         [np.where(crotch_zone != 0)[1][0], np.where(crotch_zone != 0)[0][1]]
@@ -152,7 +153,7 @@ def better_edges(edges, data):
     return edges
 
 
-def get_ratio(img, top, bot):
+def get_ratio(img: np.ndarray, top : int, bot: int):
     if top:
         img = _crop(img, [img.shape[0] / 2.5, 0], [img.shape[0], img.shape[0] / 1.5])
     if bot:
@@ -183,7 +184,7 @@ def get_ratio(img, top, bot):
     ratio = 9.8 / ratio
     ratio2 = 9.8 / ratio2
     return ratio, ratio2
-def get_ratio2(img, top, bot):
+def get_ratio2(img: np.ndarray, top: int, bot: int):
     if top:
         img = _crop(img, [img.shape[0] / 2.5, 0], [img.shape[0], img.shape[0] / 1.5])
     if bot:
@@ -215,7 +216,7 @@ def get_ratio2(img, top, bot):
     ratio2 = 9.8 / ratio2
     return ratio, ratio2
 
-def get_new_ratio(origin, depth, width1):
+def get_new_ratio(origin: int, depth: int, width1: int):
     """
     origin is the real distance between the camera and the person
     depth is the real distance between the wall and the person
@@ -227,4 +228,4 @@ def get_new_ratio(origin, depth, width1):
 
 def get_ratio3(img):
 
-    return 0.3397634422772799, 0.3397634422772799
+    return 0.285,0.285

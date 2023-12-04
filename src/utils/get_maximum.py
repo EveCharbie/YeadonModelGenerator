@@ -1,7 +1,7 @@
 import numpy as np
+import cv2 as cv
 
-
-def pt_from(origin, angle, distance):
+def pt_from(origin: np.ndarray, angle: int, distance):
     """
     compute the point [x, y] that is 'distance' apart from the origin point
     perpendicular
@@ -11,7 +11,7 @@ def pt_from(origin, angle, distance):
     return np.array([int(y), int(x)])
 
 
-def find_edge(p1, angle_radians, edges, save):
+def find_edge(p1: np.ndarray, angle_radians, edges: np.ndarray, save):
     distance = 0
     while True:
         # as we want the width of the "start", we choose p1
@@ -26,7 +26,7 @@ def find_edge(p1, angle_radians, edges, save):
     return save
 
 
-def get_points(start, end):
+def get_points(start: np.ndarray, end: np.ndarray):
     p1, p2 = np.array([start[0:2][1], start[0:2][0]]), np.array(
         [end[0:2][1], end[0:2][0]]
     )
@@ -50,7 +50,7 @@ def get_max_approx(top_arr, bottom_arr):
     return save_index
 
 
-def vector_angle(vector, plus):
+def vector_angle(vector: np.ndarray, plus: int):
     if plus:
         return np.arctan2(vector[1], vector[0]) + np.pi / 2
     else:
@@ -78,16 +78,17 @@ def get_maximum_range(angle_radians, result, edges):
     return save
 
 
-def _get_maximum(start, end, edges, angle, is_start):
+def _get_maximum(start: np.ndarray, end: np.ndarray, edges: np.ndarray, img, angle, is_start: int):
     p1, p2, vector = get_points(start, end)
     angle_radians = np.arctan2(vector[1], vector[0]) - angle
     max1 = find_edge(p1, angle_radians, edges, save=[])
     angle_radians = (np.arctan2(vector[1], vector[0]) + angle) * is_start
     max2 = find_edge(p1, angle_radians, edges, save=[])
+    cv.line(img, max1[0], max2[0], (0,0,255), 1)
     return np.linalg.norm(np.array(max1) - np.array(max2))
 
 
-def max_line(start, end, edges):
+def max_line(start: np.ndarray, end: np.ndarray, edges: np.ndarray, img: np.ndarray):
     """
     give the longest distance given 2 two points, it stops when it hit a coloured pixel.
     the two point gives the direction.
@@ -99,15 +100,17 @@ def max_line(start, end, edges):
         the second point
     edges: numpy array
         the edge of the body
+    img: numpy array
+        image
     Returns
     -------
     int
         the max distance
     """
-    return _get_maximum(start, end, edges, 0, -1)
+    return _get_maximum(start, end, edges, img, 0, -1)
 
 
-def max_perp(start, end, edges):
+def max_perp(start: np.ndarray, end: np.ndarray, edges: np.ndarray, img: np.ndarray):
     """
     from 2 points it will give the longest perpendicular between the two point.
     Parameters
@@ -118,12 +121,14 @@ def max_perp(start, end, edges):
         the second point
     edges: numpy array
         the edge of the body
+    img: numpy array
+        image
     Returns
     -------
     int
         the max perpendicular
     """
-    return _get_maximum(start, end, edges, np.pi / 2, 1)
+    return _get_maximum(start, end, edges, img, np.pi / 2, 1)
 
 
 def get_max_pt(start, end, edges):
@@ -159,7 +164,7 @@ def get_max_pt(start, end, edges):
     return result[index][::-1]
 
 
-def get_maximum_pit(start, edges):
+def get_maximum_pit(start: np.ndarray, edges: np.ndarray):
     point = np.array([start[0:2][1], start[0:2][0]])
     point2 = np.array([point[0] + 5, point[1]])
     vector = np.array([point2[0] - point[0], point2[1] - point[1]])

@@ -4,16 +4,19 @@ from src.utils.crop import _crop
 from src.utils.get_maximum import *
 
 
-def find_acromion_right(edges, ear, shoulder, height):
+def find_acromion_right(edges: np.ndarray, ear: np.ndarray, shoulder: np.ndarray, height: int):
     """Finds the acromion given an image and a set of keypoints.
 
     Parameters
     ----------
-    im : numpy array
+    edges : numpy array
         The image to be processed.
-    data : numpy array
-        The keypoints of the image (given by openpifpaf WholeBody, predictions[0].data generally).
-
+    ear : numpy array
+        The ear keypoint of the image (given by openpifpaf WholeBody, predictions[0].data generally).
+    shoulder : numpy array
+        The shoulder keypoint of the image (given by openpifpaf WholeBody, predictions[0].data generally).
+    height: int
+        A bool to know if we want the acromion for the height or for the perimeter
     Returns
     -------
     numpy array
@@ -34,16 +37,17 @@ def find_acromion_right(edges, ear, shoulder, height):
     return acromion
 
 
-def find_acromion_left(edges, data, height):
+def find_acromion_left(edges: np.ndarray, data: np.ndarray, height: int):
     """Finds the acromion given an image and a set of keypoints.
 
     Parameters
     ----------
-    im : numpy array
+    edges : numpy array
         The image to be processed.
     data : numpy array
         The keypoints of the image (given by openpifpaf WholeBody, predictions[0].data generally).
-
+    height: int
+        A bool to know if we want the acromion for the height or for the perimeter
     Returns
     -------
     numpy array
@@ -63,7 +67,7 @@ def find_acromion_left(edges, data, height):
     return acromion
 
 
-def find_top_of_head(data, edges):
+def find_top_of_head(data: np.ndarray, edges: np.ndarray):
     """Finds the top of the head given an image.
 
     Parameters
@@ -88,7 +92,7 @@ def find_top_of_head(data, edges):
     return top_of_head[0]
 
 
-def get_crotch_right_left(edges, data):
+def get_crotch_right_left(edges: np.ndarray, data: np.ndarray):
     # crop the image to see the right hip to the left knee
     crotch_zone = _crop(edges, data[12], data[13])
     # now the cropped image only has the crotch as an edge so we can get it like the head
@@ -102,12 +106,12 @@ def get_crotch_right_left(edges, data):
     return crotch_approx_right, crotch_approx_left
 
 
-def get_mid_thigh_right_left(data, r_crotch, l_crotch):
+def get_mid_thigh_right_left(data: np.ndarray, r_crotch: np.ndarray, l_crotch: np.ndarray):
     mid_thigh_right, mid_thigh_left = (data[14][0:2] + r_crotch) / 2, (
         data[13][0:2] + l_crotch
     ) / 2
     return mid_thigh_right, mid_thigh_left
-def find_hand_pos_grp(data, pike):
+def find_hand_pos_grp(data: np.ndarray, pike: int):
     r_hand = data[121].astype(int)
     r_wrist = data[10].astype(int)
     r_knee = data[14].astype(int)
