@@ -47,19 +47,16 @@ class YeadonModel:
         edges_short = better_edges(edges_short, data)
         image_chessboard = image.copy()
 
-
-        self.ratio, self.ratio2 = 0.3348163270416008,0.3348163270416008
+        self.ratio, self.ratio2 = 0.3348163270416008, 0.3348163270416008
         #self.ratio, self.ratio2 = 0.31065814668059905, 0.31065814668059905
 
         #self.ratio, self.ratio2 = get_new_ratio(203.2,76.2, self.ratio)
-        self.bottom_ratio, self.bottom_ratio2 = 0.36620960816439263,0.36620960816439263
+        self.bottom_ratio, self.bottom_ratio2 = 0.36620960816439263, 0.36620960816439263
         #self.bottom_ratio, self.bottom_ratio2 = 0.34, 0.34
 
         # self.bottom_ratio, self.bottom_ratio2 = get_ratio(image_chessboard, 1, 0)
         #self.bottom_ratio, self.bottom_ratio2 = self.ratio, self.ratio2
 
-        print("self.ratio", self.ratio)
-        print("self.ratio2", self.ratio2)
         #print("self.bottom_ratio", self.bottom_ratio)
         #print("self.bottom_ratio2", self.bottom_ratio2)
 
@@ -77,7 +74,7 @@ class YeadonModel:
         predictions2, gt_anns2, image_meta2 = predictor.pil_image(pil_r_side_im)
         data_r_side = predictions2[0].data[:, 0:2]
         image_r_side_chessboard = image_r_side.copy()
-        self.ratio_r_side, self.ratio_r_side2 = 0.32558096496029115,0.3255809649602911
+        self.ratio_r_side, self.ratio_r_side2 = 0.32558096496029115, 0.3255809649602911
         #self.ratio_r_side, self.ratio_r_side2 = 0.2936829134247206, 0.2936829134247206
 
         #self.ratio_r_side, self.ratio_r_side2 = get_new_ratio(203.2,76.2, self.ratio_r_side)
@@ -96,12 +93,11 @@ class YeadonModel:
         predictions5, gt_anns5, image_meta5 = predictor.pil_image(pil_pike_im)
         data_pike = predictions5[0].data[:, 0:2]
         image_pike_chessboard = image_pike.copy()
-        self.ratio_pike, self.ratio_pike2 = 0.2809182715601447,0.2809182715601447
+        self.ratio_pike, self.ratio_pike2 = 0.2809182715601447, 0.2809182715601447
         #self.ratio_pike, self.ratio_pike2 = 0.262691671595592, 0.262691671595592
-
         #self.ratio_pike, self.ratio_pike2 = get_new_ratio(203.2,76.2, self.ratio_pike)
-
         #self.ratio_pike, self.ratio_pike2 = get_ratio(image_pike, 0, 1)
+
         # right side pike
         #undistorted_r_pike_image = _undistortion('img/chessboards/*', "img/al_r_pike.jpg")
         #pil_l_pike_im, image_l_pike, im_l_pike = create_resize_remove_im("img/martin/mar_r_pike.jpg")
@@ -114,7 +110,7 @@ class YeadonModel:
         predictions6, gt_anns6, image_meta6 = predictor.pil_image(pil_l_pike_im)
         data_l_pike = predictions6[0].data[:, 0:2]
         image_r_pike_chessboard = image_l_pike.copy()
-        self.ratio_l_pike, self.ratio_l_pike2 = 0.3073210091677901,0.3073210091677901
+        self.ratio_l_pike, self.ratio_l_pike2 = 0.3073210091677901, 0.3073210091677901
         #self.ratio_l_pike, self.ratio_l_pike2 = 0.3317379895445664, 0.3317379895445664
 
         #self.ratio_l_pike, self.ratio_l_pike = get_new_ratio(203.2,76.2, self.ratio_l_pike)
@@ -198,7 +194,6 @@ class YeadonModel:
 
         bdy_part["left_nipple"] = (left_lowest_front_rib_approx + data[5] * 1.4) / 2.4
         bdy_part["right_nipple"] = (right_lowest_front_rib_approx + data[6] * 1.4) / 2.4
-        print(bdy_part["right_nipple"])
         bdy_part["left_umbiculus"] = ((left_lowest_front_rib_approx * 3.1) + (data[11] * 1.9)) / 5
         bdy_part["right_umbiculus"] = ((right_lowest_front_rib_approx * 3.1) + (data[12] * 1.9)) / 5
         left_arch_approx = (data[17] + data[19]) / 2
@@ -338,11 +333,11 @@ class YeadonModel:
             "Lj4L": np.linalg.norm(bdy_part["left_hip"] - bdy_part["left_maximum_calf"]) * self.bottom_ratio2,
             "Lj5L": np.linalg.norm(bdy_part["left_hip"] - bdy_part["left_ankle"]) * self.bottom_ratio2,
             "Lj6L": 1,
-            # not measured "Lj7L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_arch"]),
+            # Not measured "Lj7L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_arch"]),
             "Lj8L": np.linalg.norm(bdy_part_pike["right_ankle"] - bdy_part_pike["right_ball"]) * self.ratio_pike2,
             "Lj9L": np.linalg.norm(bdy_part_pike["right_ankle"] - bdy_part_pike["right_toe_nail"]) * self.ratio_pike2,
 
-            # not measured "Lj0p":,
+            # Not measured "Lj0p":,
             "Lj1p": circle_p(bdy_part["crotch_width"]),
             "Lj2p": circle_p(max_perp(bdy_part["right_mid_thigh"], bdy_part["right_hip"], edges_short, image)) * self.bottom_ratio,
             "Lj3p": circle_p(max_perp(bdy_part["right_knee"], bdy_part["right_hip"], edges, image)) * self.bottom_ratio,
@@ -369,11 +364,11 @@ class YeadonModel:
             "Lk4L": np.linalg.norm(bdy_part["right_hip"] - bdy_part["right_maximum_calf"]) * self.bottom_ratio2,
             "Lk5L": np.linalg.norm(bdy_part["right_hip"] - bdy_part["right_ankle"]) * self.bottom_ratio2,
             "Lk6L": 1,
-            # not measured "Lk7L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_arch"]),
+            # Not measured "Lk7L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_arch"]),
             "Lk8L": np.linalg.norm(bdy_part_pike["right_ankle"] - bdy_part_pike["right_ball"]) * self.ratio_pike2,
             "Lk9L": np.linalg.norm(bdy_part_pike["right_ankle"] - bdy_part_pike["right_toe_nail"]) * self.ratio_pike2,
 
-            # not measured "Lk0p":,
+            # Not measured "Lk0p":,
             "Lk1p": circle_p(bdy_part["crotch_width"]),
             "Lk2p": circle_p(max_perp(bdy_part["right_mid_thigh"], bdy_part["right_hip"], edges_short, image)) * self.bottom_ratio,
             "Lk3p": circle_p(max_perp(bdy_part["right_knee"], bdy_part["right_hip"], edges, image)) * self.bottom_ratio,
@@ -404,35 +399,37 @@ class YeadonModel:
                 if key[-1].isalpha():
                     file_object.writelines("{} : {:.1f}\n".format(key, float(value)))
     def _round_keypoints(self):
-        def loop(keypoint_perim, keypoint_width):
+        def loop(keypoint_perim, keypoint_width, keypoint_name):
             if keypoint_perim / keypoint_width <= 2:
+                print(f"{keypoint_name} is too high")
                 return (keypoint_perim / 2) - 0.1
             if keypoint_perim / keypoint_width >= np.pi:
+                print(f"{keypoint_name} is too low")
                 return (keypoint_perim / np.pi) + 0.1
             return keypoint_width
 
-        self.keypoints["Ls0w"] = loop(self.keypoints["Ls0p"], self.keypoints["Ls0w"])
-        self.keypoints["Ls1w"] = loop(self.keypoints["Ls1p"], self.keypoints["Ls1w"])
-        self.keypoints["Ls2w"] = loop(self.keypoints["Ls2p"], self.keypoints["Ls2w"])
-        self.keypoints["Ls3w"] = loop(self.keypoints["Ls3p"], self.keypoints["Ls3w"])
+        self.keypoints["Ls0w"] = loop(self.keypoints["Ls0p"], self.keypoints["Ls0w"], "Ls0w")
+        self.keypoints["Ls1w"] = loop(self.keypoints["Ls1p"], self.keypoints["Ls1w"], "Ls1w")
+        self.keypoints["Ls2w"] = loop(self.keypoints["Ls2p"], self.keypoints["Ls2w"], "Ls2w")
+        self.keypoints["Ls3w"] = loop(self.keypoints["Ls3p"], self.keypoints["Ls3w"], "Ls3w")
 
-        self.keypoints["La4w"] = loop(self.keypoints["La4p"], self.keypoints["La4w"])
-        self.keypoints["La5w"] = loop(self.keypoints["La5p"], self.keypoints["La5w"])
-        self.keypoints["La6w"] = loop(self.keypoints["La6p"], self.keypoints["La6w"])
-        self.keypoints["La7w"] = loop(self.keypoints["La7p"], self.keypoints["La7w"])
+        self.keypoints["La4w"] = loop(self.keypoints["La4p"], self.keypoints["La4w"], "La4w")
+        self.keypoints["La5w"] = loop(self.keypoints["La5p"], self.keypoints["La5w"], "La5w")
+        self.keypoints["La6w"] = loop(self.keypoints["La6p"], self.keypoints["La6w"], "La6w")
+        self.keypoints["La7w"] = loop(self.keypoints["La7p"], self.keypoints["La7w"], "La7w")
 
-        self.keypoints["Lb4w"] = loop(self.keypoints["Lb4p"], self.keypoints["Lb4w"])
-        self.keypoints["Lb5w"] = loop(self.keypoints["Lb5p"], self.keypoints["Lb5w"])
-        self.keypoints["Lb6w"] = loop(self.keypoints["Lb6p"], self.keypoints["Lb6w"])
-        self.keypoints["Lb7w"] = loop(self.keypoints["Lb7p"], self.keypoints["Lb7w"])
+        self.keypoints["Lb4w"] = loop(self.keypoints["Lb4p"], self.keypoints["Lb4w"], "Lb4w")
+        self.keypoints["Lb5w"] = loop(self.keypoints["Lb5p"], self.keypoints["Lb5w"], "Lb5w")
+        self.keypoints["Lb6w"] = loop(self.keypoints["Lb6p"], self.keypoints["Lb6w"], "Lb6w")
+        self.keypoints["Lb7w"] = loop(self.keypoints["Lb7p"], self.keypoints["Lb7w"], "Lb7w")
 
-        self.keypoints["Lj6d"] = loop(self.keypoints["Lj6p"], self.keypoints["Lj6d"])
-        self.keypoints["Lj8w"] = loop(self.keypoints["Lj8p"], self.keypoints["Lj8w"])
-        self.keypoints["Lj9w"] = loop(self.keypoints["Lj9p"], self.keypoints["Lj9w"])
+        self.keypoints["Lj6d"] = loop(self.keypoints["Lj6p"], self.keypoints["Lj6d"], "Lj6d")
+        self.keypoints["Lj8w"] = loop(self.keypoints["Lj8p"], self.keypoints["Lj8w"], "Lj8w")
+        self.keypoints["Lj9w"] = loop(self.keypoints["Lj9p"], self.keypoints["Lj9w"], "Lj9w")
 
-        self.keypoints["Lk6d"] = loop(self.keypoints["Lk6p"], self.keypoints["Lk6d"])
-        self.keypoints["Lk8w"] = loop(self.keypoints["Lk8p"], self.keypoints["Lk8w"])
-        self.keypoints["Lk9w"] = loop(self.keypoints["Lk9p"], self.keypoints["Lk9w"])
+        self.keypoints["Lk6d"] = loop(self.keypoints["Lk6p"], self.keypoints["Lk6d"], "Lk6d")
+        self.keypoints["Lk8w"] = loop(self.keypoints["Lk8p"], self.keypoints["Lk8w"], "Lk8w")
+        self.keypoints["Lk9w"] = loop(self.keypoints["Lk9p"], self.keypoints["Lk9w"], "Lk9w")
     def _verify_keypoints(self):
         for key, value in self.keypoints.items():
             if value > 150 or value == 0:
