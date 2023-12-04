@@ -111,13 +111,4 @@ def get_mid_thigh_right_left(data: np.ndarray, r_crotch: np.ndarray, l_crotch: n
         data[13][0:2] + l_crotch
     ) / 2
     return mid_thigh_right, mid_thigh_left
-def find_hand_pos_grp(data: np.ndarray, pike: int):
-    r_hand = data[121].astype(int)
-    r_wrist = data[10].astype(int)
-    r_knee = data[14].astype(int)
-    point = (r_wrist + r_hand) / 2
-    if pike:
-        return abs(r_knee[0] - point[0])
-    else:
-        return abs(r_knee[1] - point[1])
 

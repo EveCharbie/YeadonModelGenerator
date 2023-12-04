@@ -119,7 +119,6 @@ class YeadonModel:
 
         #self.ratio_l_pike, self.ratio_l_pike = get_new_ratio(203.2,76.2, self.ratio_l_pike)
 
-        #self.ratio_l_pike, self.ratio_l_pike2 = get_ratio(image_l_pike, 0, 1)
         # front
         body_parts_index = {
             "nose": 0,
@@ -196,8 +195,7 @@ class YeadonModel:
         bdy_part["left_lowest_front_rib"] = left_lowest_front_rib_approx
         right_lowest_front_rib_approx = (data[6] + data[12] * 1.1) / 2.1
         bdy_part["right_lowest_front_rib"] = right_lowest_front_rib_approx
-        bdy_part["left_shoulder_perimeter_width"] = get_max_pt(data[7], data[5], edges)
-        bdy_part["right_shoulder_perimeter_width"] = get_max_pt(data[8], data[6], edges)
+
         bdy_part["left_nipple"] = (left_lowest_front_rib_approx + data[5] * 1.4) / 2.4
         bdy_part["right_nipple"] = (right_lowest_front_rib_approx + data[6] * 1.4) / 2.4
         print(bdy_part["right_nipple"])
@@ -211,6 +209,8 @@ class YeadonModel:
         bdy_part["right_ball"] = (data[20] + right_arch_approx) / 2
         bdy_part["left_mid_arm"] = (data[5] + data[7]) / 2
         bdy_part["right_mid_arm"] = (data[6] + data[8]) / 2
+        bdy_part["left_shoulder_perimeter_width"] = (data[5] * 1.5 + bdy_part["left_mid_arm"]) / 2.5
+        bdy_part["right_shoulder_perimeter_width"] =(data[6] * 1.5 + bdy_part["right_mid_arm"]) / 2.5
         bdy_part["left_acromion"] = find_acromion_left(edges, data, 0)
         bdy_part["right_acromion"] = find_acromion_right(edges, data[0], data[6], 0)
         bdy_part["left_acromion_height"] = find_acromion_left(edges, data, 1)
@@ -236,13 +236,6 @@ class YeadonModel:
         bdy_part["right_knuckles_width"] = max_perp(bdy_part["right_knuckles"], bdy_part["right_wrist"], edges, image)
         bdy_part["crotch_width"] = min(max_perp(bdy_part["left_crotch"], bdy_part["left_knee"], edges_short, image) * self.bottom_ratio,
                                        max_perp(bdy_part["right_crotch"], bdy_part["right_knee"], edges_short, image) * self.bottom_ratio)
-        #if bdy_part["crotch_width"] > 30:
-        #    bdy_part["crotch_width"] /= 2
-        print("left_shoulder_perimeter_width", max_perp(bdy_part["left_shoulder_perimeter_width"], bdy_part["left_elbow"], edges, image))
-        print("right_shoulder_perimeter_width", max_perp(bdy_part["right_shoulder_perimeter_width"], bdy_part["right_elbow"], edges, image))
-        print("La0p", circle_p(max_perp(bdy_part["left_shoulder_perimeter_width"], bdy_part["left_shoulder_perimeter_width"] + np.array([1, 0]), edges, image)))
-        print("Lb0p", circle_p(max_perp(bdy_part["right_shoulder_perimeter_width"], bdy_part["right_shoulder_perimeter_width"] + np.array([-1, 0]), edges, image)))
-        hand_pos_grp = find_hand_pos_grp(data, 0) * self.ratio2
         # right side
         if data[56][0] > 0 and data[74][0] > 0:
             bdy_part_r_side["nose"] = (data[56] + data[74]) / 2
@@ -263,7 +256,6 @@ class YeadonModel:
         bdy_part_r_pike["right_ball"] = np.array([bdy_part_r_pike["right_toe_nail"][0], bdy_part_r_pike["right_toe_nail"][1] - 3 / self.ratio_l_pike])
         bdy_part_r_pike["right_arch"] = (bdy_part_r_pike["right_heel"] + bdy_part_r_pike["right_ball"]) / 2
         self.keypoints = {
-
             "Ls1L": abs(bdy_part["right_umbiculus"][1] - bdy_part["right_hip"][1]) * self.ratio2,
             "Ls2L": abs(bdy_part["right_lowest_front_rib"][1]- bdy_part["right_hip"][1]) * self.ratio2,
             "Ls3L": abs(bdy_part["right_nipple"][1] - bdy_part["right_hip"][1]) * self.ratio2,
@@ -304,7 +296,7 @@ class YeadonModel:
             "La6L": np.linalg.norm(bdy_part["left_wrist"] - bdy_part["left_knuckles"]) * self.ratio,
             "La7L": np.linalg.norm(bdy_part["left_wrist"] - bdy_part["left_nails"]) * self.ratio,
 
-            "La0p": circle_p(max_perp(bdy_part["left_shoulder_perimeter_width"], bdy_part["left_shoulder_perimeter_width"] + np.array([1, 0]), edges, image)) * self.ratio2,
+            "La0p": circle_p(max_perp(bdy_part["left_shoulder_perimeter_width"], bdy_part["left_shoulder"], edges, image)) * self.ratio2,
             "La1p": circle_p(max_perp(bdy_part["left_mid_arm"], bdy_part["left_elbow"], edges, image)) * self.ratio2,
             "La2p": circle_p(max_perp(bdy_part["left_elbow"], bdy_part["left_mid_arm"], edges, image)) * self.ratio2,
             "La3p": circle_p(max_perp(bdy_part["left_maximum_forearm"], bdy_part["left_elbow"], edges, image)) * self.ratio2,
@@ -326,7 +318,7 @@ class YeadonModel:
             "Lb6L": np.linalg.norm(bdy_part["right_wrist"] - bdy_part["right_knuckles"]) * self.ratio,
             "Lb7L": np.linalg.norm(bdy_part["right_wrist"] - bdy_part["right_nails"]) * self.ratio,
 
-            "Lb0p": circle_p(max_perp(bdy_part["right_shoulder_perimeter_width"], bdy_part["right_shoulder_perimeter_width"] + np.array([1, 0]), edges, image)) * self.ratio2,
+            "Lb0p": circle_p(max_perp(bdy_part["right_shoulder_perimeter_width"], bdy_part["right_shoulder"], edges, image)) * self.ratio2,
             "Lb1p": circle_p(max_perp(bdy_part["right_mid_arm"], bdy_part["right_elbow"], edges, image)) * self.ratio2,
             "Lb2p": circle_p(max_perp(bdy_part["right_elbow"], bdy_part["right_mid_arm"], edges, image)) * self.ratio2,
             "Lb3p": circle_p(max_perp(bdy_part["right_maximum_forearm"], bdy_part["right_elbow"], edges, image)) * self.ratio2,
@@ -401,9 +393,6 @@ class YeadonModel:
 
             "Lk6d": max_perp(bdy_part_r_pike["right_ankle"], bdy_part_r_pike["right_knee"], edges_l_pike, image_l_pike) * self.ratio_l_pike,
         }
-        print(max_perp(bdy_part["right_shoulder_perimeter_width"], bdy_part["right_shoulder_perimeter_width"] + np.array([-1, 0]), edges, image))
-        print(max_perp(bdy_part["left_shoulder_perimeter_width"], bdy_part["left_shoulder_perimeter_width"] + np.array([1, 0]), edges, image))
-
         self._save_img(image, image_r_side, image_pike, image_l_pike)
         self._round_keypoints()
         self._create_txt(f"{impath.split('/')[-1].split('_')[0]}.txt")
