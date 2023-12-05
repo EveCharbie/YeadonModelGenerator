@@ -13,9 +13,9 @@ def stad_p(width: float, depth: float):
     -------
     float
     """
-    #radius = depth / 2
-    #a = width - depth
-    #perimeter = 2 * (np.pi * radius + a)
+    # radius = depth / 2
+    # a = width - depth
+    # perimeter = 2 * (np.pi * radius + a)
     perimeter = 2 * (width - depth) + np.pi * depth
     return perimeter
 
@@ -32,6 +32,8 @@ def circle_p(diag: float):
     """
     r = diag / 2
     return 2 * np.pi * r
+
+
 def circle_p2(diag: float, depth: float):
     """
     calculate the perimeter of a circle
@@ -43,5 +45,5 @@ def circle_p2(diag: float, depth: float):
     -------
     float
     """
-    res = 2 * ((diag + depth)/2)
+    res = 2 * ((diag + depth) / 2)
     return res

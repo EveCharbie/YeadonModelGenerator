@@ -4,6 +4,7 @@ from PIL import Image
 from rembg import remove
 import glob
 import cv2 as cv
+from scipy.ndimage import rotate
 
 from src.utils.crop import _crop
 
@@ -46,6 +47,8 @@ def canny_edges(im: np.ndarray, image: np.ndarray):
     # draw the contours on a copy of the original image
     cv.drawContours(edges, contours, -1, (0, 255, 0), 2)
     return edges
+
+
 def thresh(im: np.ndarray, image: np.ndarray, line_size):
     grayscale_image = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
     _, binary_silhouette = cv.threshold(grayscale_image, 5, 255, cv.THRESH_BINARY)
@@ -64,6 +67,9 @@ def create_resize_remove_im(impath: str):
     pil_im = _resize(pil_im)
     image = np.asarray(pil_im)
     im = remove(image)
+    pil_im = pil_im.transpose(Image.ROTATE_270)
+    image = rotate(image, -90, reshape=True, mode='nearest')
+    im = rotate(im, -90, reshape=True, mode='nearest')
     return pil_im, image, im
 
 
@@ -105,7 +111,8 @@ def undistortion(chessboard_images_path: str, img_with_chessboard_path: str):
         image_size = (img_with_chessboard.shape[1], img_with_chessboard.shape[0])
 
         if object_points and image_points:
-            ret, camera_matrix, distortion_coeffs, rvecs, tvecs = cv.calibrateCamera(object_points, image_points, image_size, None, None)
+            ret, camera_matrix, distortion_coeffs, rvecs, tvecs = cv.calibrateCamera(object_points, image_points,
+                                                                                     image_size, None, None)
         else:
             camera_matrix = None
             distortion_coeffs = None
@@ -122,8 +129,8 @@ def undistortion(chessboard_images_path: str, img_with_chessboard_path: str):
         error = cv.norm(image_points[i], imgpoints2, cv.NORM_L2) / len(imgpoints2)
         mean_error += error
 
-        print( "total error: {}".format(mean_error/len(object_points)) )
-        #cv.imwrite('undistorted_image.jpg', undistorted_image)
+        print("total error: {}".format(mean_error / len(object_points)))
+        # cv.imwrite('undistorted_image.jpg', undistorted_image)
         return undistorted_image, camera_matrix, distortion_coeffs
 
     chessboard_images = glob.glob(chessboard_images_path)
@@ -133,11 +140,11 @@ def undistortion(chessboard_images_path: str, img_with_chessboard_path: str):
     calibrated_image, camera_matrix, distortion_coeffs = recalibrate_image(chessboard_images, img_with_chessboard)
     height, width = img_with_chessboard.shape[:2]
     # get the new camera matrix (alpha 0 will destroy some pixel)
-    new_camera_matrix, roi = cv.getOptimalNewCameraMatrix(camera_matrix, distortion_coeffs, (width, height), 1, (width, height))
+    new_camera_matrix, roi = cv.getOptimalNewCameraMatrix(camera_matrix, distortion_coeffs, (width, height), 1,
+                                                          (width, height))
     # Undistort the image
     undistorted_img = cv.undistort(img_with_chessboard, camera_matrix, distortion_coeffs, None, new_camera_matrix)
     return undistorted_img
-
 
 
 def better_edges(edges: np.ndarray, data: np.ndarray):
@@ -153,38 +160,7 @@ def better_edges(edges: np.ndarray, data: np.ndarray):
     return edges
 
 
-def get_ratio(img: np.ndarray, top : int, bot: int):
-    if top:
-        img = _crop(img, [img.shape[0] / 2.5, 0], [img.shape[0], img.shape[0] / 1.5])
-    if bot:
-        img = _crop(img, [0, img.shape[0]], [img.shape[1], img.shape[0] / 1.5])
-
-    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-
-    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-
-    # Find the chessboard corners
-    ret, corners = cv.findChessboardCorners(img, (5, 5), None)
-    corners2 = cv.cornerSubPix(gray, corners, (5, 5), (-1, -1), criteria)
-
-    # Draw the corners on the image
-    cv.drawChessboardCorners(img, (5, 5), corners2, ret)
-
-    # Get the contour of the chessboard pattern
-    hull = cv.convexHull(corners2)
-    epsilon = 0.02 * cv.arcLength(hull, True)
-    corners_hull = cv.approxPolyDP(hull, epsilon, True)
-    chessboard_contour = corners_hull[:4, 0, :]
-    cv.drawContours(img, [chessboard_contour.astype(int)], -1, (255, 0, 0), 1)
-
-    ratio = np.linalg.norm(chessboard_contour[0] - chessboard_contour[3])
-    ratio2 = np.linalg.norm(chessboard_contour[0] - chessboard_contour[1])
-    print(ratio)
-    print(ratio2)
-    ratio = 9.8 / ratio
-    ratio2 = 9.8 / ratio2
-    return ratio, ratio2
-def get_ratio2(img: np.ndarray, top: int, bot: int):
+def get_ratio(img: np.ndarray, top: int, bot: int):
     if top:
         img = _crop(img, [img.shape[0] / 2.5, 0], [img.shape[0], img.shape[0] / 1.5])
     if bot:
@@ -216,15 +192,68 @@ def get_ratio2(img: np.ndarray, top: int, bot: int):
     ratio2 = 9.8 / ratio2
     return ratio, ratio2
 
-def get_new_ratio(origin: int, depth: int, width: int, pixel_width: int):
+
+def get_ratio2(img: np.ndarray):
+    pattern_size = (5, 5)
+    img1 = _crop(img, [0, 0], [img.shape[1] / 2, img.shape[0] / 2])
+    img2 = _crop(img, [img.shape[1] / 2, img.shape[0] / 2], [img.shape[1], 0])
+    img3 = _crop(img, [img.shape[1] / 2, img.shape[0] / 2], [img.shape[1], img.shape[0] / 1.3])
+    img4 = _crop(img, [0, img.shape[0] / 2], [img.shape[1] / 2, img.shape[0]])
+
+    imgs = []
+    imgs.append(img1)
+    imgs.append(img2)
+    imgs.append(img3)
+    imgs.append(img4)
+    chess_points = []
+    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.00001)
+
+    for image in imgs:
+        gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+
+        # Find the chessboard corners
+        ret, corners = cv.findChessboardCorners(image, pattern_size, None)
+        if ret:  # Check if corners were found
+            corners2 = cv.cornerSubPix(gray, corners, pattern_size, (-1, -1), criteria)
+            # Get the contour of the chessboard pattern
+            hull = cv.convexHull(corners2)
+            epsilon = 0.02 * cv.arcLength(hull, True)
+            corners_hull = cv.approxPolyDP(hull, epsilon, True)
+            chessboard_contour = corners_hull[:4, 0, :]
+            chess_points.append(np.mean(chessboard_contour, axis=0))
+            cv.drawContours(image, [chessboard_contour.astype(int)], -1, (255, 0, 0), 1)
+        else:
+            print("Chessboard corners not found")
+    chess_points[1] = chess_points[1] + [img.shape[1] / 2, 0]
+    chess_points[2] = chess_points[2] + [img.shape[1] / 2, img.shape[0] / 2]
+    chess_points[3] = chess_points[3] + [0, img.shape[0] / 2]
+    ratio = np.linalg.norm(chess_points[0] - chess_points[1])
+    return ratio, ratio
+
+
+def get_new_ratio(origin: float, depth: float, width: int, pixel_width: int):
     """
     origin is the real distance between the camera and the person
     depth is the real distance between the wall and the person
     width is the real distance two chessboard in the wall
     """
     res = (depth * width / origin)
-    return res / pixel_width
+    print("res", res)
+    print("pixel_width", pixel_width)
+    print(res / pixel_width)
+    return res / pixel_width, res / pixel_width
+
+
+def save_img(image, image_r_side, image_pike, image_r_pike):
+    img = Image.fromarray(image)
+    img.save("front_t.jpg")
+    img = Image.fromarray(image_r_side)
+    img.save("r_side.jpg")
+    img = Image.fromarray(image_pike)
+    img.save("pike_t.jpg")
+    img = Image.fromarray(image_r_pike)
+    img.save("r_pike_t.jpg")
+
 
 def get_ratio3(img):
-
-    return 0.285,0.285
+    return 0.285, 0.285
