@@ -2,7 +2,6 @@ import numpy as np
 import PIL
 from PIL import Image
 from rembg import remove
-import glob
 import cv2 as cv
 from scipy.ndimage import rotate
 
@@ -79,72 +78,6 @@ def pil_resize_remove_im(undistorted_image: np.ndarray):
     image = np.asarray(pil_im)
     im = remove(image)
     return pil_im, image, im
-
-
-def undistortion(chessboard_images_path: str, img_with_chessboard_path: str):
-    def recalibrate_image(chessboard_images, img_with_chessboard):
-        chessboard_size = (5, 5)
-
-        # Create a list to store object points (3D) and image points (2D)
-        object_points = []
-        image_points = []
-
-        # Define the 3D coordinates of the chessboard corners (assuming a flat board)
-        object_points_pattern = np.zeros((chessboard_size[0] * chessboard_size[1], 3), np.float32)
-        object_points_pattern[:, :2] = np.mgrid[0:chessboard_size[0], 0:chessboard_size[1]].T.reshape(-1, 2)
-
-        for chessboard_image in chessboard_images:
-            img = cv.imread(chessboard_image)
-            gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-
-            ret, corners = cv.findChessboardCorners(gray, chessboard_size, None)
-
-            if ret:
-                object_points.append(object_points_pattern)
-                image_points.append(corners)
-            else:
-                print(f"Failed to detect corners in image: {chessboard_image}")
-
-        if not object_points or not image_points:
-            print("No valid calibration images found. Check your input images.")
-
-        image_size = (img_with_chessboard.shape[1], img_with_chessboard.shape[0])
-
-        if object_points and image_points:
-            ret, camera_matrix, distortion_coeffs, rvecs, tvecs = cv.calibrateCamera(object_points, image_points,
-                                                                                     image_size, None, None)
-        else:
-            camera_matrix = None
-            distortion_coeffs = None
-
-        if camera_matrix is not None:
-            undistorted_image = cv.undistort(img_with_chessboard, camera_matrix, distortion_coeffs)
-        else:
-            undistorted_image = None
-            print("Camera calibration failed. Check your calibration images.")
-
-        mean_error = 0
-        for i in range(len(object_points)):
-            imgpoints2, _ = cv.projectPoints(object_points[i], rvecs[i], tvecs[i], camera_matrix, distortion_coeffs)
-        error = cv.norm(image_points[i], imgpoints2, cv.NORM_L2) / len(imgpoints2)
-        mean_error += error
-
-        print("total error: {}".format(mean_error / len(object_points)))
-        # cv.imwrite('undistorted_image.jpg', undistorted_image)
-        return undistorted_image, camera_matrix, distortion_coeffs
-
-    chessboard_images = glob.glob(chessboard_images_path)
-    pil_im = PIL.Image.open(img_with_chessboard_path).convert('RGB')
-    img_with_chessboard = np.asarray(pil_im)
-    # get the camera matrix and the distortion_coef and the calibrated image
-    calibrated_image, camera_matrix, distortion_coeffs = recalibrate_image(chessboard_images, img_with_chessboard)
-    height, width = img_with_chessboard.shape[:2]
-    # get the new camera matrix (alpha 0 will destroy some pixel)
-    new_camera_matrix, roi = cv.getOptimalNewCameraMatrix(camera_matrix, distortion_coeffs, (width, height), 1,
-                                                          (width, height))
-    # Undistort the image
-    undistorted_img = cv.undistort(img_with_chessboard, camera_matrix, distortion_coeffs, None, new_camera_matrix)
-    return undistorted_img
 
 
 def better_edges(edges: np.ndarray, data: np.ndarray):
@@ -238,9 +171,6 @@ def get_new_ratio(origin: float, depth: float, width: int, pixel_width: int):
     width is the real distance two chessboard in the wall
     """
     res = (depth * width / origin)
-    print("res", res)
-    print("pixel_width", pixel_width)
-    print(res / pixel_width)
     return res / pixel_width, res / pixel_width
 
 

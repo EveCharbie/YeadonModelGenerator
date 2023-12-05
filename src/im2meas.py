@@ -18,7 +18,7 @@ class YeadonModel:
         A dictionary containing the keypoints of the image. (Ls0, Ls1, ...)
     """
 
-    def __init__(self, impath_front: str, impath_side: str, impath_pike: str, impath_r_pike: str):
+    def __init__(self, impath_front: str, impath_pike: str, impath_r_pike: str, impath_side: str):
         """Creates a YeadonModel object from an image path.
 
         Parameters
