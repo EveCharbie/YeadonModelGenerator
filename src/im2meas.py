@@ -4,6 +4,7 @@ import sys
 from src.utils.find_body_parts import *
 from src.utils.image_config import *
 from src.utils.perimeter_calculator import *
+from src.utils.generate_yml import generate_yml
 
 
 
@@ -50,8 +51,6 @@ class YeadonModel:
         edges = better_edges(edges, data)
         edges_short = better_edges(edges_short, data)
         image_chessboard = image.copy()
-        img = Image.fromarray(image)
-        img.save("test.jpg")
 
         self.ratio, self.ratio2 = get_ratio2(image_chessboard)
         self.ratio, self.ratio2 = get_new_ratio(355.6, 355.6 - 50.8, 150, self.ratio)
@@ -224,6 +223,7 @@ class YeadonModel:
         bdy_part_r_pike["right_ball"] = np.array(
             [bdy_part_r_pike["right_toe_nail"][0], bdy_part_r_pike["right_toe_nail"][1] - 3 / self.ratio_l_pike])
         bdy_part_r_pike["right_arch"] = (bdy_part_r_pike["right_heel"] + bdy_part_r_pike["right_ball"]) / 2
+        # generate yml
         self.keypoints = {
             "Ls1L": abs(bdy_part["right_umbiculus"][1] - bdy_part["right_hip"][1]) * self.ratio2,
             "Ls2L": abs(bdy_part["right_lowest_front_rib"][1] - bdy_part["right_hip"][1]) * self.ratio2,
@@ -365,7 +365,9 @@ class YeadonModel:
 
             "Lk6d": max_perp(bdy_part_r_pike["right_ankle"], bdy_part_r_pike["right_knee"], edges_l_pike, image_l_pike) * self.ratio_l_pike,
         }
-        save_img(image, image_r_side, image_pike, image_l_pike)
+        self.pelvis = abs(bdy_part["left_hip"][1] - bdy_part["top_of_head"][1]) * self.ratio / 100
+        self.knuckle = self.keypoints["La6L"] / 100
+        #save_img(image, image_r_side, image_pike, image_l_pike)
         self._round_keypoints()
         self._create_txt(f"{impath_front.split('/')[-1].split('_')[0]}.txt")
         self._verify_keypoints()
