@@ -6,7 +6,6 @@ The primary objective of this project is to generate a three-dimensional human b
 ## Setup
 <p align="center">
     <img
-      width="200"
       src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/chessboardsx4.jpg"
       alt="logo"
     />
