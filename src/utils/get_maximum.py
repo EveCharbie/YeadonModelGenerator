@@ -163,7 +163,6 @@ def get_maximum_pit(start: np.ndarray, edges: np.ndarray):
             break
         max_save_left = max_last_left
 
-    delta = np.linalg.norm(abs(np.array(max_last_left) - np.array(max_last_right)))
     distance = np.linalg.norm(max(max_save_left, max_last_right))
     point = max(max_save_left, max_last_right)
 
