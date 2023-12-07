@@ -25,7 +25,8 @@ The position of the person capturing the photos should follow the silhouette in 
 You will have to take 4 pictures, for every picture the person dont have to be inside the square overlay but all his body should be inside the photo.
 
 # Getting Started
-After taking the 4 pictures, you have to put them in the img file, it should be in order: front_img - pike_img - r_pike_img - side_img.
+After taking the 4 pictures, you have to put them in the img file, it should be in order:
+front_img - pike_img - r_pike_img - side_img.
 ```bash
 make run
 ```
