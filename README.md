@@ -4,7 +4,13 @@ The primary objective of this project is to generate a three-dimensional human b
 
 # Taking pictures
 ## Setup
-![Alt text](relative%20tests/pictures/chessboardsx4.jpg?raw=true "Title")
+<p align="center">
+    <img
+      src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/chessboardsx4.jpg"
+      alt="logo"
+    />
+</p>
+
 To commence you will have to create a square structure measuring 150x150cm, incorporating a chessboard pattern at each corner. Ensure precision in the arrangement, maintaining a distance of 150cm between the centers of adjacent chessboards.
 
 Once done, proceed to download our application, im2meas, utilizing the Flutter run command. This application serves as an overlay for camera functionality, featuring a square interface. It is imperative to position four chessboard squares within the confines of the red square in the overlay. A silhouette guide is provided for reference to facilitate accurate placement of the body.
