@@ -12,10 +12,10 @@ The primary objective of this project is to generate a three-dimensional human b
 
 To commence you will have to create a square structure measuring 150x150cm, incorporating a chessboard pattern at each corner. Ensure precision in the arrangement, maintaining a distance of 150cm between the centers of adjacent chessboards.
 <p style="display: flex;align-items: center;justify-content: center;">
-  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/front_silhouette.jpg" width="100" />
-  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/side_silhouette.jpg" width="100"/>
-  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/r_pike_silhouette.jpg" width="100"/>
-  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/front_pike_silhouette.jpg" width="100"/>
+  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/front_silhouette.jpg" width="200" />
+  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/side_silhouette.jpg" width="200"/>
+  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/r_pike_silhouette.jpg" width="200"/>
+  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/front_pike_silhouette.jpg" width="200"/>
 </p>
 Once done, proceed to download our application, im2meas, utilizing the Flutter run command in the flutter folder. This application serves as an overlay for camera functionality, featuring a square interface. It is imperative to position four chessboard squares within the confines of the red square in the overlay. A silhouette guide is provided for reference to facilitate accurate placement of the body.
 
