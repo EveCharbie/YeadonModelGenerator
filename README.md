@@ -3,12 +3,11 @@
 The primary objective of this project is to generate a three-dimensional human body model employing the Yeadon model, utilizing only four picturess.
 
 ## How to install
-First download anaconda it will be a lot easier.
-Once done can create the environment using the command:
+First, download anaconda it will easier.
+You can create the environment using the command:
 ```bash
 conda env create -f environment.yml
 ```
-Now you are good to go !
 
 # Taking pictures
 ## Setup
