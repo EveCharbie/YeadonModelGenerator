@@ -11,4 +11,4 @@ run:
 biomake:
 	python src/biomake/biomake_models.py --bioModOptions src/biomake/tech_opt.yml "${name}.txt" > "${name}.bioMod"
 bioviz:
-	python src/bioviz.py "${name}"
+	python src/biov.py "${name}"

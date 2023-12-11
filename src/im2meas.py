@@ -19,7 +19,7 @@ class YeadonModel:
         A dictionary containing the keypoints of the image. (Ls0, Ls1, ...)
     """
 
-    def __init__(self, impath_front: str, impath_side: str, impath_r_tuck: str, impath_tuck: str):
+    def __init__(self, impath_front: str, impath_r_tuck: str, impath_side: str, impath_tuck: str):
         """Creates a YeadonModel object from an image path.
 
         Parameters
@@ -382,6 +382,7 @@ class YeadonModel:
 
     def _create_txt(self, file_name: str):
         with open(file_name, "w") as file_object:
+            file_object.writelines("measurementconversionfactor: .01\n")
             for key, value in self.keypoints.items():
                 if key[-1].isalpha():
                     file_object.writelines("{} : {:.1f}\n".format(key, float(value)))

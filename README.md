@@ -2,6 +2,14 @@
 
 The primary objective of this project is to generate a three-dimensional human body model employing the Yeadon model, utilizing only four picturess.
 
+## How to install
+First download anaconda it will be a lot easier.
+Once done can create the environment using the command:
+```bash
+conda env create -f environment.yml
+```
+Now you are good to go !
+
 # Taking pictures
 ## Setup
 <p align="center">
@@ -26,18 +34,18 @@ You will have to take 4 pictures, for every picture the person dont have to be i
 
 # Getting Started
 After taking the 4 pictures, you have to put them in the img file, it should be in order:
-front_img - pike_img - r_pike_img - side_img.
+THE_NAME_front_img - THE_NAME_r_tuck_img - THE_NAME_side_img - THE_NAME_tuck_img
 ```bash
 make run
 ```
-it will create a .txt file named: the_name.txt ("the_name" is the input you entered in the app).
+it will create a .txt file named: THE_NAME.txt ("THE_NAME" is the input you entered in the app).
 To create the .bioMod you can just use the command:
 
 ```bash
-make biomake name=the_name
+make biomake name=THE_NAME
 ```
 
 To visualize the 3d body model you can use the command:
 ```bash
-make bioviz name=the_name
+make bioviz name=THE_NAME
 ```
