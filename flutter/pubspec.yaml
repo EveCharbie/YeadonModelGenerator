@@ -1,0 +1,27 @@
+name: name
+description: A description of your project
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  camera: ^0.10.0
+  path_provider: ^2.0.15
+  intl: ^0.18.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+flutter:
+  assets:
+    - assets/front.png
+    - assets/side.png
+    - assets/r_tuck.png
+    - assets/tuck.png
+    - assets/camera_button.png
+    - assets/home_page.png
+    - assets/flashlight.jpg
+
+
