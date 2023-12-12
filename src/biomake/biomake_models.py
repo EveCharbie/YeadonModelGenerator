@@ -466,7 +466,7 @@ class Nipple(BioModSegment):
     def adapted_meshscale(human):
         m_x = (human.meas.get("Ls4w")) / 0.1
         m_y = (human.meas.get("Ls4d")) / 0.1
-        m_z = (human.meas.get("Ls4L") - human.meas.get("Ls3L")) / 0.075
+        m_z = (human.meas.get("Ls4L") - human.meas.get("Ls3L")) / 0.1
         return [m_x, m_y, m_z]
 
     @staticmethod
