@@ -57,7 +57,7 @@ To create the .bioMod you can just use the command:
 ```bash
 make biomake name=THE_NAME
 ```
-The .bioMod will appear in the root folder
+The .bioMod will appear in the root folder.
 
 To visualize the 3d body model you can use the command:
 ```bash
