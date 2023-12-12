@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
-import 'package:intl/intl.dart';
+//import 'package:intl/intl.dart';
 
 void main() => runApp(MyApp());
 
@@ -74,7 +74,8 @@ class _CameraScreenState extends State<CameraScreen> {
   List<String> _silhouetteImages = [
     'assets/front.png',
     'assets/side.png',
-    'assets/r_pike.png',
+    'assets/r_tuck.png',
+    'assets/tuck.png',
     'assets/pike.png',
   ];
   
@@ -299,8 +300,7 @@ class _CameraScreenState extends State<CameraScreen> {
                             final XFile picture = await _controller.takePicture();
                             final String directory =
                                 (await getExternalStorageDirectory())?.path ?? "";
-                            final String formattedTimestamp =
-                                DateFormat('yyyy-MM-dd_HHmmss').format(DateTime.now()); // not used in the final version
+                            //final String formattedTimestamp = DateFormat('yyyy-MM-dd_HHmmss').format(DateTime.now()); // not used in the final version
                             final String fileName =
                                 '${widget.imageName}_${position}.jpg';
                             final String filePath = join(directory, fileName);

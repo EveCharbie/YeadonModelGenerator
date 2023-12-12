@@ -4,6 +4,7 @@ from PIL import Image
 from rembg import remove
 import cv2 as cv
 from scipy.ndimage import rotate
+import os
 
 from src.utils.crop import _crop
 
@@ -174,16 +175,15 @@ def get_new_ratio(origin: float, depth: float, width: int, pixel_width: int):
     return res / pixel_width, res / pixel_width
 
 
-def save_img(image, image_r_side, image_pike, image_r_pike):
+def save_img(image, image_r_side, image_pike, image_r_pike, name):
+    if not os.path.exists(f"{name}_dir"):
+        os.mkdir(f"{name}_dir")
     img = Image.fromarray(image)
-    img.save("front_t.jpg")
+    img.save(f"{name}/{name}_front_t.jpg")
     img = Image.fromarray(image_r_side)
-    img.save("r_side.jpg")
+    img.save(f"{name}/{name}_r_side.jpg")
     img = Image.fromarray(image_pike)
-    img.save("pike_t.jpg")
+    img.save(f"{name}/{name}_pike_t.jpg")
     img = Image.fromarray(image_r_pike)
-    img.save("r_pike_t.jpg")
+    img.save(f"{name}/{name}_r_pike_t.jpg")
 
-
-def get_ratio3(img):
-    return 0.285, 0.285

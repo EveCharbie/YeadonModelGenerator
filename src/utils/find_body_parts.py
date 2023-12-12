@@ -89,7 +89,7 @@ def find_top_of_head(data: np.ndarray, edges: np.ndarray):
     vector = np.array([point2[0] - point[0], point2[1] - point[1]])
     angle_radians = np.arctan2(vector[1], vector[0])
     top_of_head = find_edge(point, angle_radians, edges, save=[])
-    return top_of_head[0]
+    return np.array(top_of_head[0])
 
 
 def get_crotch_right_left(edges: np.ndarray, data: np.ndarray):

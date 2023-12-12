@@ -19,7 +19,7 @@ class YeadonModel:
         A dictionary containing the keypoints of the image. (Ls0, Ls1, ...)
     """
 
-    def __init__(self, impath_front: str, impath_r_tuck: str, impath_side: str, impath_tuck: str):
+    def __init__(self, impath_front: str, impath_pike: str, impath_r_tuck: str, impath_side: str, impath_tuck: str):
         """Creates a YeadonModel object from an image path.
 
         Parameters
@@ -86,7 +86,7 @@ class YeadonModel:
         self.ratio_l_tuck, self.ratio_l_tuck2 = get_ratio2(image_r_tuck_chessboard)
         self.ratio_l_tuck, self.ratio_l_tuck2 = get_new_ratio(355.6, 355.6 - 50.8, 150, self.ratio_l_tuck)
         # pike
-        pil_pike_im, image_pike, im_pike = create_resize_remove_im(impath_tuck)
+        pil_pike_im, image_pike, im_pike = create_resize_remove_im(impath_pike)
 
         predictions3, gt_anns3, image_meta3 = predictor.pil_image(pil_pike_im)
         data_pike = predictions3[0].data[:, 0:2]
@@ -151,8 +151,9 @@ class YeadonModel:
         }
         bdy_part_tuck = {k: data_tuck[v] for k, v in body_parts_index_tuck.items()}
         # left side tuck
-        body_parts_index_l_tuck = {
+        body_parts_index_r_tuck = {
             "right_ear": 4,
+            "right_knuckle": 121,
             "right_shoulder": 6,
             "right_elbow": 8,
             "right_hip": 12,
@@ -161,7 +162,15 @@ class YeadonModel:
             "right_heel": 22,
             "right_toe_nail": 20,
         }
-        bdy_part_r_tuck = {k: data_l_tuck[v] for k, v in body_parts_index_l_tuck.items()}
+        bdy_part_r_tuck = {k: data_l_tuck[v] for k, v in body_parts_index_r_tuck.items()}
+        # pike
+        body_parts_index_pike = {
+            "right_knee": 14,
+            "right_wrist": 10,
+            "right_knuckle": 121,
+        }
+        bdy_part_pike = {k: data_pike[v] for k, v in body_parts_index_pike.items()}
+        bdy_part_pike["right_hand"] = (bdy_part_pike["right_wrist"] + bdy_part_pike["right_knuckle"]) / 2
         # front
         bdy_part["left_nails"] = (data[102] + data[103]) / 2
         bdy_part["right_nails"] = (data[123] + data[124]) / 2
@@ -210,6 +219,13 @@ class YeadonModel:
         bdy_part["crotch_width"] = min(
             max_perp(bdy_part["left_crotch"], bdy_part["left_knee"], edges_short, image) * self.ratio,
             max_perp(bdy_part["right_crotch"], bdy_part["right_knee"], edges_short, image) * self.ratio)
+        bdy_part["hip"] = (bdy_part["right_hip"] + bdy_part["left_hip"]) / 2
+        bdy_part["umbiculus"] = (bdy_part["right_umbiculus"] + bdy_part["left_umbiculus"]) / 2
+        bdy_part["lowest_front_rib"] = (bdy_part["right_lowest_front_rib"] + bdy_part["left_lowest_front_rib"]) / 2
+        bdy_part["nipple"] = (bdy_part["right_nipple"] + bdy_part["left_nipple"]) / 2
+        bdy_part["shoulder"] = (bdy_part["right_shoulder"] + bdy_part["left_shoulder"]) / 2
+        bdy_part["acromion"] = (bdy_part["left_acromion_height"] + bdy_part["right_acromion_height"]) / 2
+        bdy_part["ear"] = (bdy_part["right_ear"] + bdy_part["left_ear"]) / 2
         # right side
         if data[56][0] > 0 and data[74][0] > 0:
             bdy_part_r_side["nose"] = (data[56] + data[74]) / 2
@@ -233,13 +249,13 @@ class YeadonModel:
         bdy_part_r_tuck["right_arch"] = (bdy_part_r_tuck["right_heel"] + bdy_part_r_tuck["right_ball"]) / 2
         # generate yml
         self.keypoints = {
-            "Ls1L": abs(bdy_part["right_umbiculus"][1] - bdy_part["right_hip"][1]) * self.ratio2,
-            "Ls2L": abs(bdy_part["right_lowest_front_rib"][1] - bdy_part["right_hip"][1]) * self.ratio2,
-            "Ls3L": abs(bdy_part["right_nipple"][1] - bdy_part["right_hip"][1]) * self.ratio2,
-            "Ls4L": abs(bdy_part["right_shoulder"][1] - bdy_part["right_hip"][1]) * self.ratio2,
-            "Ls5L": abs(bdy_part["right_acromion_height"][1] - bdy_part["right_hip"][1]) * self.ratio2,
-            "Ls6L": abs(bdy_part["left_acromion_height"][1] - bdy_part["nose_per"][1]) * self.ratio2,
-            "Ls7L": np.linalg.norm(bdy_part["left_acromion_height"] - bdy_part["left_ear"]) * self.ratio2,
+            "Ls1L": get_length(bdy_part["umbiculus"], bdy_part["hip"], image) * self.ratio2,
+            "Ls2L": get_length(bdy_part["lowest_front_rib"], bdy_part["hip"], image) * self.ratio2,
+            "Ls3L": get_length(bdy_part["nipple"], bdy_part["hip"], image) * self.ratio2,
+            "Ls4L": get_length(bdy_part["shoulder"], bdy_part["hip"], image) * self.ratio2,
+            "Ls5L": get_length(bdy_part["acromion"], bdy_part["hip"], image) * self.ratio2,
+            "Ls6L": get_length(bdy_part["acromion"], bdy_part["nose_per"], image) * self.ratio2,
+            "Ls7L": get_length(bdy_part["acromion"], bdy_part["ear"], image) * self.ratio2,
             "Ls8L": abs(bdy_part["left_acromion_height"][1] - bdy_part["top_of_head"][1]) * self.ratio2,
 
             "Ls0p": stad_p(max_line(bdy_part["right_hip"], bdy_part["left_hip"], edges_short, image) * self.ratio,
@@ -252,9 +268,9 @@ class YeadonModel:
             ),
             "Ls3p": stad_p(max_line(bdy_part["right_nipple"], bdy_part["left_nipple"], edges, image) * self.ratio,
                            max_perp(bdy_part_r_side["right_nipple"], bdy_part_r_side["right_hip"], edges_r_side, image_r_side) * self.ratio_r_side),
-            "Ls5p": circle_p(abs(bdy_part["left_acromion"][0] - bdy_part["right_acromion"][0]) * self.ratio),
+            "Ls5p": circle_p(get_length(bdy_part["left_acromion"], bdy_part["right_acromion"], image) * self.ratio),
             "Ls6p": circle_p(max_perp(bdy_part["nose_per"], bdy_part["nose"], edges, image)) * self.ratio,
-            "Ls7p": circle_p(np.linalg.norm(bdy_part["left_ear"] - bdy_part["right_ear"]) * self.ratio),
+            "Ls7p": circle_p(get_length(bdy_part["left_ear"], bdy_part["right_ear"], image) * self.ratio),
 
             "Ls0w": max_line(bdy_part["left_hip"], bdy_part["right_hip"], edges_short, image) * self.ratio,
             "Ls1w": max(max_line(bdy_part["left_umbiculus"], bdy_part["right_umbiculus"], edges, image) * self.ratio,
@@ -263,7 +279,7 @@ class YeadonModel:
                         np.linalg.norm(bdy_part["left_lowest_front_rib"] - bdy_part["right_lowest_front_rib"]) * self.ratio),
             "Ls3w": max(max_line(bdy_part["left_nipple"], bdy_part["right_nipple"], edges, image) * self.ratio,
                         np.linalg.norm(bdy_part["left_nipple"] - bdy_part["right_nipple"]) * self.ratio),
-            "Ls4w": np.linalg.norm(bdy_part["left_shoulder"] - bdy_part["right_shoulder"]) * self.ratio,
+            "Ls4w": get_length(bdy_part["left_shoulder"], bdy_part["right_shoulder"], image) * self.ratio,
 
             "Ls4d": max_perp(bdy_part_r_side["right_shoulder"], bdy_part_r_side["right_elbow"], edges_r_side, image_r_side) * self.ratio_r_side,
 
@@ -374,8 +390,11 @@ class YeadonModel:
             "Lk6d": max_perp(bdy_part_r_tuck["right_ankle"], bdy_part_r_tuck["right_knee"], edges_l_tuck, image_l_tuck) * self.ratio_l_tuck,
         }
         self.pelvis = abs(bdy_part["left_hip"][1] - bdy_part["top_of_head"][1]) * self.ratio / 100
-        self.knuckle = self.keypoints["La6L"] / 100
-        #save_img(image, image_r_side, image_tuck, image_l_tuck)
+        self.knuckle = self.keypoints["Lb6L"] / 100
+        self.pike_hand = np.linalg.norm(bdy_part_pike["right_knee"] - bdy_part_pike["right_hand"]) * self.ratio_pike / 100
+        self.tuck_hand = abs(bdy_part_r_tuck["right_knee"][1] - bdy_part_r_tuck["right_knuckle"][1]) * self.ratio_l_tuck / 100
+        generate_yml(self.pelvis, self.knuckle, self.pike_hand, self.tuck_hand)
+        save_img(image, image_r_side, image_tuck, image_l_tuck, impath_front.split('/')[-1].split('_')[0])
         self._round_keypoints()
         self._create_txt(f"{impath_front.split('/')[-1].split('_')[0]}.txt")
         self._verify_keypoints()
@@ -390,10 +409,10 @@ class YeadonModel:
     def _round_keypoints(self):
         def loop(keypoint_perim, keypoint_width, keypoint_name):
             if keypoint_perim / keypoint_width <= 2:
-                print(f"{keypoint_name} is too high")
+                print(f"{keypoint_name} is too high, so it has been decreased")
                 return (keypoint_perim / 2) - 0.1
             if keypoint_perim / keypoint_width >= np.pi:
-                print(f"{keypoint_name} is too low")
+                print(f"{keypoint_name} is too low, so it has been increased")
                 return (keypoint_perim / np.pi) + 0.1
             return keypoint_width
 
@@ -428,8 +447,8 @@ class YeadonModel:
 
 def main():
     args = sys.argv[1:]
-    if len(args) == 4:
-        yeadon = YeadonModel(args[0], args[1], args[2], args[3])
+    if len(args) == 5:
+        yeadon = YeadonModel(args[0], args[1], args[2], args[3], args[4])
     else:
         print("Wrong arguments you should have 4 args")
 

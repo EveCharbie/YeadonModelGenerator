@@ -167,3 +167,9 @@ def get_maximum_pit(start: np.ndarray, edges: np.ndarray):
     point = max(max_save_left, max_last_right)
 
     return point[0], int(distance)
+
+
+def get_length(point1: np.ndarray, point2: np.ndarray, image: np.ndarray):
+    length = np.linalg.norm(point1 - point2)
+    cv.line(image, point1.astype(int), point2.astype(int), (0, 0, 255), 1)
+    return length
