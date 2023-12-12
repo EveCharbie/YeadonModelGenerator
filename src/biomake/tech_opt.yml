@@ -7,7 +7,7 @@
       fused: True
       gravity: [0, 0, -9.81]
     
-    Hip:
+    Pelvis:
       meshfile: Model_mesh/pelvis.stl
       meshrt: [-0.175, 0, 0]
       meshxyz: [0, 0, 0]
@@ -18,8 +18,8 @@
           position: [0, 0, 1.0643419976544906] # change depending on the length of hip_joint to top_of_the_head
         PelvisBase:
           position: [0, 0, 0]
-    
-    Umbiculus:
+
+    Stomach:
       meshfile: Model_mesh/boule.stl
       meshrt: [-0.15, 0, 0]
       meshxyz: [0, -0.025, 0]

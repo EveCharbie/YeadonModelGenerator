@@ -149,7 +149,7 @@ class BioModSegment:
         return mod
 
 
-class Hip(BioModSegment): # TODO separate in 2 Hip and Umbiculus
+class Pelvis(BioModSegment): # TODO separate in 2 Pelvis and Stomach
     def __init__(
         self,
         human: yeadon.Human,
@@ -167,14 +167,14 @@ class Hip(BioModSegment): # TODO separate in 2 Hip and Umbiculus
         patch: list[Vec3] = None,
         markers: dict[dict] = {},
     ):
-        label = label or Hip.__name__
+        label = label or Pelvis.__name__
         parent = None
 
-        xyz = Hip.get_origin(human)
+        xyz = Pelvis.get_origin(human)
         com = O
         mass = human.segments[0].solids[0].mass
         inertia = human.segments[0].solids[0].rel_inertia
-        meshscale = Hip.adapted_meshscale(human)
+        meshscale = Pelvis.adapted_meshscale(human)
         markers = parse_markers(label, markers)
 
         BioModSegment.__init__(
@@ -207,11 +207,11 @@ class Hip(BioModSegment): # TODO separate in 2 Hip and Umbiculus
         return [m_x, m_y, m_z]
 
     @staticmethod
-    def get_origin(human: yeadon.Human) -> Vec3: # TODO for the umbiculus what is this function
-        """Get the origin of the Hip in the global frame centered at Hip' COM."""
+    def get_origin(human: yeadon.Human) -> Vec3: # TODO for the stomach what is this function
+        """Get the origin of the Pelvis in the global frame centered at Pelvis' COM."""
         return O
 
-class Hip(BioModSegment):
+class Pelvis(BioModSegment):
     def __init__(
         self,
         human: yeadon.Human,
@@ -229,14 +229,14 @@ class Hip(BioModSegment):
         patch: list[Vec3] = None,
         markers: dict[dict] = {},
     ):
-        label = label or Hip.__name__
+        label = label or Pelvis.__name__
         parent = None
 
-        xyz = Hip.get_origin(human)
+        xyz = Pelvis.get_origin(human)
         com = O
         mass = human.segments[0].solids[0].mass
         inertia = human.segments[0].solids[0].rel_inertia
-        meshscale = Hip.adapted_meshscale(human)
+        meshscale = Pelvis.adapted_meshscale(human)
         markers = parse_markers(label, markers)
 
         BioModSegment.__init__(
@@ -269,16 +269,16 @@ class Hip(BioModSegment):
         return [m_x, m_y, m_z]
 
     @staticmethod
-    def get_origin(human: yeadon.Human) -> Vec3: # TODO for the umbiculus what is this function
-        """Get the origin of the Hip in the global frame centered at Hip' COM."""
+    def get_origin(human: yeadon.Human) -> Vec3: # TODO for the stomach what is this function
+        """Get the origin of the Pelvis in the global frame centered at Pelvis' COM."""
         return O
 
-class Umbiculus(BioModSegment):
+class Stomach(BioModSegment):
     def __init__(
         self,
         human: yeadon.Human,
         label: str = "",
-        parent: str = Hip.__name__,
+        parent: str = Pelvis.__name__,
         rt: Vec3 = O,
         rotations: str = "",
         rangesQ: list[Vec2] = None,
@@ -291,16 +291,16 @@ class Umbiculus(BioModSegment):
         patch: list[Vec3] = None,
         markers: dict[dict] = {},
     ):
-        label = label or Umbiculus.__name__
+        label = label or Stomach.__name__
 
-        xyz = Umbiculus.get_origin(human) - Hip.get_origin(human)
+        xyz = Stomach.get_origin(human) - Pelvis.get_origin(human)
         translations = ""
         mass = human.segments[0].solids[1].mass
         com_global = human.segments[0].solids[1].center_of_mass
         inertia_global = human.segments[0].solids[1].rel_inertia
         #mass, com_global, inertia_global = human.combine_inertia(("T", "s3"))
-        com = np.asarray(com_global - human.P.center_of_mass).reshape(3) - Umbiculus.get_origin(human)
-        meshscale = Umbiculus.adapted_meshscale(human)
+        com = np.asarray(com_global - human.P.center_of_mass).reshape(3) - Stomach.get_origin(human)
+        meshscale = Stomach.adapted_meshscale(human)
         markers = parse_markers(label, markers)
 
         BioModSegment.__init__(
@@ -329,12 +329,12 @@ class Umbiculus(BioModSegment):
     def adapted_meshscale(human):
         m_x = (human.meas.get("Ls0w")) / 0.1
         m_y = (human.meas.get("Ls4d")) / 0.1
-        m_z = (human.meas.get("Ls2L") - human.meas.get("Ls1L")) / 0.075
+        m_z = (human.meas.get("Ls2L") - human.meas.get("Ls1L")) / 0.05
         return [m_x, m_y, m_z]
 
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
-        """Get the origin of the Rib in the global frame centered at Hip' COM."""
+        """Get the origin of the Rib in the global frame centered at Pelvis' COM."""
         length = human.segments[0].solids[0].height
         dir = human.segments[0].solids[0].end_pos - human.segments[0].solids[0].pos
         dir = dir / np.linalg.norm(dir)
@@ -347,7 +347,7 @@ class Rib(BioModSegment):
         self,
         human: yeadon.Human,
         label: str = "",
-        parent: str = Umbiculus.__name__,
+        parent: str = Stomach.__name__,
         rt: Vec3 = O,
         rotations: str = "",
         rangesQ: list[Vec2] = None,
@@ -362,7 +362,7 @@ class Rib(BioModSegment):
     ):
         label = label or Rib.__name__
 
-        xyz = Rib.get_origin(human) - Umbiculus.get_origin(human)
+        xyz = Rib.get_origin(human) - Stomach.get_origin(human)
         translations = ""
         mass = human.T.mass
         com_global = human.T.center_of_mass
@@ -403,7 +403,7 @@ class Rib(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
-        """Get the origin of the Rib in the global frame centered at Hip' COM."""
+        """Get the origin of the Rib in the global frame centered at Pelvis' COM."""
         length = human.segments[0].solids[1].height
         dir = human.segments[0].solids[1].end_pos - human.segments[0].solids[1].pos
         dir = dir / np.linalg.norm(dir)
@@ -471,7 +471,7 @@ class Nipple(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
-        """Get the origin of the Nipple in the global frame centered at Hip' COM."""
+        """Get the origin of the Nipple in the global frame centered at Pelvis' COM."""
         length = human.segments[1].solids[0].height
         dir = human.segments[1].solids[0].end_pos - human.segments[1].solids[0].pos
         dir = dir / np.linalg.norm(dir)
@@ -539,7 +539,7 @@ class Shoulder(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
-        """Get the origin of the Shoulder in the global frame centered at Hip' COM."""
+        """Get the origin of the Shoulder in the global frame centered at Pelvis' COM."""
         return np.asarray(human.C.pos - human.P.center_of_mass).reshape(3)
 
 class Head(BioModSegment):
@@ -602,7 +602,7 @@ class Head(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
-        """Get the origin of the Head in the global frame centered at Hip' COM."""
+        """Get the origin of the Head in the global frame centered at Pelvis' COM."""
         length = human.segments[2].solids[1].height
         dir = human.segments[2].solids[1].end_pos - human.segments[2].solids[1].pos
         dir = dir / np.linalg.norm(dir)
@@ -672,7 +672,7 @@ class LeftUpperArm(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
-        """Get the origin of the LeftUpperArm in the global frame centered at Hip' COM."""
+        """Get the origin of the LeftUpperArm in the global frame centered at Pelvis' COM."""
         return np.asarray(human.A1.pos - human.P.center_of_mass).reshape(3)
 
 
@@ -738,7 +738,7 @@ class LeftForearm(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
-        """Get the origin of the LeftForearm in the global frame centered at Hip' COM."""
+        """Get the origin of the LeftForearm in the global frame centered at Pelvis' COM."""
         return np.asarray(human.A2.pos - human.P.center_of_mass).reshape(3)
 
 
@@ -804,7 +804,7 @@ class LeftHand(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human):
-        """Get the origin of the LeftHand in the global frame centered at Hip' COM."""
+        """Get the origin of the LeftHand in the global frame centered at Pelvis' COM."""
         length = human.A2.solids[0].height + human.A2.solids[1].height
         dir = human.A2.end_pos - human.A2.pos
         dir = dir / np.linalg.norm(dir)
@@ -872,7 +872,7 @@ class RightUpperArm(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
-        """Get the origin of the RightUpperArm in the global frame centered at Hip' COM."""
+        """Get the origin of the RightUpperArm in the global frame centered at Pelvis' COM."""
         return np.asarray(human.B1.pos - human.P.center_of_mass).reshape(3)
 
 
@@ -938,7 +938,7 @@ class RightForearm(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
-        """Get the origin of the RightForearm in the global frame centered at Hip' COM."""
+        """Get the origin of the RightForearm in the global frame centered at Pelvis' COM."""
         return np.asarray(human.B2.pos - human.P.center_of_mass).reshape(3)
 
 
@@ -1004,7 +1004,7 @@ class RightHand(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human):
-        """Get the origin of the RightHand in the global frame centered at Hip' COM."""
+        """Get the origin of the RightHand in the global frame centered at Pelvis' COM."""
         length = human.B2.solids[0].height + human.B2.solids[1].height
         dir = human.B2.end_pos - human.B2.pos
         dir = dir / np.linalg.norm(dir)
@@ -1017,7 +1017,7 @@ class LeftThigh(BioModSegment):
         self,
         human: yeadon.Human,
         label: str = "",
-        parent: str = Hip.__name__,
+        parent: str = Pelvis.__name__,
         rt: Vec3 = O,
         rotations: str = "",
         rangesQ: list[Vec2] = None,
@@ -1032,7 +1032,7 @@ class LeftThigh(BioModSegment):
     ):
         label = label or LeftThigh.__name__
 
-        xyz = LeftThigh.get_origin(human) - Hip.get_origin(human)
+        xyz = LeftThigh.get_origin(human) - Pelvis.get_origin(human)
         translations = ""
         com = np.asarray(human.J1.rel_center_of_mass).reshape(3)
         mass = human.J1.mass
@@ -1071,7 +1071,7 @@ class LeftThigh(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
-        """Get the origin of the LeftTigh in the global frame centered at Hip' COM."""
+        """Get the origin of the LeftTigh in the global frame centered at Pelvis' COM."""
         return np.asarray(human.J1.pos - human.P.center_of_mass).reshape(3)
 
 
@@ -1137,7 +1137,7 @@ class LeftShank(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
-        """Get the origin of the LeftShank in the global frame centered at Hip' COM."""
+        """Get the origin of the LeftShank in the global frame centered at Pelvis' COM."""
         return np.asarray(human.J2.pos - human.P.center_of_mass).reshape(3)
 
 
@@ -1205,7 +1205,7 @@ class LeftFoot(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human):
-        """Get the origin of the LeftFoot in the global frame centered at Hip' COM."""
+        """Get the origin of the LeftFoot in the global frame centered at Pelvis' COM."""
         length = human.J2.solids[0].height + human.J2.solids[1].height
         dir = human.J2.end_pos - human.J2.pos
         dir = dir / np.linalg.norm(dir)
@@ -1218,7 +1218,7 @@ class RightThigh(BioModSegment):
         self,
         human: yeadon.Human,
         label: str = "",
-        parent: str = Hip.__name__,
+        parent: str = Pelvis.__name__,
         rt: Vec3 = O,
         rotations: str = "",
         rangesQ: list[Vec2] = None,
@@ -1233,7 +1233,7 @@ class RightThigh(BioModSegment):
     ):
         label = label or RightThigh.__name__
 
-        xyz = RightThigh.get_origin(human) - Hip.get_origin(human)
+        xyz = RightThigh.get_origin(human) - Pelvis.get_origin(human)
         translations = ""
         com = np.asarray(human.K1.rel_center_of_mass).reshape(3)
         mass = human.K1.mass
@@ -1272,7 +1272,7 @@ class RightThigh(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
-        """Get the origin of the RightTigh in the global frame centered at Hip' COM."""
+        """Get the origin of the RightTigh in the global frame centered at Pelvis' COM."""
         return np.asarray(human.K1.pos - human.P.center_of_mass).reshape(3)
 
 
@@ -1338,7 +1338,7 @@ class RightShank(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
-        """Get the origin of the RightShank in the global frame centered at Hip' COM."""
+        """Get the origin of the RightShank in the global frame centered at Pelvis' COM."""
         return np.asarray(human.K2.pos - human.P.center_of_mass).reshape(3)
 
 
@@ -1406,7 +1406,7 @@ class RightFoot(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human):
-        """Get the origin of the RightFoot in the global frame centered at Hip' COM."""
+        """Get the origin of the RightFoot in the global frame centered at Pelvis' COM."""
         length = human.K2.solids[0].height + human.K2.solids[1].height
         dir = human.K2.end_pos - human.K2.pos
         dir = dir / np.linalg.norm(dir)
@@ -1421,7 +1421,7 @@ class UpperLegs(BioModSegment):
         self,
         human: yeadon.Human,
         label: str = "",
-        parent: str = Hip.__name__,
+        parent: str = Pelvis.__name__,
         rt: Vec3 = O,
         rotations: str = "",
         rangesQ: list[Vec2] = None,
@@ -1435,7 +1435,7 @@ class UpperLegs(BioModSegment):
         markers: dict[dict] = {},
     ):
         label = label or UpperLegs.__name__
-        xyz = UpperLegs.get_origin(human) - Hip.get_origin(human)
+        xyz = UpperLegs.get_origin(human) - Pelvis.get_origin(human)
         translations = ""
 
         mass, com_global, inertia = human.combine_inertia(("J1", "K1"))
@@ -1468,7 +1468,7 @@ class UpperLegs(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
-        """Get the origin of the Tighs in the global frame centered at Hip' COM."""
+        """Get the origin of the Tighs in the global frame centered at Pelvis' COM."""
         return np.asarray(human.P.pos - human.P.center_of_mass).reshape(3)
 
 
@@ -1526,7 +1526,7 @@ class LowerLegs(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
-        """Get the origin of the LowerLegsAndFeet in the global frame centered at Hip' COM."""
+        """Get the origin of the LowerLegsAndFeet in the global frame centered at Pelvis' COM."""
         return np.asarray((human.J2.pos + human.K2.pos) / 2.0 - human.P.center_of_mass).reshape(3)
 
 
@@ -1585,7 +1585,7 @@ class Feet(BioModSegment):
 
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
-        """Get the origin of the Feet in the global frame centered at Hip' COM."""
+        """Get the origin of the Feet in the global frame centered at Pelvis' COM."""
         length = (
             human.J2.solids[0].height
             + human.J2.solids[1].height
@@ -1603,16 +1603,16 @@ class Feet(BioModSegment):
 class BioModHuman:
     def __init__(self, human: yeadon.Human, gravity: Vec3 = None, **segments_options):
         self.gravity = gravity
-        self.hip = Hip(human, **segments_options[Hip.__name__] if Hip.__name__ in segments_options else {})
+        self.pelvis = Pelvis(human, **segments_options[Pelvis.__name__] if Pelvis.__name__ in segments_options else {})
         # TODO
-        self.umbiculus = Umbiculus(
+        self.stomach = Stomach(
             human,
-            parent=self.hip.label,
-            **segments_options[Umbiculus.__name__] if Umbiculus.__name__ in segments_options else {},
+            parent=self.pelvis.label,
+            **segments_options[Stomach.__name__] if Stomach.__name__ in segments_options else {},
         )
         self.rib = Rib(
             human,
-            parent=self.umbiculus.label,
+            parent=self.stomach.label,
             **segments_options[Rib.__name__] if Rib.__name__ in segments_options else {},
         )
         self.nipple = Nipple(
@@ -1662,7 +1662,7 @@ class BioModHuman:
         )
         self.right_thigh = RightThigh(
             human,
-            parent=self.hip.label,
+            parent=self.pelvis.label,
             **segments_options[RightThigh.__name__] if RightThigh.__name__ in segments_options else {},
         )
         self.right_shank = RightShank(
@@ -1677,7 +1677,7 @@ class BioModHuman:
         )
         self.left_thigh = LeftThigh(
             human,
-            parent=self.hip.label,
+            parent=self.pelvis.label,
             **segments_options[LeftThigh.__name__] if LeftThigh.__name__ in segments_options else {},
         )
         self.left_shank = LeftShank(
@@ -1695,8 +1695,8 @@ class BioModHuman:
         biomod = "version 4\n\nroot_actuated 0\nexternal_forces 0\n\n"
         if self.gravity:
             biomod += f"gravity {format_vec(self.gravity)}\n\n"
-        biomod += f"{self.hip}\n\n"
-        biomod += f"{self.umbiculus}\n\n"
+        biomod += f"{self.pelvis}\n\n"
+        biomod += f"{self.stomach}\n\n"
         biomod += f"{self.rib}\n\n"
         biomod += f"{self.nipple}\n\n"
         biomod += f"{self.shoulder}\n\n"
@@ -1720,15 +1720,15 @@ class BioModHuman:
 class BioModHumanFusedLegs:
     def __init__(self, human: yeadon.Human, gravity: Vec3 = None, **segments_options):
         self.gravity = gravity
-        self.hip = Hip(human, **segments_options[Hip.__name__] if Hip.__name__ in segments_options else {})
-        self.umbiculus = Umbiculus(
+        self.pelvis = Pelvis(human, **segments_options[Pelvis.__name__] if Pelvis.__name__ in segments_options else {})
+        self.stomach = Stomach(
             human,
-            parent=self.hip.label,
-            **segments_options[Umbiculus.__name__] if Umbiculus.__name__ in segments_options else {},
+            parent=self.pelvis.label,
+            **segments_options[Stomach.__name__] if Stomach.__name__ in segments_options else {},
         )
         self.rib = Rib(
             human,
-            parent=self.hip.label,
+            parent=self.stomach.label,
             **segments_options[Rib.__name__] if Rib.__name__ in segments_options else {},
         )
         self.nipple = Nipple(
@@ -1778,7 +1778,7 @@ class BioModHumanFusedLegs:
         )
         self.thighs = UpperLegs(
             human,
-            parent=self.hip.label,
+            parent=self.pelvis.label,
             **segments_options[UpperLegs.__name__] if UpperLegs.__name__ in segments_options else {},
         )
         self.shanks = LowerLegs(
@@ -1796,8 +1796,8 @@ class BioModHumanFusedLegs:
         biomod = "version 4\n\nroot_actuated 0\nexternal_forces 0\n\n"
         if self.gravity:
             biomod += f"gravity {format_vec(self.gravity)}\n\n"
-        biomod += f"{self.hip}\n\n"
-        biomod += f"{self.umbiculus}\n\n"
+        biomod += f"{self.pelvis}\n\n"
+        biomod += f"{self.stomach}\n\n"
         biomod += f"{self.rib}\n\n"
         biomod += f"{self.nipple}\n\n"
         biomod += f"{self.shoulder}\n\n"
