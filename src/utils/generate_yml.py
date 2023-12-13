@@ -19,11 +19,13 @@ def generate_yml(pelvis: float, knuckle: float, pike_hand: float, tuck_hand: flo
           position: [0, 0, {pelvis}] # change depending on the length of hip_joint to top_of_the_head
         PelvisBase:
           position: [0, 0, 0]
+
     Umbiculus:
       meshfile: Model_mesh/boule.stl
       meshrt: [-0.15, 0, 0]
       meshxyz: [0, -0.025, 0]
       rotations: xyz
+
     Rib:
       meshfile: Model_mesh/thorax.stl
       meshrt: [-0.15, 0, 0]
@@ -45,6 +47,12 @@ def generate_yml(pelvis: float, knuckle: float, pike_hand: float, tuck_hand: flo
     Head:
       meshfile: Model_mesh/tete.stl
       meshrt: [0, 0, pi]
+      meshxyz: [0, 0, 0]
+      rotations: xyz
+
+      Eyes:
+      meshfile: Model_mesh/boule.stl
+      meshrt: [0, 0, 0]
       meshxyz: [0, 0, 0]
       rotations: xyz
     

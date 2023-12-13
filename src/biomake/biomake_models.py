@@ -466,7 +466,7 @@ class Nipple(BioModSegment):
     def adapted_meshscale(human):
         m_x = (human.meas.get("Ls4w")) / 0.1
         m_y = (human.meas.get("Ls4d")) / 0.1
-        m_z = (human.meas.get("Ls4L") - human.meas.get("Ls3L")) / 0.1
+        m_z = (human.meas.get("Ls4L") - human.meas.get("Ls3L")) / 0.2
         return [m_x, m_y, m_z]
 
     @staticmethod
@@ -609,6 +609,74 @@ class Head(BioModSegment):
         pos = human.segments[2].solids[1].pos + length * dir
         return np.asarray(pos - human.P.center_of_mass).reshape(3)
 
+class Eyes(BioModSegment):
+    def __init__(
+        self,
+        human: yeadon.Human,
+        label: str = "",
+        parent: str = Head.__name__,
+        rt: Vec3 = O,
+        rotations: str = "",
+        rangesQ: list[Vec2] = None,
+        mesh: list[Vec3] = [(0, 0, 0)],
+        meshfile: str = None,
+        meshcolor: Vec3 = None,
+        meshscale: Vec3 = None,
+        meshrt: Vec3 = None,
+        meshxyz: Vec3 = None,
+        patch: list[Vec3] = None,
+        markers: dict[dict] = {},
+    ):
+        label = label or Eyes.__name__
+
+        xyz = Eyes.get_origin(human) - Head.get_origin(human)
+
+        translations = ""
+
+        mass = human.segments[2].solids[4].mass
+        com_global = human.segments[2].solids[4].center_of_mass
+        inertia_global = human.segments[2].solids[4].rel_inertia
+        com = np.asarray(com_global - human.P.center_of_mass).reshape(3) - Eyes.get_origin(human)
+        meshscale = Eyes.adapted_meshscale(human)
+        markers = parse_markers(label, markers)
+
+        BioModSegment.__init__(
+            self,
+            label=label,
+            parent=parent,
+            rt=rt,
+            xyz=xyz,
+            translations=translations,
+            rotations=rotations,
+            com=com,
+            mass=mass,
+            inertia=inertia_global,  # I can do this because the systems of coordinates are aligned.
+            rangesQ=rangesQ,
+            mesh=mesh,
+            meshfile=meshfile,
+            meshcolor=meshcolor,
+            meshscale=meshscale,
+            meshrt=meshrt,
+            meshxyz=meshxyz,
+            patch=patch,
+            markers=markers,
+        )
+
+    @staticmethod
+    def adapted_meshscale(human: yeadon.Human):
+        m_x = ((human.meas.get("Ls7p")) / pi) / 0.185
+        m_y = ((human.meas.get("Ls7p")) / pi) / 0.185
+        m_z = (human.meas.get("Ls7L")) / 0.277
+        return [m_x, m_y, m_z]
+
+    @staticmethod
+    def get_origin(human: yeadon.Human) -> Vec3:
+        """Get the origin of the Head in the global frame centered at Pelvis' COM."""
+        length = human.segments[2].solids[3].height
+        dir = human.segments[2].solids[3].end_pos - human.segments[2].solids[1].pos
+        dir = dir / np.linalg.norm(dir)
+        pos = human.segments[2].solids[3].pos + length * dir
+        return np.asarray(pos - human.P.center_of_mass).reshape(3)
 
 class LeftUpperArm(BioModSegment):
     def __init__(
@@ -1630,6 +1698,11 @@ class BioModHuman:
             parent=self.shoulder.label,
             **segments_options[Head.__name__] if Head.__name__ in segments_options else {},
         )
+        self.eyes = Eyes(
+            human,
+            parent=self.head.label,
+            **segments_options[Eyes.__name__] if Eyes.__name__ in segments_options else {},
+        )
         self.right_upper_arm = RightUpperArm(
             human,
             parent=self.shoulder.label,
@@ -1701,6 +1774,7 @@ class BioModHuman:
         biomod += f"{self.nipple}\n\n"
         biomod += f"{self.shoulder}\n\n"
         biomod += f"{self.head}\n\n"
+        biomod += f"{self.eyes}\n\n"
         biomod += f"{self.right_upper_arm}\n\n"
         biomod += f"{self.right_forearm}\n\n"
         biomod += f"{self.right_hand}\n\n"
@@ -1745,6 +1819,11 @@ class BioModHumanFusedLegs:
             human,
             parent=self.shoulder.label,
             **segments_options[Head.__name__] if Head.__name__ in segments_options else {},
+        )
+        self.eyes = Eyes(
+            human,
+            parent=self.head.label,
+            **segments_options[Eyes.__name__] if Eyes.__name__ in segments_options else {},
         )
         self.right_upper_arm = RightUpperArm(
             human,
@@ -1802,6 +1881,7 @@ class BioModHumanFusedLegs:
         biomod += f"{self.nipple}\n\n"
         biomod += f"{self.shoulder}\n\n"
         biomod += f"{self.head}\n\n"
+        biomod += f"{self.eyes}\n\n"
         biomod += f"{self.right_upper_arm}\n\n"
         biomod += f"{self.right_forearm}\n\n"
         biomod += f"{self.right_hand}\n\n"

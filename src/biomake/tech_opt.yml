@@ -29,7 +29,6 @@
       meshrt: [-0.15, 0, 0]
       meshxyz: [0, -0.025, 0]
       rotations: xyz
-      
     Nipple:
       meshfile: Model_mesh/boule.stl
       meshrt: [-0.15, 0, 0]
@@ -45,7 +44,11 @@
       meshrt: [0, 0, pi]
       meshxyz: [0, 0, 0]
       rotations: xyz
-    
+    Eyes:
+      meshfile: Model_mesh/boule.stl
+      meshrt: [0, 0, 0]
+      meshxyz: [0, 0, 0]
+      rotations: xyz
     RightUpperArm:
       meshfile: Model_mesh/bras.stl
       rotations: xyz
