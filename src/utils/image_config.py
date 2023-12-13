@@ -184,9 +184,9 @@ def save_img(image, image_r_side, image_pike, image_r_pike, name):
     img = Image.fromarray(image)
     img.save(f"{name}_dir/{name}_front_t.jpg")
     img = Image.fromarray(image_r_side)
-    img.save(f"{name}_dir/{name}_r_side.jpg")
+    img.save(f"{name}_dir/{name}_side.jpg")
     img = Image.fromarray(image_pike)
-    img.save(f"{name}_dir/{name}_pike_t.jpg")
+    img.save(f"{name}_dir/{name}_tuck.jpg")
     img = Image.fromarray(image_r_pike)
-    img.save(f"{name}_dir/{name}_r_pike_t.jpg")
+    img.save(f"{name}_dir/{name}_r_tuck_t.jpg")
 
