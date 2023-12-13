@@ -123,6 +123,7 @@ class YeadonModel:
             "right_toe_nail": 20,
         }
         bdy_part = {k: data[v] for k, v in body_parts_index.items()}
+        #self.ratio, self.ratio2 = get_ratio_meas_top(bdy_part["right_elbow"], bdy_part["right_wrist"])
         # right side
         body_parts_index_r = {
             "nose": 0,
@@ -136,6 +137,7 @@ class YeadonModel:
         }
 
         bdy_part_r_side = {k: data_r_side[v] for k, v in body_parts_index_r.items()}
+        #self.ratio_r_side, self.ratio_r_side2 = get_ratio_meas_bottom(bdy_part_r_side["right_knee"], bdy_part_r_side["right_ankle"])
         # front tuck
         body_parts_index_tuck = {
             "left_hip": 11,
@@ -150,6 +152,7 @@ class YeadonModel:
             "right_toe_nail": 20,
         }
         bdy_part_tuck = {k: data_tuck[v] for k, v in body_parts_index_tuck.items()}
+        #self.ratio_tuck, self.ratio_tuck2 = get_ratio_meas_bottom(bdy_part_tuck["right_knee"], bdy_part_tuck["right_ankle"])
         # left side tuck
         body_parts_index_r_tuck = {
             "right_ear": 4,
@@ -163,6 +166,7 @@ class YeadonModel:
             "right_toe_nail": 20,
         }
         bdy_part_r_tuck = {k: data_l_tuck[v] for k, v in body_parts_index_r_tuck.items()}
+        #self.ratio_r_tuck, self.ratio_r_tuck2 = get_ratio_meas_bottom(bdy_part_r_tuck["right_knee"], bdy_part_r_tuck["right_ankle"])
         # pike
         body_parts_index_pike = {
             "right_knee": 14,

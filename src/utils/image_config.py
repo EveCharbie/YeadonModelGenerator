@@ -173,17 +173,20 @@ def get_new_ratio(origin: float, depth: float, width: int, pixel_width: int):
     """
     res = (depth * width / origin)
     return res / pixel_width, res / pixel_width
-
+def get_ratio_meas_top(elbow, wrist):
+    return 25 / np.linalg.norm(elbow - wrist), 25 / np.linalg.norm(elbow - wrist)
+def get_ratio_meas_bottom(knee, ankle):
+    return 42 / np.linalg.norm(knee - ankle), 42 / np.linalg.norm(knee - ankle)
 
 def save_img(image, image_r_side, image_pike, image_r_pike, name):
     if not os.path.exists(f"{name}_dir"):
         os.mkdir(f"{name}_dir")
     img = Image.fromarray(image)
-    img.save(f"{name}/{name}_front_t.jpg")
+    img.save(f"{name}_dir/{name}_front_t.jpg")
     img = Image.fromarray(image_r_side)
-    img.save(f"{name}/{name}_r_side.jpg")
+    img.save(f"{name}_dir/{name}_r_side.jpg")
     img = Image.fromarray(image_pike)
-    img.save(f"{name}/{name}_pike_t.jpg")
+    img.save(f"{name}_dir/{name}_pike_t.jpg")
     img = Image.fromarray(image_r_pike)
-    img.save(f"{name}/{name}_r_pike_t.jpg")
+    img.save(f"{name}_dir/{name}_r_pike_t.jpg")
 

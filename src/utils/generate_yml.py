@@ -8,7 +8,7 @@ def generate_yml(pelvis: float, knuckle: float, pike_hand: float, tuck_hand: flo
       fused: True
       gravity: [0, 0, -9.81]
     
-    Hip:
+    Pelvis:
       meshfile: Model_mesh/pelvis.stl
       meshrt: [-0.175, 0, 0]
       meshxyz: [0, 0, 0]
@@ -20,7 +20,7 @@ def generate_yml(pelvis: float, knuckle: float, pike_hand: float, tuck_hand: flo
         PelvisBase:
           position: [0, 0, 0]
 
-    Umbiculus:
+    Stomach:
       meshfile: Model_mesh/boule.stl
       meshrt: [-0.15, 0, 0]
       meshxyz: [0, -0.025, 0]
@@ -50,7 +50,7 @@ def generate_yml(pelvis: float, knuckle: float, pike_hand: float, tuck_hand: flo
       meshxyz: [0, 0, 0]
       rotations: xyz
 
-      Eyes:
+    Eyes:
       meshfile: Model_mesh/boule.stl
       meshrt: [0, 0, 0]
       meshxyz: [0, 0, 0]
