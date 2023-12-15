@@ -8,7 +8,7 @@
       gravity: [0, 0, -9.81]
     
     Pelvis:
-      meshfile: Model_mesh/pelvis.stl
+      meshfile: Model_mesh/boule.stl
       meshrt: [-0.175, 0, 0]
       meshxyz: [0, 0, 0]
       translations: xyz
@@ -31,6 +31,11 @@
       meshxyz: [0, -0.025, 0]
       rotations: xyz
       
+    Thorax:
+      meshfile: Model_mesh/thorax.stl
+      meshrt: [-0.15, 0, 0]
+      meshxyz: [0, -0.025, 0]
+      rotations: xyz
     Nipple:
       meshfile: Model_mesh/boule.stl
       meshrt: [-0.15, 0, 0]

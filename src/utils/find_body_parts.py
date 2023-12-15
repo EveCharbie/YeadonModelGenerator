@@ -24,7 +24,9 @@ def find_acromion_right(edges: np.ndarray, ear: np.ndarray, shoulder: np.ndarray
     """
 
     cropped_img = _crop(edges, ear, shoulder)
+    # crop the image between the ear and the shoulder
     cropped_img[: int(len(cropped_img) / 2), :] = 0
+    # get the middle in the img
     if height:
         cropped_img[:, int(len(cropped_img[0]) / 2.5) :] = 0
     reversed_image_array = np.fliplr(cropped_img)
@@ -54,8 +56,10 @@ def find_acromion_left(edges: np.ndarray, data: np.ndarray, height: int):
         The coordinates of the acromion in the image.
     """
     l_ear, l_shoulder = data[0], data[5]
+    # crop the image between the ear and the shoulder
     cropped_img = _crop(edges, l_ear, l_shoulder)
     cropped_img[: int(len(cropped_img) / 2), :] = 0
+    # get the middle in the img
     if height:
         cropped_img[:,:int(len(cropped_img[0])/1.5)] = 0
     acromion = np.array(

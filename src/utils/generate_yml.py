@@ -1,4 +1,4 @@
-def generate_yml(pelvis: float, knuckle: float, pike_hand: float, tuck_hand: float): #TODO add markers for the tuck position
+def generate_yml(pelvis: float, knuckle: float, pike_hand: float, tuck_hand: float):
     content = f"""
     # bioMod configuration for models used with TechOpt83
     #

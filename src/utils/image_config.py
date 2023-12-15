@@ -23,6 +23,8 @@ def _resize(im):
     -------
     PIL Image
         The resized image.
+    min_ratio
+        The ratio of the resize
     """
     x_im, y_im = im.height, im.width
     x_ratio, y_ratio = RESIZE_SIZE / x_im, RESIZE_SIZE / y_im
@@ -30,10 +32,22 @@ def _resize(im):
     if min_ratio >= 1:
         return im.copy()
     x_resize, y_resize = int(min_ratio * x_im), int(min_ratio * y_im)
-    return im.resize((y_resize, x_resize))
+    return im.resize((y_resize, x_resize)), min_ratio
 
 
 def canny_edges(im: np.ndarray, image: np.ndarray):
+    """ Apply canny to the given image and returns the edges
+
+    Parameters
+    ----------
+    im: np.ndarray
+    image: np.ndarray
+
+    Returns
+    -------
+    PIL Image
+        the edges of the image after canny
+    """
     grayscale_image = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
 
     edged = cv.Canny(grayscale_image, 10, 30)
@@ -50,6 +64,18 @@ def canny_edges(im: np.ndarray, image: np.ndarray):
 
 
 def thresh(im: np.ndarray, image: np.ndarray, line_size):
+    """ Apply thresh to the given image and returns the edges
+
+    Parameters
+    ----------
+    im: np.ndarray
+    image: np.ndarray
+
+    Returns
+    -------
+    PIL Image
+        the edges of the image after thresh
+    """
     grayscale_image = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
     _, binary_silhouette = cv.threshold(grayscale_image, 5, 255, cv.THRESH_BINARY)
 
@@ -63,22 +89,26 @@ def thresh(im: np.ndarray, image: np.ndarray, line_size):
 
 
 def create_resize_remove_im(impath: str):
+    """
+    Take and image path and return image without background, resized and the pil version
+    Parameters
+    ----------
+    impath: str
+
+    Returns
+    -------
+    PIL Image
+    """
     pil_im = PIL.Image.open(impath).convert("RGB")
-    pil_im = _resize(pil_im)
     image = np.asarray(pil_im)
-    im = remove(image)
+    pil_im, resize_ratio = _resize(pil_im)
+    image_resized = np.asarray(pil_im)
+    im = remove(image_resized)
     pil_im = pil_im.transpose(Image.ROTATE_270)
+    image_resized = rotate(image, -90, reshape=True, mode='nearest')
     image = rotate(image, -90, reshape=True, mode='nearest')
     im = rotate(im, -90, reshape=True, mode='nearest')
-    return pil_im, image, im
-
-
-def pil_resize_remove_im(undistorted_image: np.ndarray):
-    pil_im = Image.fromarray(undistorted_image.astype("uint8"), "RGB")
-    pil_im = _resize(pil_im)
-    image = np.asarray(pil_im)
-    im = remove(image)
-    return pil_im, image, im
+    return pil_im, image_resized, im, image, resize_ratio
 
 
 def better_edges(edges: np.ndarray, data: np.ndarray):
@@ -127,7 +157,7 @@ def get_ratio(img: np.ndarray, top: int, bot: int):
     return ratio, ratio2
 
 
-def get_ratio2(img: np.ndarray):
+def get_ratio2(img: np.ndarray, resize_ratio):
     pattern_size = (5, 5)
     img1 = _crop(img, [0, 0], [img.shape[1] / 2, img.shape[0] / 2])
     img2 = _crop(img, [img.shape[1] / 2, img.shape[0] / 2], [img.shape[1], 0])
@@ -162,7 +192,7 @@ def get_ratio2(img: np.ndarray):
     chess_points[2] = chess_points[2] + [img.shape[1] / 2, img.shape[0] / 2]
     chess_points[3] = chess_points[3] + [0, img.shape[0] / 2]
     ratio = np.linalg.norm(chess_points[0] - chess_points[1])
-    return ratio, ratio
+    return ratio * resize_ratio, ratio * resize_ratio
 
 
 def get_new_ratio(origin: float, depth: float, width: int, pixel_width: int):
@@ -174,9 +204,11 @@ def get_new_ratio(origin: float, depth: float, width: int, pixel_width: int):
     res = (depth * width / origin)
     return res / pixel_width, res / pixel_width
 def get_ratio_meas_top(elbow, wrist):
-    return 25 / np.linalg.norm(elbow - wrist), 25 / np.linalg.norm(elbow - wrist)
+    #return  25 / np.linalg.norm(elbow - wrist), 25 / np.linalg.norm(elbow - wrist)
+    return 24 / np.linalg.norm(elbow - wrist), 24 / np.linalg.norm(elbow - wrist)
 def get_ratio_meas_bottom(knee, ankle):
-    return 42 / np.linalg.norm(knee - ankle), 42 / np.linalg.norm(knee - ankle)
+    #return 42 / np.linalg.norm(knee - ankle), 42 / np.linalg.norm(knee - ankle)
+    return 40 / np.linalg.norm(knee - ankle), 40 / np.linalg.norm(knee - ankle)
 
 def save_img(image, image_r_side, image_pike, image_r_pike, name):
     if not os.path.exists(f"{name}_dir"):
