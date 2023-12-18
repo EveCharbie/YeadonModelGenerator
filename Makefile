@@ -5,6 +5,8 @@ alexandre:
 william:
 	python src/im2meas.py img/william/w/*
 
+martin:
+	python src/im2meas.py img/m/*
 run:
 	python src/im2meas.py img/*
 biomake:

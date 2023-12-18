@@ -32,7 +32,7 @@ def _resize(im):
     if min_ratio >= 1:
         return im.copy()
     x_resize, y_resize = int(min_ratio * x_im), int(min_ratio * y_im)
-    return im.resize((y_resize, x_resize)), min_ratio
+    return im.resize((y_resize, x_resize))
 
 
 def canny_edges(im: np.ndarray, image: np.ndarray):
@@ -100,15 +100,13 @@ def create_resize_remove_im(impath: str):
     PIL Image
     """
     pil_im = PIL.Image.open(impath).convert("RGB")
-    image = np.asarray(pil_im)
-    pil_im, resize_ratio = _resize(pil_im)
+    pil_im = _resize(pil_im)
     image_resized = np.asarray(pil_im)
     im = remove(image_resized)
     pil_im = pil_im.transpose(Image.ROTATE_270)
-    image_resized = rotate(image, -90, reshape=True, mode='nearest')
-    image = rotate(image, -90, reshape=True, mode='nearest')
+    image_resized = rotate(image_resized, -90, reshape=True, mode='nearest')
     im = rotate(im, -90, reshape=True, mode='nearest')
-    return pil_im, image_resized, im, image, resize_ratio
+    return pil_im, image_resized, im
 
 
 def better_edges(edges: np.ndarray, data: np.ndarray):
@@ -157,7 +155,7 @@ def get_ratio(img: np.ndarray, top: int, bot: int):
     return ratio, ratio2
 
 
-def get_ratio2(img: np.ndarray, resize_ratio):
+def get_ratio2(img: np.ndarray):
     pattern_size = (5, 5)
     img1 = _crop(img, [0, 0], [img.shape[1] / 2, img.shape[0] / 2])
     img2 = _crop(img, [img.shape[1] / 2, img.shape[0] / 2], [img.shape[1], 0])
@@ -192,7 +190,7 @@ def get_ratio2(img: np.ndarray, resize_ratio):
     chess_points[2] = chess_points[2] + [img.shape[1] / 2, img.shape[0] / 2]
     chess_points[3] = chess_points[3] + [0, img.shape[0] / 2]
     ratio = np.linalg.norm(chess_points[0] - chess_points[1])
-    return ratio * resize_ratio, ratio * resize_ratio
+    return ratio, ratio
 
 
 def get_new_ratio(origin: float, depth: float, width: int, pixel_width: int):
@@ -202,6 +200,7 @@ def get_new_ratio(origin: float, depth: float, width: int, pixel_width: int):
     width is the real distance two chessboard in the wall
     """
     res = (depth * width / origin)
+    #res = (250 * 150 / 300)
     return res / pixel_width, res / pixel_width
 def get_ratio_meas_top(elbow, wrist):
     #return  25 / np.linalg.norm(elbow - wrist), 25 / np.linalg.norm(elbow - wrist)
@@ -210,15 +209,17 @@ def get_ratio_meas_bottom(knee, ankle):
     #return 42 / np.linalg.norm(knee - ankle), 42 / np.linalg.norm(knee - ankle)
     return 40 / np.linalg.norm(knee - ankle), 40 / np.linalg.norm(knee - ankle)
 
-def save_img(image, image_r_side, image_pike, image_r_pike, name):
+def save_img(image, image_r_side, image_tuck, image_r_tuck, image_pike, name):
     if not os.path.exists(f"{name}_dir"):
         os.mkdir(f"{name}_dir")
     img = Image.fromarray(image)
     img.save(f"{name}_dir/{name}_front_t.jpg")
     img = Image.fromarray(image_r_side)
     img.save(f"{name}_dir/{name}_side.jpg")
-    img = Image.fromarray(image_pike)
+    img = Image.fromarray(image_tuck)
     img.save(f"{name}_dir/{name}_tuck.jpg")
-    img = Image.fromarray(image_r_pike)
+    img = Image.fromarray(image_r_tuck)
     img.save(f"{name}_dir/{name}_r_tuck_t.jpg")
+    img = Image.fromarray(image_pike)
+    img.save(f"{name}_dir/{name}_pike_t.jpg")
 
