@@ -30,7 +30,7 @@ To start, you will have to create a square structure measuring 150x150cm, incorp
   <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/front_pike_silhouette.jpg" width="200"/>
 </p>
 
-In terms of spatial parameters. The distance between the individual holding the camera and the wall bearing the chessboard square should measure 355cm. Simultaneously, maintain a distance of 50cm between the person capturing the photos and the designated wall. For enhanced accuracy, position the camera at a height approximately half of the square's width, approximately 75cm.
+In terms of spatial parameters. The distance between the individual holding the camera and the wall bearing the chessboard square should measure 300cm. Simultaneously, maintain a distance of 50cm between the person capturing the photos and the designated wall. For enhanced accuracy, position the camera at a height approximately half of the square's width, approximately 75cm.
 ## Pictures
 The position of the person capturing the photos should follow the silhouette in the overlay yu don't have to match exactly the silhouete but the position should be maintained.
 You will have to take 4 pictures, for every picture the person dont have to be inside the square overlay but all his body should be inside the photo.

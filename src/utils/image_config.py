@@ -200,14 +200,13 @@ def get_new_ratio(origin: float, depth: float, width: int, pixel_width: int):
     width is the real distance two chessboard in the wall
     """
     res = (depth * width / origin)
-    #res = (250 * 150 / 300)
     return res / pixel_width, res / pixel_width
 def get_ratio_meas_top(elbow, wrist):
     #return  25 / np.linalg.norm(elbow - wrist), 25 / np.linalg.norm(elbow - wrist)
-    return 24 / np.linalg.norm(elbow - wrist), 24 / np.linalg.norm(elbow - wrist)
+    return 23 / np.linalg.norm(elbow - wrist), 23 / np.linalg.norm(elbow - wrist)
 def get_ratio_meas_bottom(knee, ankle):
     #return 42 / np.linalg.norm(knee - ankle), 42 / np.linalg.norm(knee - ankle)
-    return 40 / np.linalg.norm(knee - ankle), 40 / np.linalg.norm(knee - ankle)
+    return 41 / np.linalg.norm(knee - ankle), 41 / np.linalg.norm(knee - ankle)
 
 def save_img(image, image_r_side, image_tuck, image_r_tuck, image_pike, name):
     if not os.path.exists(f"{name}_dir"):
