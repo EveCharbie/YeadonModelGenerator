@@ -122,40 +122,8 @@ def better_edges(edges: np.ndarray, data: np.ndarray):
     return edges
 
 
-def get_ratio(img: np.ndarray, top: int, bot: int):
-    if top:
-        img = _crop(img, [img.shape[0] / 2.5, 0], [img.shape[0], img.shape[0] / 1.5])
-    if bot:
-        img = _crop(img, [0, img.shape[0]], [img.shape[1], img.shape[0] / 1.5])
 
-    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-
-    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-
-    # Find the chessboard corners
-    ret, corners = cv.findChessboardCorners(img, (5, 5), None)
-    corners2 = cv.cornerSubPix(gray, corners, (5, 5), (-1, -1), criteria)
-
-    # Draw the corners on the image
-    cv.drawChessboardCorners(img, (5, 5), corners2, ret)
-
-    # Get the contour of the chessboard pattern
-    hull = cv.convexHull(corners2)
-    epsilon = 0.02 * cv.arcLength(hull, True)
-    corners_hull = cv.approxPolyDP(hull, epsilon, True)
-    chessboard_contour = corners_hull[:4, 0, :]
-    cv.drawContours(img, [chessboard_contour.astype(int)], -1, (255, 0, 0), 1)
-
-    ratio = np.linalg.norm(chessboard_contour[0] - chessboard_contour[3])
-    ratio2 = np.linalg.norm(chessboard_contour[0] - chessboard_contour[1])
-    print(ratio)
-    print(ratio2)
-    ratio = 9.8 / ratio
-    ratio2 = 9.8 / ratio2
-    return ratio, ratio2
-
-
-def get_ratio2(img: np.ndarray):
+def get_ratio(img: np.ndarray):
     pattern_size = (5, 5)
     img1 = _crop(img, [0, 0], [img.shape[1] / 2, img.shape[0] / 2])
     img2 = _crop(img, [img.shape[1] / 2, img.shape[0] / 2], [img.shape[1], 0])
