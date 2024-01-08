@@ -185,6 +185,9 @@ class YeadonModel:
         bdy_part_pike = {k: data_pike[v] for k, v in body_parts_index_pike.items()}
         bdy_part_pike["right_mid_arm"] = (data_pike[6] + data_pike[8]) / 2
         bdy_part_pike["right_hand"] = (bdy_part_pike["right_wrist"] + bdy_part_pike["right_knuckle"]) / 2
+        if bdy_part_pike["right_knuckle"][0] < 0:
+            bdy_part_pike["right_hand"] = bdy_part_pike["right_wrist"]
+
         # front
         bdy_part["left_nails"] = (data[102] + data[103]) / 2
         bdy_part["right_nails"] = (data[123] + data[124]) / 2
@@ -410,7 +413,7 @@ class YeadonModel:
         self.knuckle = self.keypoints["Lb6L"] / 100
         self.pike_hand = np.linalg.norm(bdy_part_pike["right_knee"] - bdy_part_pike["right_hand"]) * self.ratio_pike / 100
         self.tuck_hand = abs(bdy_part_r_tuck["right_knee"][1] - bdy_part_r_tuck["right_knuckle"][1]) * self.ratio_l_tuck / 100
-        #generate_yml(self.pelvis, self.knuckle, self.pike_hand, self.tuck_hand)
+        generate_yml(self.pelvis, self.knuckle, self.pike_hand, self.tuck_hand)
         save_img(image, image_r_side, image_tuck, image_l_tuck, image_pike, impath_front.split('/')[-1].split('_')[0])
         self._round_keypoints()
         self._create_txt(f"{impath_front.split('/')[-1].split('_')[0]}.txt")
