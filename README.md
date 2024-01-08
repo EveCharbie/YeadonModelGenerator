@@ -16,7 +16,7 @@ Or has to take the 2 reference measurements.... depending on the precision we ar
 This is the chessboard reference (if you don't take this one as the reference, note that the chessboard you have to use should be a 6x6 chessboard):
 <p align="center">
     <img
-      src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/chessboard_ref.png"
+      src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/chessboardRef.png"
     />
 </p>
 
