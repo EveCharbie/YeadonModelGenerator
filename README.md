@@ -59,6 +59,10 @@ make run
 ```
 it will create a .txt file named: THE_NAME.txt ("THE_NAME" is the input you entered in the app).
 This command will also create a folder named THE_NAME_dir where you will have all your images modified to check manually.
+If you want you can enter the mass to have better results using the command:
+```bash
+make run_with_mass mass=MASS
+```
 To create the .bioMod you can just use the command:
 
 ```bash

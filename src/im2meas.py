@@ -1,5 +1,6 @@
 import openpifpaf
 import sys
+import argparse
 
 from src.utils.find_body_parts import *
 from src.utils.image_config import *
@@ -19,7 +20,7 @@ class YeadonModel:
         A dictionary containing the keypoints of the image. (Ls0, Ls1, ...)
     """
 
-    def __init__(self, impath_front: str, impath_pike: str, impath_r_tuck: str, impath_side: str, impath_tuck: str):
+    def __init__(self, impath_front: str, impath_pike: str, impath_r_tuck: str, impath_side: str, impath_tuck: str, mass: float):
         """Creates a YeadonModel object from an image path.
 
         Parameters
@@ -416,15 +417,18 @@ class YeadonModel:
         generate_yml(self.pelvis, self.knuckle, self.pike_hand, self.tuck_hand)
         save_img(image, image_r_side, image_tuck, image_l_tuck, image_pike, impath_front.split('/')[-1].split('_')[0])
         self._round_keypoints()
-        self._create_txt(f"{impath_front.split('/')[-1].split('_')[0]}.txt")
+        self._create_txt(f"{impath_front.split('/')[-1].split('_')[0]}.txt", mass)
         self._verify_keypoints()
 
-    def _create_txt(self, file_name: str):
+    def _create_txt(self, file_name: str, mass):
         with open(file_name, "w") as file_object:
             file_object.writelines("measurementconversionfactor: .01\n")
             for key, value in self.keypoints.items():
                 if key[-1].isalpha():
                     file_object.writelines("{} : {:.1f}\n".format(key, float(value)))
+            if mass != 0:
+                file_object.writelines(f"totalmass : {mass}\n")
+
 
     def _round_keypoints(self):
         def loop(keypoint_perim, keypoint_width, keypoint_name):
@@ -466,11 +470,18 @@ class YeadonModel:
 
 
 def main():
-    args = sys.argv[1:]
-    if len(args) == 5:
-        yeadon = YeadonModel(args[0], args[1], args[2], args[3], args[4])
-    else:
-        print("Wrong arguments you should have 5 args")
+    parser = argparse.ArgumentParser(description="Im2meas")
+
+    parser.add_argument("front_img", type=str, help="Path to the front image")
+    parser.add_argument("pike_img", type=str, help="Path to the pike image")
+    parser.add_argument("right_tuck_img", type=str, help="Path to the right tuck image")
+    parser.add_argument("side_img", type=str, help="Path to the side image")
+    parser.add_argument("tuck_img", type=str, help="Path to the tuck image")
+
+    parser.add_argument("-m", "--mass", type=float, default=0, help="Enter the mass of the person")
+
+    args = parser.parse_args()
+    yeadon = YeadonModel(args.front_img, args.pike_img, args.right_tuck_img, args.side_img, args.tuck_img, args.mass)
 
 
 if __name__ == "__main__":
