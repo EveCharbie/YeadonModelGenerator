@@ -5,6 +5,7 @@ from rembg import remove
 import cv2 as cv
 from scipy.ndimage import rotate
 import os
+import glob
 
 from src.utils.crop import _crop
 
@@ -32,7 +33,7 @@ def _resize(im):
     if min_ratio >= 1:
         return im.copy()
     x_resize, y_resize = int(min_ratio * x_im), int(min_ratio * y_im)
-    return im.resize((y_resize, x_resize))
+    return im.resize((y_resize, x_resize)), min_ratio
 
 
 def canny_edges(im: np.ndarray, image: np.ndarray):
@@ -88,6 +89,30 @@ def thresh(im: np.ndarray, image: np.ndarray, line_size):
     return edges
 
 
+def calibrate_image(chessboard_imgs, im):
+    chessboard_size = (5, 5)  # Change this to match your pattern
+    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+    obj_points = []
+    img_points = []
+
+    objp = np.zeros((chessboard_size[0] * chessboard_size[1], 3), np.float32)
+    objp[:, :2] = np.mgrid[0:chessboard_size[0], 0:chessboard_size[1]].T.reshape(-1, 2)
+    for fname in chessboard_imgs:
+        img = cv.imread(fname)
+        gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        ret, corners = cv.findChessboardCorners(gray, chessboard_size, None)
+        if ret:
+            obj_points.append(objp)
+            corners2 = cv.cornerSubPix(gray, corners, (5, 5), (-1, -1), criteria)
+            img_points.append(corners2)
+
+    ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(obj_points, img_points, gray.shape[::-1], None, None)
+    h, w = im.shape[:2]
+    newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
+    undist_img = cv.undistort(im, mtx, dist, None, newcameramtx)
+    return undist_img
+
+
 def create_resize_remove_im(impath: str):
     """
     Take and image path and return image without background, resized and the pil version
@@ -100,13 +125,21 @@ def create_resize_remove_im(impath: str):
     PIL Image
     """
     pil_im = PIL.Image.open(impath).convert("RGB")
-    pil_im = _resize(pil_im)
+    original_image = np.asarray(pil_im)
+    pil_im, min_ratio = _resize(pil_im)
     image_resized = np.asarray(pil_im)
     im = remove(image_resized)
+    images = glob.glob('img/kael/k/*')
+    #pil_im = pil_im.transpose(Image.ROTATE_270)
+    #image_resized = calibrate_image(images, rotate(image_resized, -90, reshape=True, mode='nearest'))
+    #im = calibrate_image(images, rotate(im, -90, reshape=True, mode='nearest'))
+    #original_image = rotate(original_image, -90, reshape=True, mode='nearest')
+    #return pil_im, image_resized, im, original_image, min_ratio
     pil_im = pil_im.transpose(Image.ROTATE_270)
     image_resized = rotate(image_resized, -90, reshape=True, mode='nearest')
     im = rotate(im, -90, reshape=True, mode='nearest')
-    return pil_im, image_resized, im
+    original_image = rotate(original_image, -90, reshape=True, mode='nearest')
+    return pil_im, image_resized, im, original_image, min_ratio
 
 
 def better_edges(edges: np.ndarray, data: np.ndarray):
@@ -123,7 +156,7 @@ def better_edges(edges: np.ndarray, data: np.ndarray):
 
 
 
-def get_ratio(img: np.ndarray):
+def get_ratio(img: np.ndarray, min_ratio):
     pattern_size = (5, 5)
     img1 = _crop(img, [0, 0], [img.shape[1] / 2, img.shape[0] / 2])
     img2 = _crop(img, [img.shape[1] / 2, img.shape[0] / 2], [img.shape[1], 0])
@@ -158,7 +191,7 @@ def get_ratio(img: np.ndarray):
     chess_points[2] = chess_points[2] + [img.shape[1] / 2, img.shape[0] / 2]
     chess_points[3] = chess_points[3] + [0, img.shape[0] / 2]
     ratio = np.linalg.norm(chess_points[0] - chess_points[1])
-    return ratio, ratio
+    return ratio * min_ratio, ratio * min_ratio
 
 
 def get_new_ratio(origin: float, depth: float, width: int, pixel_width: int):

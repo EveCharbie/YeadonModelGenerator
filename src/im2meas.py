@@ -39,7 +39,7 @@ class YeadonModel:
             The YeadonModel object with the keypoints of the image.
         """
         # front
-        pil_im, image, im = create_resize_remove_im(impath_front)
+        pil_im, image, im, original_img, min_ratio = create_resize_remove_im(impath_front)
         edges = thresh(im, image, 2)
         # edges short was for the edges for the hip to the knee because the original detection had some difficulty to detect the black of the short
         edges_short = thresh(im, image, 2)
@@ -52,44 +52,43 @@ class YeadonModel:
         edges = better_edges(edges, data)
         edges_short = better_edges(edges_short, data)
 
-        self.ratio, self.ratio2 = get_ratio(image)
+        self.ratio, self.ratio2 = get_ratio(original_img, min_ratio)
         self.ratio, self.ratio2 = get_new_ratio(300, 300 - 50, 150, self.ratio)
         self.ratio_bottom, self.ratio_bottom2 = self.ratio, self.ratio2
         print(self.ratio)
         # right side
-        pil_r_side_im, image_r_side, im_r_side = create_resize_remove_im(impath_side)
+        pil_r_side_im, image_r_side, im_r_side, original_img_side, min_ratio = create_resize_remove_im(impath_side)
 
         edges_r_side = thresh(im_r_side, image_r_side, 1)
         predictions2, gt_anns2, image_meta2 = predictor.pil_image(pil_r_side_im)
         data_r_side = predictions2[0].data[:, 0:2]
 
-        self.ratio_r_side, self.ratio_r_side2 = get_ratio(image_r_side)
+        self.ratio_r_side, self.ratio_r_side2 = get_ratio(original_img_side, min_ratio)
         self.ratio_r_side, self.ratio_r_side2 = get_new_ratio(300, 300 - 50, 150, self.ratio_r_side)
 
         # front tuck
-        pil_tuck_im, image_tuck, im_tuck = create_resize_remove_im(impath_tuck)
+        pil_tuck_im, image_tuck, im_tuck, original_img_tuck, min_ratio = create_resize_remove_im(impath_tuck)
 
         edges_tuck = thresh(im_tuck, image_tuck, 2)
         predictions5, gt_anns5, image_meta5 = predictor.pil_image(pil_tuck_im)
         data_tuck = predictions5[0].data[:, 0:2]
-        self.ratio_tuck, self.ratio_tuck2 = get_ratio(image_tuck)
+        self.ratio_tuck, self.ratio_tuck2 = get_ratio(original_img_tuck, min_ratio)
         self.ratio_tuck, self.ratio_tuck2 = get_new_ratio(300, 300 - 50, 150, self.ratio_tuck)
 
         # right side tuck
-        pil_l_tuck_im, image_l_tuck, im_l_tuck = create_resize_remove_im(impath_r_tuck)
+        pil_l_tuck_im, image_l_tuck, im_l_tuck, original_img_l_tuck, min_ratio = create_resize_remove_im(impath_r_tuck)
 
         edges_l_tuck = thresh(im_l_tuck, image_l_tuck, 2)
         predictions6, gt_anns6, image_meta6 = predictor.pil_image(pil_l_tuck_im)
         data_l_tuck = predictions6[0].data[:, 0:2]
-        self.ratio_l_tuck, self.ratio_l_tuck2 = get_ratio(image_l_tuck)
+        self.ratio_l_tuck, self.ratio_l_tuck2 = get_ratio(original_img_l_tuck, min_ratio)
         self.ratio_l_tuck, self.ratio_l_tuck2 = get_new_ratio(300, 300 - 50, 150, self.ratio_l_tuck)
         # pike
-        pil_pike_im, image_pike, im_pike = create_resize_remove_im(impath_pike)
+        pil_pike_im, image_pike, im_pike, original_img_pike, min_ratio = create_resize_remove_im(impath_pike)
 
-        edges_pike = thresh(im_pike, image_pike, 2)
         predictions3, gt_anns3, image_meta3 = predictor.pil_image(pil_pike_im)
         data_pike = predictions3[0].data[:, 0:2]
-        self.ratio_pike, self.ratio_pike2 = get_ratio(image_pike)
+        self.ratio_pike, self.ratio_pike2 = get_ratio(original_img_pike, min_ratio)
         self.ratio_pike, self.ratio_pike2 = get_new_ratio(300, 300 - 50, 150, self.ratio_pike)
         # front
         body_parts_index = {
