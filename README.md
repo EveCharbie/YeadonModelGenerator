@@ -30,11 +30,11 @@ This is the chessboard reference (if you don't take this one as the reference, n
 
 To start, you will have to create a square structure measuring 150x150cm, incorporating a chessboard pattern at each corner. Ensure precision in the arrangement, maintaining a distance of 150cm between the centers of adjacent chessboards.
 <p style="display: flex;align-items: center;justify-content: center;">
-  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/frontSilhouette.jpg" width="200" />
-  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/sideSilhouette.jpg" width="200"/>
-  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/rTuckSilhouette.jpg" width="200"/>
-  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/frontTuckSilhouette.jpg" width="200"/>
-  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/pikeSilhouette.png" width="200"/>
+  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/frontSilhouette.jpg" width="150" />
+  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/sideSilhouette.jpg" width="150"/>
+  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/rTuckSilhouette.jpg" width="150"/>
+  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/frontTuckSilhouette.jpg" width="150"/>
+  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/pikeSilhouette.png" width="150"/>
 </p>
 
 In terms of spatial parameters. The distance between the individual holding the camera and the wall bearing the chessboard square should measure 300cm. Simultaneously, maintain a distance of 50cm between the person capturing the photos and the designated wall. For enhanced accuracy, position the camera at a height approximately half of the square's width, approximately 75cm.
