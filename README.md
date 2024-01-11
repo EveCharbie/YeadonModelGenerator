@@ -1,6 +1,6 @@
 # YeadonModelGenerator
 
-This project aims to approximate the anthropometric measurements from [Yeadon's model](https://doi.org/10.1016/0021-9290(90)90370-I) from pictures of the participant (4 pictures for generic model, 5 pictures for acrobatic specific model). The procedure proposed here has an error rate of ... (...%) on the center of mass position and ... (...%) on the inertia properties compared to the manual measurements. 
+This project aims to approximate the anthropometric measurements from [Yeadon's model](https://doi.org/10.1016/0021-9290(90)90370-I) from pictures of the participant (4 pictures for generic model, 5 pictures for acrobatic specific model). The procedure proposed here has an error rate of 7% on the 95 measurements from the Yeadon's model, ... (...%) on the center of mass position and ... (...%) on the inertia properties compared to the manual measurements. 
 
 The suggested pipeline is composed of three steps:
 1) Taking the participant pictures using an Android application.
