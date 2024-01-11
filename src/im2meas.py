@@ -1,5 +1,4 @@
 import openpifpaf
-import sys
 import argparse
 
 from src.utils.find_body_parts import *
@@ -122,10 +121,6 @@ class YeadonModel:
             "right_toe_nail": 20,
         }
         bdy_part = {k: data[v] for k, v in body_parts_index.items()}
-        #self.ratio, self.ratio2 = get_ratio_meas_top(bdy_part["right_elbow"], bdy_part["right_wrist"])
-        #self.ratio_bottom, self.ratio_bottom2 = get_ratio_meas_bottom(bdy_part["right_knee"], bdy_part["right_ankle"])
-        #print(get_ratio_meas_top(bdy_part["right_elbow"], bdy_part["right_wrist"]))
-        #print(get_ratio_meas_bottom(bdy_part["right_knee"], bdy_part["right_ankle"]))
         # right side
         body_parts_index_r = {
             "nose": 0,
@@ -186,7 +181,7 @@ class YeadonModel:
         bdy_part_pike = {k: data_pike[v] for k, v in body_parts_index_pike.items()}
         #bdy_part_pike["right_mid_arm"] = (data_pike[6] + data_pike[8]) / 2
         if bdy_part_pike["right_knuckle"][0] < 0:
-            bdy_part_pike["right_hand"] = bdy_part_pike["right_wrist"]
+            bdy_part_pike["right_knuckle"] = bdy_part_pike["right_wrist"]
         bdy_part_pike["right_hand"] = (bdy_part_pike["right_wrist"] + bdy_part_pike["right_knuckle"]) / 2
 
         # front
@@ -354,7 +349,7 @@ class YeadonModel:
             # Not needed"Lj2L": (np.linalg.norm(body_parts_pos["left_hip"] - body_par&ts_pos["left_knee"])) / 2,
             "Lj3L": np.linalg.norm(bdy_part["left_hip"] - bdy_part["left_knee"]) * self.ratio_bottom,
             "Lj4L": np.linalg.norm(bdy_part["left_hip"] - bdy_part["left_maximum_calf"]) * self.ratio_bottom,
-            "Lj5L": np.linalg.norm(bdy_part["left_hip"] - bdy_part["left_ankle"]) * self.ratio_bottom,
+            "Lj5L": np.linalg.norm(bdy_part_r_side["right_hip"] - bdy_part_r_side["right_ankle"]) * self.ratio_r_side,
             "Lj6L": 1.0,
             # Not measured "Lj7L": np.linalg.norm(body_parts_pos["left_ankle"] - body_parts_pos["left_arch"]),
             "Lj8L": np.linalg.norm(bdy_part_tuck["right_ankle"] - bdy_part_tuck["right_ball"]) * self.ratio_tuck2,
@@ -385,7 +380,7 @@ class YeadonModel:
             # Not measured "Lk2L"
             "Lk3L": get_length(bdy_part["right_hip"], bdy_part["right_knee"], image) * self.ratio_bottom,
             "Lk4L": get_length(bdy_part["right_hip"], bdy_part["right_maximum_calf"], image) * self.ratio_bottom,
-            "Lk5L": get_length(bdy_part["right_hip"], bdy_part["right_ankle"], image) * self.ratio_bottom,
+            "Lk5L": get_length(bdy_part_r_side["right_hip"], bdy_part_r_side["right_ankle"], image_r_side) * self.ratio_r_side,
             "Lk6L": 1.0,
             # Not measured "Lk7L": np.linalg.norm(body_parts_pos["right_ankle"] - body_parts_pos["right_arch"]),
             "Lk8L": get_length(bdy_part_tuck["right_ankle"], bdy_part_tuck["right_ball"], image_tuck) * self.ratio_tuck2,
