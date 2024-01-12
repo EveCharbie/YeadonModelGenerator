@@ -92,7 +92,6 @@ def thresh(im: np.ndarray, image: np.ndarray, line_size):
 def calibrate_image(im):
     chessboard_size = (5, 5)  # Change this to match your pattern
     if not os.path.exists("camera_calibration.npz"):
-        print("calibration start")
         chessboard_imgs = glob.glob('img/chessboard/*.jpg')
         if (len(chessboard_imgs) == 0):
             print("You need a chessboards folder with images with chessboard in it with you camera")
@@ -118,7 +117,6 @@ def calibrate_image(im):
         ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(obj_points, img_points, gray.shape[::-1], None, None)
         np.savez('camera_calibration.npz', mtx=mtx, dist=dist, rvecs=rvecs, tvecs=tvecs)
     else:
-        print("no calibration")
         calibration_data = np.load('camera_calibration.npz')
         mtx, dist, rvecs, tvecs = calibration_data['mtx'], calibration_data['dist'], calibration_data['rvecs'], \
         calibration_data['tvecs']

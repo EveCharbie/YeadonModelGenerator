@@ -19,7 +19,16 @@ class YeadonModel:
         A dictionary containing the keypoints of the image. (Ls0, Ls1, ...)
     """
 
-    def __init__(self, impath_front: str, impath_pike: str, impath_r_tuck: str, impath_side: str, impath_tuck: str, rotation: int, mass: float, calibration : int):
+    def __init__(self,
+                 impath_front: str,
+                 impath_pike: str,
+                 impath_r_tuck: str,
+                 impath_side: str,
+                 impath_tuck: str,
+                 rotation: int,
+                 mass: float,
+                 calibration: int,
+                 distance: int):
         """Creates a YeadonModel object from an image path.
 
         Parameters
@@ -35,14 +44,10 @@ class YeadonModel:
         Returns
         -------
         YeadonModel
-            The YeadonModel object with the keypoints of the image.
+            The YeadonModel object with the key points of the image.
         """
         # front
-        print(rotation)
-        print(calibration)
         pil_im, image, im, original_img, min_ratio = create_resize_remove_im(impath_front, calibration, rotation)
-        img = Image.fromarray(image)
-        img.save("test.jpg")
         edges = thresh(im, image, 2)
         # edges short was for the edges for the hip to the knee because the original detection had some difficulty to detect the black of the short
         edges_short = thresh(im, image, 2)
@@ -56,10 +61,8 @@ class YeadonModel:
         edges_short = better_edges(edges_short, data)
 
         self.ratio, self.ratio2 = get_ratio(original_img, min_ratio)
-        self.ratio, self.ratio2 = get_new_ratio(300, 300 - 50, 150, self.ratio, self.ratio2)
+        self.ratio, self.ratio2 = get_new_ratio(distance, distance - 50, 150, self.ratio, self.ratio2)
         self.ratio_bottom, self.ratio_bottom2 = self.ratio2, self.ratio2
-        print(self.ratio)
-        print(self.ratio_bottom)
         # right side
         pil_r_side_im, image_r_side, im_r_side, original_img_side, min_ratio = create_resize_remove_im(impath_side, calibration, rotation)
 
@@ -68,7 +71,7 @@ class YeadonModel:
         data_r_side = predictions2[0].data[:, 0:2]
 
         self.ratio_r_side, self.ratio_r_side2 = get_ratio(original_img_side, min_ratio)
-        self.ratio_r_side, self.ratio_r_side2 = get_new_ratio(300, 300 - 50, 150, self.ratio_r_side, self.ratio_r_side2)
+        self.ratio_r_side, self.ratio_r_side2 = get_new_ratio(distance, distance - 50, 150, self.ratio_r_side, self.ratio_r_side2)
         # front tuck
         pil_tuck_im, image_tuck, im_tuck, original_img_tuck, min_ratio = create_resize_remove_im(impath_tuck, calibration, rotation)
 
@@ -76,7 +79,7 @@ class YeadonModel:
         predictions5, gt_anns5, image_meta5 = predictor.pil_image(pil_tuck_im)
         data_tuck = predictions5[0].data[:, 0:2]
         self.ratio_tuck, self.ratio_tuck2 = get_ratio(original_img_tuck, min_ratio)
-        self.ratio_tuck, self.ratio_tuck2 = get_new_ratio(300, 300 - 50, 150, self.ratio_tuck, self.ratio_tuck2)
+        self.ratio_tuck, self.ratio_tuck2 = get_new_ratio(distance, distance - 50, 150, self.ratio_tuck, self.ratio_tuck2)
 
         # right side tuck
         pil_l_tuck_im, image_r_tuck, im_l_tuck, original_img_l_tuck, min_ratio = create_resize_remove_im(impath_r_tuck, calibration, rotation)
@@ -85,14 +88,14 @@ class YeadonModel:
         predictions6, gt_anns6, image_meta6 = predictor.pil_image(pil_l_tuck_im)
         data_l_tuck = predictions6[0].data[:, 0:2]
         self.ratio_r_tuck, self.ratio_r_tuck2 = get_ratio(original_img_l_tuck, min_ratio)
-        self.ratio_r_tuck, self.ratio_r_tuck2 = get_new_ratio(300, 300 - 50, 150, self.ratio_r_tuck, self.ratio_r_tuck2)
+        self.ratio_r_tuck, self.ratio_r_tuck2 = get_new_ratio(distance, distance - 50, 150, self.ratio_r_tuck, self.ratio_r_tuck2)
         # pike
         pil_pike_im, image_pike, im_pike, original_img_pike, min_ratio = create_resize_remove_im(impath_pike, calibration, rotation)
 
         predictions3, gt_anns3, image_meta3 = predictor.pil_image(pil_pike_im)
         data_pike = predictions3[0].data[:, 0:2]
         self.ratio_pike, self.ratio_pike2 = get_ratio(original_img_pike, min_ratio)
-        self.ratio_pike, self.ratio_pike2 = get_new_ratio(300, 300 - 50, 150, self.ratio_pike, self.ratio_pike2)
+        self.ratio_pike, self.ratio_pike2 = get_new_ratio(distance, distance - 50, 150, self.ratio_pike, self.ratio_pike2)
         # front
         body_parts_index = {
             "nose": 0,
@@ -481,15 +484,17 @@ def main():
     parser.add_argument("right_tuck_img", type=str, help="Path to the right tuck image")
     parser.add_argument("side_img", type=str, help="Path to the side image")
     parser.add_argument("tuck_img", type=str, help="Path to the tuck image")
-    # This is used because some phones rotate the images taken from the app, so i rotate it back to the original state
+    # This is used because some phones rotate the images taken from the app, so set to 1 if you want to rotate it back to the original state
     parser.add_argument("--rotation", type=int, default=1, help="Enter 1 if you need to rotate the images")
 
     parser.add_argument("-m", "--mass", type=float, default=0, help="Enter the mass of the person")
-    # Used if you don't want to use the calibration because it can be wrong
+    # Used if you want to use the calibration because it can be wrong
     parser.add_argument("-c", "--calibration", type=int, default=0, help="Enter 1 if you want to calibrate the images")
+    # Used to change the distance between the camera and the wall just in case
+    parser.add_argument("--distance", type=int, default=350, help="Enter the distance between the camera and the wall")
 
     args = parser.parse_args()
-    yeadon = YeadonModel(args.front_img, args.pike_img, args.right_tuck_img, args.side_img, args.tuck_img, args.rotation, args.mass, args.calibration)
+    yeadon = YeadonModel(args.front_img, args.pike_img, args.right_tuck_img, args.side_img, args.tuck_img, args.rotation, args.mass, args.calibration, args.distance)
 
 
 if __name__ == "__main__":
