@@ -14,10 +14,6 @@ Vec2 = Annotated[npt.NDArray[DType], Literal[2]]
 Vec3 = Annotated[npt.NDArray[DType], Literal[3]]
 Mat3x3 = Annotated[npt.NDArray[DType], Literal[3, 3]]
 
-
-O = np.zeros(3)
-
-
 def format_vec(vec):
     return ("{} " * len(vec)).format(*vec)[:-1]  # fancy
 
@@ -28,6 +24,87 @@ def format_mat(mat: Mat3x3, leading=""):
         f"{leading}{mat[1, 0]} {mat[1, 1]} {mat[1, 2]}\n"
         f"{leading}{mat[2, 0]} {mat[2, 1]} {mat[2, 2]}"
     )
+
+def combine_rel_inertia(human, solid_names, xyz_global):
+    """
+    Combine the relative inertia of several segments into one.
+    P -> s0, s1
+    T -> s2
+    C -> s3, s4, s5, s6, s7
+    """
+
+    solids = {"s0": human.P.solids[0],
+              "s1": human.P.solids[1],
+              "s2": human.T.solids[0],
+              "s3": human.C.solids[0],
+              "s4": human.C.solids[1],
+              "s5": human.C.solids[2],
+              "s6": human.C.solids[3],
+              "s7": human.C.solids[4],
+              "a0": human.A1.solids[0],
+              "a1": human.A1.solids[1],
+              "a2": human.A2.solids[0],
+              "a3": human.A2.solids[1],
+              "a4": human.A2.solids[2],
+              "a5": human.A2.solids[3],
+              "a6": human.A2.solids[4],
+              "b0": human.B1.solids[0],
+              "b1": human.B1.solids[1],
+              "b2": human.B2.solids[0],
+              "b3": human.B2.solids[1],
+              "b4": human.B2.solids[2],
+              "b5": human.B2.solids[3],
+              "b6": human.B2.solids[4],
+              "j0": human.J1.solids[0],
+              "j1": human.J1.solids[1],
+              "j2": human.J1.solids[2],
+              "j3": human.J2.solids[0],
+              "j4": human.J2.solids[1],
+              "j5": human.J2.solids[2],
+              "j6": human.J2.solids[3],
+              "j7": human.J2.solids[4],
+              "j8": human.J2.solids[5],
+              "k0": human.K1.solids[0],
+              "k1": human.K1.solids[1],
+              "k2": human.K1.solids[2],
+              "k3": human.K2.solids[0],
+              "k4": human.K2.solids[1],
+              "k5": human.K2.solids[2],
+              "k6": human.K2.solids[3],
+              "k7": human.K2.solids[4],
+              "k8": human.K2.solids[5],
+              }
+
+    segments = []
+    mass = 0
+    for solid_name in solid_names:
+        segments += [solids[solid_name]]
+        mass += segments[-1].mass
+
+    com = np.zeros((3, ))
+    for i_segment, segment in enumerate(segments):
+        com += segment.mass * (np.array(segment.center_of_mass).reshape((3, )) - xyz_global)
+    com /= mass
+
+    inertia = np.zeros((3, 3))
+    for i_segment, segment in enumerate(segments):
+        current_com = np.array(segment.center_of_mass).reshape((3, )) - xyz_global
+        dist = current_com - com
+        a = dist[0]
+        b = dist[1]
+        c = dist[2]
+
+        inertia[0, 0] += segment.rel_inertia[0, 0] + segment.mass * (b ** 2 + c ** 2)
+        inertia[0, 1] += segment.rel_inertia[0, 1] - segment.mass * (-a * b)
+        inertia[0, 2] += segment.rel_inertia[0, 2] - segment.mass * (-a * c)
+        inertia[1, 0] += segment.rel_inertia[1, 0] - segment.mass * (-a * b)
+        inertia[1, 1] += segment.rel_inertia[1, 1] + segment.mass * (c ** 2 + a ** 2)
+        inertia[1, 2] += segment.rel_inertia[1, 2] - segment.mass * (-b * c)
+        inertia[2, 0] += segment.rel_inertia[2, 0] - segment.mass * (-a * c)
+        inertia[2, 1] += segment.rel_inertia[2, 1] - segment.mass * (-b * c)
+        inertia[2, 2] += segment.rel_inertia[2, 2] + segment.mass * (a ** 2 + b ** 2)
+
+    return mass, com, inertia
 
 
 class BioModMarker:
@@ -154,7 +231,7 @@ class Pelvis(BioModSegment):
         self,
         human: yeadon.Human,
         label: str = "",
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         translations: str = "",
         rotations: str = "",
         rangesQ: list[Vec2] = None,
@@ -171,7 +248,7 @@ class Pelvis(BioModSegment):
         parent = None
 
         xyz = Pelvis.get_origin(human)
-        com = O
+        com = np.asarray(human.P.rel_center_of_mass).reshape(3)
         mass = human.P.mass
         inertia = human.P.rel_inertia
         meshscale = Pelvis.adapted_meshscale(human)
@@ -209,7 +286,7 @@ class Pelvis(BioModSegment):
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
         """Get the origin of the Pelvis in the global frame centered at Pelvis' COM."""
-        return O
+        return np.zeros((3, ))
 
 
 class Thorax(BioModSegment):
@@ -218,7 +295,7 @@ class Thorax(BioModSegment):
         human: yeadon.Human,
         label: str = "",
         parent: str = Pelvis.__name__,
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         rotations: str = "",
         rangesQ: list[Vec2] = None,
         mesh: list[Vec3] = [(0, 0, 0)],
@@ -232,15 +309,12 @@ class Thorax(BioModSegment):
     ):
         label = label or Thorax.__name__
 
-        xyz = Thorax.get_origin(human) - Pelvis.get_origin(human)
+        xyz_global = Thorax.get_origin(human)
+        xyz = xyz_global - Pelvis.get_origin(human)
         translations = ""
 
-        mass, com_global, inertia_global = human.combine_inertia(("T", "s3", "s4"))
+        mass, com, inertia = combine_rel_inertia(human, ["s2", "s3", "s4"], xyz_global)
 
-        com = np.asarray(com_global).reshape(3) - Thorax.get_origin(human)
-        print(human.combine_inertia(("T", "s3", "s4")))
-        print(human.combine_inertia(("s2", "s3", "s4")))
-        print(com)
         meshscale = Thorax.adapted_meshscale(human)
         markers = parse_markers(label, markers)
 
@@ -254,7 +328,7 @@ class Thorax(BioModSegment):
             rotations=rotations,
             com=com,
             mass=mass,
-            inertia=inertia_global,  # I can do this because the systems of coordinates are aligned.
+            inertia=inertia,
             rangesQ=rangesQ,
             mesh=mesh,
             meshfile=meshfile,
@@ -285,7 +359,7 @@ class Head(BioModSegment):
         human: yeadon.Human,
         label: str = "",
         parent: str = Thorax.__name__,
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         rotations: str = "",
         rangesQ: list[Vec2] = None,
         mesh: list[Vec3] = [(0, 0, 0)],
@@ -299,11 +373,12 @@ class Head(BioModSegment):
     ):
         label = label or Head.__name__
 
-        xyz = Head.get_origin(human) - Thorax.get_origin(human)
+        xyz_global = Head.get_origin(human)
+        xyz = xyz_global - Thorax.get_origin(human)
         translations = ""
 
-        mass, com_global, inertia_global = human.combine_inertia(("s5", "s6", "s7"))
-        com = np.asarray(com_global).reshape(3) - Head.get_origin(human)
+        mass, com, inertia = combine_rel_inertia(human, ["s5", "s6", "s7"], xyz_global)
+
         meshscale = Head.adapted_meshscale(human)
         markers = parse_markers(label, markers)
 
@@ -317,7 +392,7 @@ class Head(BioModSegment):
             rotations=rotations,
             com=com,
             mass=mass,
-            inertia=inertia_global,  # I can do this because the systems of coordinates are aligned.
+            inertia=inertia,
             rangesQ=rangesQ,
             mesh=mesh,
             meshfile=meshfile,
@@ -339,11 +414,7 @@ class Head(BioModSegment):
     @staticmethod
     def get_origin(human: yeadon.Human) -> Vec3:
         """Get the origin of the Head in the global frame centered at Pelvis' COM."""
-        length = human.C.solids[0].height + human.C.solids[1].height
-        dir = human.C.end_pos - human.C.pos
-        dir = dir / np.linalg.norm(dir)
-        pos = human.C.pos + length * dir
-        return np.asarray(pos).reshape(3)
+        return np.asarray(human.segments[2].solids[2].pos).reshape(3)
 
 
 class LeftUpperArm(BioModSegment):
@@ -352,7 +423,7 @@ class LeftUpperArm(BioModSegment):
         human: yeadon.Human,
         label: str = "",
         parent: str = Thorax.__name__,
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         rotations: str = "",
         rangesQ: list[Vec2] = None,
         mesh: list[Vec3] = [(0, 0, 0)],
@@ -416,7 +487,7 @@ class LeftForearm(BioModSegment):
         human: yeadon.Human,
         label: str = "",
         parent: str = LeftUpperArm.__name__,
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         rotations: str = "",
         rangesQ: list[Vec2] = None,
         mesh: list[Vec3] = [(0, 0, 0)],
@@ -434,7 +505,7 @@ class LeftForearm(BioModSegment):
         translations = ""
 
         # using Segment to have rel_inertia
-        segment = yeadon.segment.Segment("", O.reshape(3, 1), np.eye(3), human.A2.solids[:2], O, False)
+        segment = yeadon.segment.Segment("", np.zeros((3, 1)), np.eye(3), human.A2.solids[:2], np.zeros((3, )), False)
         mass = segment.mass
         com = np.asarray(segment.rel_center_of_mass).reshape(3)
         inertia = segment.rel_inertia
@@ -482,7 +553,7 @@ class LeftHand(BioModSegment):
         human: yeadon.Human,
         label: str = "",
         parent: str = LeftForearm.__name__,
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         rotations: str = "",
         rangesQ: list[Vec2] = None,
         mesh: list[Vec3] = [(0, 0, 0)],
@@ -500,7 +571,7 @@ class LeftHand(BioModSegment):
         translations = ""
 
         # using Segment to have rel_inertia
-        segment = yeadon.segment.Segment("", O.reshape(3, 1), np.eye(3), human.A2.solids[2:], O, False)
+        segment = yeadon.segment.Segment("", np.zeros((3, 1)), np.eye(3), human.A2.solids[2:], np.zeros((3, )), False)
         mass = segment.mass
         com = np.asarray(segment.rel_center_of_mass).reshape(3)
         inertia = segment.rel_inertia
@@ -552,7 +623,7 @@ class RightUpperArm(BioModSegment):
         human: yeadon.Human,
         label: str = "",
         parent: str = Thorax.__name__,
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         rotations: str = "",
         rangesQ: list[Vec2] = None,
         mesh: list[Vec3] = [(0, 0, 0)],
@@ -615,7 +686,7 @@ class RightForearm(BioModSegment):
         human: yeadon.Human,
         label: str = "",
         parent: str = RightUpperArm.__name__,
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         rotations: str = "",
         rangesQ: list[Vec2] = None,
         mesh: list[Vec3] = [(0, 0, 0)],
@@ -633,7 +704,7 @@ class RightForearm(BioModSegment):
         translations = ""
 
         # using Segment to have rel_inertia
-        segment = yeadon.segment.Segment("", O.reshape(3, 1), np.eye(3), human.B2.solids[:2], O, False)
+        segment = yeadon.segment.Segment("", np.zeros((3, 1)), np.eye(3), human.B2.solids[:2], np.zeros((3, )), False)
         mass = segment.mass
         com = np.asarray(segment.rel_center_of_mass).reshape(3)
         inertia = segment.rel_inertia
@@ -681,7 +752,7 @@ class RightHand(BioModSegment):
         human: yeadon.Human,
         label: str = "",
         parent: str = RightForearm.__name__,
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         rotations: str = "",
         rangesQ: list[Vec2] = None,
         mesh: list[Vec3] = [(0, 0, 0)],
@@ -699,7 +770,7 @@ class RightHand(BioModSegment):
         translations = ""
 
         # using Segment to have rel_inertia
-        segment = yeadon.segment.Segment("", O.reshape(3, 1), np.eye(3), human.B2.solids[2:], O, False)
+        segment = yeadon.segment.Segment("", np.zeros((3, 1)), np.eye(3), human.B2.solids[2:], np.zeros((3, )), False)
         mass = segment.mass
         com = np.asarray(segment.rel_center_of_mass).reshape(3)
         inertia = segment.rel_inertia
@@ -751,7 +822,7 @@ class LeftThigh(BioModSegment):
         human: yeadon.Human,
         label: str = "",
         parent: str = Pelvis.__name__,
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         rotations: str = "",
         rangesQ: list[Vec2] = None,
         mesh: list[Vec3] = [(0, 0, 0)],
@@ -814,7 +885,7 @@ class LeftShank(BioModSegment):
         human: yeadon.Human,
         label: str = "",
         parent: str = LeftThigh.__name__,
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         rotations: str = "",
         rangesQ: list[Vec2] = None,
         mesh: list[Vec3] = [(0, 0, 0)],
@@ -832,7 +903,7 @@ class LeftShank(BioModSegment):
         translations = ""
 
         # using Segment to have rel_inertia
-        segment = yeadon.segment.Segment("", O.reshape(3, 1), np.eye(3), human.J2.solids[:2], O, False)
+        segment = yeadon.segment.Segment("", np.zeros((3, 1)), np.eye(3), human.J2.solids[:2], np.zeros((3, )), False)
         mass = segment.mass
         com = np.asarray(segment.rel_center_of_mass).reshape(3)
         inertia = segment.rel_inertia
@@ -880,7 +951,7 @@ class LeftFoot(BioModSegment):
         human: yeadon.Human,
         label: str = "",
         parent: str = LeftShank.__name__,
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         rotations: str = "",
         rangesQ: list[Vec2] = None,
         mesh: list[Vec3] = [(0, 0, 0)],
@@ -898,7 +969,7 @@ class LeftFoot(BioModSegment):
         translations = ""
 
         # using Segment to have rel_inertia
-        segment = yeadon.segment.Segment("", O.reshape(3, 1), np.eye(3), human.J2.solids[2:], O, False)
+        segment = yeadon.segment.Segment("", np.zeros((3, 1)), np.eye(3), human.J2.solids[2:], np.zeros((3, )), False)
         mass = segment.mass
         com = np.asarray(segment.rel_center_of_mass).reshape(3)
         inertia = segment.rel_inertia
@@ -952,7 +1023,7 @@ class RightThigh(BioModSegment):
         human: yeadon.Human,
         label: str = "",
         parent: str = Pelvis.__name__,
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         rotations: str = "",
         rangesQ: list[Vec2] = None,
         mesh: list[Vec3] = [(0, 0, 0)],
@@ -1015,7 +1086,7 @@ class RightShank(BioModSegment):
         human: yeadon.Human,
         label: str = "",
         parent: str = RightThigh.__name__,
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         rotations: str = "",
         rangesQ: list[Vec2] = None,
         mesh: list[Vec3] = [(0, 0, 0)],
@@ -1033,7 +1104,7 @@ class RightShank(BioModSegment):
         translations = ""
 
         # using Segment to have rel_inertia
-        segment = yeadon.segment.Segment("", O.reshape(3, 1), np.eye(3), human.K2.solids[:2], O, False)
+        segment = yeadon.segment.Segment("", np.zeros((3, 1)), np.eye(3), human.K2.solids[:2], np.zeros((3, )), False)
         mass = segment.mass
         com = np.asarray(segment.rel_center_of_mass).reshape(3)
         inertia = segment.rel_inertia
@@ -1081,7 +1152,7 @@ class RightFoot(BioModSegment):
         human: yeadon.Human,
         label: str = "",
         parent: str = RightShank.__name__,
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         rotations: str = "",
         rangesQ: list[Vec2] = None,
         mesh: list[Vec3] = [(0, 0, 0)],
@@ -1099,7 +1170,7 @@ class RightFoot(BioModSegment):
         translations = ""
 
         # using Segment to have rel_inertia
-        segment = yeadon.segment.Segment("", O.reshape(3, 1), np.eye(3), human.K2.solids[2:], O, False)
+        segment = yeadon.segment.Segment("", np.zeros((3, 1)), np.eye(3), human.K2.solids[2:], np.zeros((3, )), False)
         mass = segment.mass
         com = np.asarray(segment.rel_center_of_mass).reshape(3)
         inertia = segment.rel_inertia
@@ -1155,7 +1226,7 @@ class UpperLegs(BioModSegment):
         human: yeadon.Human,
         label: str = "",
         parent: str = Pelvis.__name__,
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         rotations: str = "",
         rangesQ: list[Vec2] = None,
         mesh: list[Vec3] = [(0, 0, 0)],
@@ -1168,11 +1239,12 @@ class UpperLegs(BioModSegment):
         markers: dict[dict] = {},
     ):
         label = label or UpperLegs.__name__
+        xyz_global = UpperLegs.get_origin(human)
         xyz = UpperLegs.get_origin(human) - Pelvis.get_origin(human)
         translations = ""
 
-        mass, com_global, inertia = human.combine_inertia(("J1", "K1"))
-        com = np.asarray(com_global).reshape(3) - UpperLegs.get_origin(human)
+        mass, com, inertia = combine_rel_inertia(human, ["j0", "k0", "j1", "k1", "j2", "k2"], xyz_global)
+
         m_x, m_y, m_z = np.array(RightThigh.adapted_meshscale(human)) + np.array(LeftThigh.adapted_meshscale(human))
         meshscale = [np.array(m_x / 2), m_y / 2, m_z / 2]
         markers = parse_markers(label, markers)
@@ -1187,7 +1259,7 @@ class UpperLegs(BioModSegment):
             rotations=rotations,
             com=com,
             mass=mass,
-            inertia=inertia,  # I can do this because the systems of coordinates are aligned.
+            inertia=inertia,
             rangesQ=rangesQ,
             mesh=mesh,
             meshfile=meshfile,
@@ -1213,7 +1285,7 @@ class LowerLegs(BioModSegment):
         human: yeadon.Human,
         label: str = "",
         parent: str = UpperLegs.__name__,
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         rotations: str = "",
         rangesQ: list[Vec2] = None,
         mesh: list[Vec3] = [(0, 0, 0)],
@@ -1226,11 +1298,12 @@ class LowerLegs(BioModSegment):
         markers: dict[dict] = {},
     ):
         label = label or LowerLegs.__name__
-        xyz = LowerLegs.get_origin(human) - UpperLegs.get_origin(human)
+        xyz_global = LowerLegs.get_origin(human)
+        xyz = xyz_global - UpperLegs.get_origin(human)
         translations = ""
 
-        mass, com_global, inertia = human.combine_inertia(("j3", "j4", "k3", "k4"))
-        com = np.asarray(com_global).reshape(3) - LowerLegs.get_origin(human)
+        mass, com, inertia = combine_rel_inertia(human, ["j3", "j4", "k3", "k4"], xyz_global)
+
         m_x, m_y, m_z = np.array(RightShank.adapted_meshscale(human)) + np.array(LeftShank.adapted_meshscale(human))
         meshscale = [m_x / 2, m_y / 2, m_z / 2]
         markers = parse_markers(label, markers)
@@ -1245,7 +1318,7 @@ class LowerLegs(BioModSegment):
             rotations=rotations,
             com=com,
             mass=mass,
-            inertia=inertia,  # I can do this because the systems of coordinates are aligned.
+            inertia=inertia,
             rangesQ=rangesQ,
             mesh=mesh,
             meshfile=meshfile,
@@ -1271,7 +1344,7 @@ class Feet(BioModSegment):
         human: yeadon.Human,
         label: str = "",
         parent: str = LowerLegs.__name__,
-        rt: Vec3 = O,
+        rt: Vec3 = np.zeros((3, )),
         rotations: str = "",
         rangesQ: list[Vec2] = None,
         mesh: list[Vec3] = [(0, 0, 0)],
@@ -1285,11 +1358,12 @@ class Feet(BioModSegment):
     ):
         label = label or Feet.__name__
 
-        xyz = Feet.get_origin(human) - LowerLegs.get_origin(human)
+        xyz_global = Feet.get_origin(human)
+        xyz = xyz_global - LowerLegs.get_origin(human)
         translations = ""
 
-        mass, com_global, inertia = human.combine_inertia(("j5", "j6", "j7", "j8", "k5", "k6", "k7", "k8"))
-        com = np.asarray(com_global).reshape(3) - Feet.get_origin(human)
+        mass, com, inertia = combine_rel_inertia(human, ["j5", "j6", "j7", "j8", "k5", "k6", "k7", "k8"], xyz_global)
+
         m_x, m_y, m_z = np.array(RightFoot.adapted_meshscale(human)) + np.array(LeftFoot.adapted_meshscale(human))
         meshscale = [m_x / 2, m_y / 2, m_z / 2]
         parse_markers(label, markers)
@@ -1304,7 +1378,7 @@ class Feet(BioModSegment):
             rotations=rotations,
             com=com,
             mass=mass,
-            inertia=inertia,  # I can do this because the systems of coordinates are aligned.
+            inertia=inertia,
             rangesQ=rangesQ,
             mesh=mesh,
             meshfile=meshfile,
@@ -1537,18 +1611,17 @@ def parse_biomod_options(filename):
 
 
 if __name__ == "__main__":
-    # import argparse
 
-    DEBUG_FLAG = False
+    DEBUG_FLAG = True
 
     if DEBUG_FLAG:
 
         class Arguments:
             def __init__(self):
-                self.meas = "/./home/william/AnthropoImpactOnTech/Models/alexandre.txt"
+                self.meas = "/home/charbie/Documents/Programmation/YeadonModelGenerator/data/text_files/Athlete_01.txt"
                 self.bioModOptions = ["tech_opt.yml"]
 
-        args = ArgumentVs()
+        args = Arguments()
 
     else:
         import argparse
@@ -1557,15 +1630,13 @@ if __name__ == "__main__":
         parser.add_argument("meas", help="measurement file of the human")
         parser.add_argument("--bioModOptions", nargs=1, help="option file for the bioMod")
         args = parser.parse_args()
-        bioModOptions = args.bioModOptions[0] if args.bioModOptions else None
 
-        human = yeadon.Human(args.meas)
+    bioModOptions = args.bioModOptions[0] if args.bioModOptions else None
+    human = yeadon.Human(args.meas)
 
-        BioHuman, human_options, segments_options = parse_biomod_options(bioModOptions)
-        biohuman = BioHuman(human, **human_options, **segments_options)
-        name = args.meas.split(".")[0]
-        f = open(f"{name}.bioMod", "a")
-        f.write(str(biohuman))
-        f.close()
-
-        #print(biohuman)
+    BioHuman, human_options, segments_options = parse_biomod_options(bioModOptions)
+    biohuman = BioHuman(human, **human_options, **segments_options)
+    name = args.meas.split(".")[0]
+    f = open(f"{name}.bioMod", "a")
+    f.write(str(biohuman))
+    f.close()
