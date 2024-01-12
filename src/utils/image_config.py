@@ -89,56 +89,77 @@ def thresh(im: np.ndarray, image: np.ndarray, line_size):
     return edges
 
 
-def calibrate_image(chessboard_imgs, im):
+def calibrate_image(im):
     chessboard_size = (5, 5)  # Change this to match your pattern
-    criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-    obj_points = []
-    img_points = []
+    if not os.path.exists("camera_calibration.npz"):
+        print("calibration start")
+        chessboard_imgs = glob.glob('img/chessboard/*.jpg')
+        if (len(chessboard_imgs) == 0):
+            print("You need a chessboards folder with images with chessboard in it with you camera")
+        criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+        obj_points = []
+        img_points = []
 
-    objp = np.zeros((chessboard_size[0] * chessboard_size[1], 3), np.float32)
-    objp[:, :2] = np.mgrid[0:chessboard_size[0], 0:chessboard_size[1]].T.reshape(-1, 2)
-    for fname in chessboard_imgs:
-        img = cv.imread(fname)
-        gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-        ret, corners = cv.findChessboardCorners(gray, chessboard_size, None)
-        if ret:
-            obj_points.append(objp)
-            corners2 = cv.cornerSubPix(gray, corners, (5, 5), (-1, -1), criteria)
-            img_points.append(corners2)
+        objp = np.zeros((chessboard_size[0] * chessboard_size[1], 3), np.float32)
+        objp[:, :2] = np.mgrid[0:chessboard_size[0], 0:chessboard_size[1]].T.reshape(-1, 2)
+        for fname in chessboard_imgs:
+            pil_im = PIL.Image.open(fname).convert('RGB')
+            pil_im, min_ratio = _resize(pil_im)
+            img = np.asarray(pil_im)
+            gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+            ret, corners = cv.findChessboardCorners(gray, chessboard_size, None)
+            if ret:
+                obj_points.append(objp)
+                corners2 = cv.cornerSubPix(gray, corners, (5, 5), (-1, -1), criteria)
+                img_points.append(corners2 / min_ratio)
+            else:
+                print("one not found")
 
-    ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(obj_points, img_points, gray.shape[::-1], None, None)
+        ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(obj_points, img_points, gray.shape[::-1], None, None)
+        np.savez('camera_calibration.npz', mtx=mtx, dist=dist, rvecs=rvecs, tvecs=tvecs)
+    else:
+        print("no calibration")
+        calibration_data = np.load('camera_calibration.npz')
+        mtx, dist, rvecs, tvecs = calibration_data['mtx'], calibration_data['dist'], calibration_data['rvecs'], \
+        calibration_data['tvecs']
     h, w = im.shape[:2]
     newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
-    undist_img = cv.undistort(im, mtx, dist, None, newcameramtx)
-    return undist_img
+    undist = cv.undistort(im, mtx, dist, None, newcameramtx)
+    return undist
 
 
-def create_resize_remove_im(impath: str):
+def create_resize_remove_im(im_path: str, calibration: int, rotation: int):
     """
     Take and image path and return image without background, resized and the pil version
     Parameters
     ----------
-    impath: str
+    calibration : int
+    rotation : int
+    im_path: str
 
     Returns
     -------
     PIL Image
     """
-    pil_im = PIL.Image.open(impath).convert("RGB")
+    pil_im = PIL.Image.open(im_path).convert("RGB")
     original_image = np.asarray(pil_im)
     pil_im, min_ratio = _resize(pil_im)
     image_resized = np.asarray(pil_im)
     im = remove(image_resized)
-    images = glob.glob('img/kael/k/*')
-    #pil_im = pil_im.transpose(Image.ROTATE_270)
-    #image_resized = calibrate_image(images, rotate(image_resized, -90, reshape=True, mode='nearest'))
-    #im = calibrate_image(images, rotate(im, -90, reshape=True, mode='nearest'))
-    #original_image = rotate(original_image, -90, reshape=True, mode='nearest')
-    #return pil_im, image_resized, im, original_image, min_ratio
-    pil_im = pil_im.transpose(Image.ROTATE_270)
-    image_resized = rotate(image_resized, -90, reshape=True, mode='nearest')
-    im = rotate(im, -90, reshape=True, mode='nearest')
-    original_image = rotate(original_image, -90, reshape=True, mode='nearest')
+    if rotation:
+        im = rotate(im, -90, reshape=True, mode='nearest')
+        image_resized = rotate(image_resized, -90, reshape=True, mode='nearest')
+        original_image = rotate(original_image, -90, reshape=True, mode='nearest')
+    if calibration:
+        original_image = calibrate_image(original_image)
+        original_pil_image = Image.fromarray(original_image)
+        original_pil_image.save("t.jpg")
+        image_resized, min_ratio2 = _resize(original_pil_image)
+        image_resized = np.asarray(image_resized)
+        im = remove(image_resized)
+        pil_im = Image.fromarray(image_resized)
+    else:
+        pil_im = pil_im.transpose(Image.ROTATE_270)
     return pil_im, image_resized, im, original_image, min_ratio
 
 
@@ -155,8 +176,20 @@ def better_edges(edges: np.ndarray, data: np.ndarray):
     return edges
 
 
-
 def get_ratio(img: np.ndarray, min_ratio):
+    """
+    Take an image with 4 chessboards, find the chessboards inside the image and calculate the center of each chessboard
+
+    Parameters
+    ----------
+    img : numpy array
+        The image with chessboards
+    min_ratio : float
+        The ratio used to resize the image
+    Returns
+    -------
+    the distance from the chessboard adjusted with the resized image
+    """
     pattern_size = (5, 5)
     img1 = _crop(img, [0, 0], [img.shape[1] / 2, img.shape[0] / 2])
     img2 = _crop(img, [img.shape[1] / 2, img.shape[0] / 2], [img.shape[1], 0])
@@ -191,25 +224,72 @@ def get_ratio(img: np.ndarray, min_ratio):
     chess_points[2] = chess_points[2] + [img.shape[1] / 2, img.shape[0] / 2]
     chess_points[3] = chess_points[3] + [0, img.shape[0] / 2]
     ratio = np.linalg.norm(chess_points[0] - chess_points[1])
-    return ratio * min_ratio, ratio * min_ratio
+    ratio2 = np.linalg.norm(chess_points[2] - chess_points[3])
+    return ratio * min_ratio, ratio2 * min_ratio
 
 
-def get_new_ratio(origin: float, depth: float, width: int, pixel_width: int):
+def get_new_ratio(origin: float, depth: float, width: int, image_ratio: int, image_ratio2: int):
     """
-    origin is the real distance between the camera and the person
-    depth is the real distance between the wall and the person
-    width is the real distance two chessboard in the wall
+    Use Thales geometric theorem to calculate the new ratio adapted to the person inside the image
+    Parameters
+    ----------
+    origin : float
+        The real distance between the camera and the person
+    depth : float
+        The real distance between the wall and the person
+    width : float 
+        The real distance two chessboard in the wall
+    image_ratio : int
+        The ratio of the image not processed
+
+    Returns
+    -------
+
+    """"""    
+
     """
     res = (depth * width / origin)
-    return res / pixel_width, res / pixel_width
+    return res / image_ratio, res / image_ratio2
+
+
 def get_ratio_meas_top(elbow, wrist):
-    #return  25 / np.linalg.norm(elbow - wrist), 25 / np.linalg.norm(elbow - wrist)
+    """
+    Used for debug
+    """
+    # return  25 / np.linalg.norm(elbow - wrist), 25 / np.linalg.norm(elbow - wrist)
     return 23 / np.linalg.norm(elbow - wrist), 23 / np.linalg.norm(elbow - wrist)
+
+
 def get_ratio_meas_bottom(knee, ankle):
-    #return 42 / np.linalg.norm(knee - ankle), 42 / np.linalg.norm(knee - ankle)
+    """
+    Used for debug
+    """
+    # return 42 / np.linalg.norm(knee - ankle), 42 / np.linalg.norm(knee - ankle)
     return 41 / np.linalg.norm(knee - ankle), 41 / np.linalg.norm(knee - ankle)
 
+
 def save_img(image, image_r_side, image_tuck, image_r_tuck, image_pike, name):
+    """
+    Take the 5 image modified by the keypoints and save them in a folder
+    Parameters
+    ----------
+    image : np array
+        Front image
+    image_r_side : np array
+        Right sidef image
+    image_tuck : np array
+        Tuck image
+    image_r_tuck : np array
+        Right tuck image
+    image_pike : np array
+        Pike image
+    name : string
+        Name of the person inside the image
+
+    Returns
+    -------
+
+    """
     if not os.path.exists(f"{name}_dir"):
         os.mkdir(f"{name}_dir")
     img = Image.fromarray(image)
@@ -222,4 +302,3 @@ def save_img(image, image_r_side, image_tuck, image_r_tuck, image_pike, name):
     img.save(f"{name}_dir/{name}_r_tuck_t.jpg")
     img = Image.fromarray(image_pike)
     img.save(f"{name}_dir/{name}_pike_t.jpg")
-

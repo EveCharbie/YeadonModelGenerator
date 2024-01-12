@@ -1869,7 +1869,7 @@ def parse_biomod_options(filename):
 
 if __name__ == "__main__":
 
-    DEBUG_FLAG = True
+    DEBUG_FLAG = False
 
     if DEBUG_FLAG:
 

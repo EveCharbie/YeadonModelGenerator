@@ -152,7 +152,7 @@ class _CameraScreenState extends State<CameraScreen> {
       );
     }
 
-    double previewWidth = MediaQuery.of(context).size.width * 0.72;
+    double previewWidth = MediaQuery.of(context).size.width * 0.60;
     double previewWidthLittleSquares =
         MediaQuery.of(context).size.width * 0.075;
 
