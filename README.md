@@ -34,7 +34,7 @@ To start, you will have to create a square structure measuring 150x150cm, incorp
   <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/sideSilhouette.jpg" width="150"/>
   <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/rTuckSilhouette.jpg" width="150"/>
   <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/frontTuckSilhouette.jpg" width="150"/>
-  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/pikeSilhouette.png" width="150"/>
+  <img src="https://github.com/Hakuou123/YeadonModelGenerator/blob/main/tests/pictures/pikeSilhouette.jpg" width="150"/>
 </p>
 
 In terms of spatial parameters. The distance between the individual holding the camera and the wall bearing the chessboard square should measure 350cm. Simultaneously, maintain a distance of 50cm between the person capturing the photos and the designated wall. For enhanced accuracy, position the camera at a height approximately half of the square's width, approximately 75cm.
@@ -52,13 +52,13 @@ conda env create -f environment.yml
 ```
 
 # Getting Started
-After taking the 4 pictures, you have to put them in the img folder:
-THE_NAME_front_img - THE_NAME_r_tuck_img - THE_NAME_side_img - THE_NAME_tuck_img
+After taking the 5 pictures, you have to put them in the img folder ("THE_NAME" is the input you entered in the app):
+THE_NAME_front_img - THE_NAME_r_tuck_img - THE_NAME_side_img - THE_NAME_tuck_img - THE_NAME_pike_img
 ```bash
 make run
 ```
-it will create a .txt file named: THE_NAME.txt ("THE_NAME" is the input you entered in the app).
-This command will also create a folder named THE_NAME_dir where you will have all your images modified to check manually.
+it will create a .txt file named: THE_NAME.txt.
+This command will also create a folder named THE_NAME_dir where you will have all your modified images to check manually.
 
 If you want you can enter the mass to have better results using the command:
 ```bash
@@ -74,4 +74,14 @@ The .bioMod will appear in the root folder.
 To visualize the 3d body model you can use the command:
 ```bash
 make bioviz name=THE_NAME
+```
+# Optionnal features
+For more precision, you can perform camera calibration. Although this process may not guarantee success in all cases, it improves accuracy. To initiate calibration, follow these steps:
+
+Capture at least 10 images of a chessboard from various angles. Exemplary images can be found in the 'tests/pictures/chessboard' directory.
+
+Organize the images and place them in the 'img/chessboard' folder.
+After that you can use the following command to start the script witht the camera calibration:
+```bash
+make run_calibration
 ```

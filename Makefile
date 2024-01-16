@@ -5,16 +5,21 @@ alexandre:
 
 kael:
 	python src/im2meas.py img/kael/k/*
+pierre:
+	python src/im2meas.py img/pierre/*
 
 william:
 	python src/im2meas.py img/william/w/w/*
 
+william_calib:
+	python src/im2meas.py img/william/w/w/* --calibration 1
 martin:
 	python src/im2meas.py img/m/*
 
 run:
-	python src/im2meas.py img/*
-
+	python src/im2meas.py img/*.*
+run_calibration:
+	python src/im2meas.py img/*.* --calibration 1
 run_with_mass:
 	python src/im2meas.py img/* -m "${mass}"
 

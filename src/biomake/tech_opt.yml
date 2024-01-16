@@ -15,7 +15,7 @@
       rotations: xyz
       markers:
         HeadTop:
-          position: [0, 0, 0.8957905184446732] # change depending on the length of hip_joint to top_of_the_head
+          position: [0, 0, 0.8836942922773922] # change depending on the length of hip_joint to top_of_the_head
         PelvisBase:
           position: [0, 0, 0]
 
@@ -76,7 +76,7 @@
         MiddleRightHand:
           position: [0, 0, -0.1]
         RightKnuckle:
-          position: [0, 0, 0.10883191299570477] # length wrist-knuckle
+          position: [0, 0, 0.13025425277200894] # length wrist-knuckle
     
     LeftUpperArm:
       meshfile: Model_mesh/bras.stl
@@ -99,7 +99,7 @@
         MiddleLeftHand:
           position: [0, 0, -0.1]
         LeftKnuckle:
-          position: [0, 0, 0.10883191299570477] # length wrist-knuckle
+          position: [0, 0, 0.13025425277200894] # length wrist-knuckle
     
     UpperLegs:
       meshfile: Model_mesh/cuisse.stl
@@ -112,14 +112,14 @@
       rotations: xyz
       markers: 
         PikeTargetRightHand:
-          position: [-0.1, 0, 0.20794512183647473] # pike knee to hand
+          position: [-0.1, 0, 0.32058697904982464] # pike knee to hand
         PikeTargetLeftHand:
-          position: [0.1, 0, 0.20794512183647473]
+          position: [0.1, 0, 0.32058697904982464]
       markers: 
         TuckTargetRightHand:
-          position: [-0.1, 0, 0.09382415195050903] # tuck knee to hand
+          position: [-0.1, 0, 0.0767828890818599] # tuck knee to hand
         TuckTargetLeftHand:
-          position: [0.1, 0, 0.09382415195050903]
+          position: [0.1, 0, 0.0767828890818599]
         Knee:
           position: [0, 0, 0]
     

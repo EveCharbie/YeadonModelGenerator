@@ -144,6 +144,7 @@ class YeadonModel:
         bdy_part_r_side = {k: data_r_side[v] for k, v in body_parts_index_r.items()}
         # front tuck
         body_parts_index_tuck = {
+            "left_shoulder": 5,
             "left_wrist": 9,
             "right_wrist": 10,
             "left_elbow": 7,
@@ -254,7 +255,12 @@ class YeadonModel:
         bdy_part_tuck["right_ball"] = np.array(get_max_pt(data_tuck[16], bdy_part_tuck["right_toe_nail"], edges_tuck))
         bdy_part_tuck["right_arch"] = (data_tuck[16] + bdy_part_tuck["right_ball"]) / 2
         bdy_part_tuck["left_wrist_width"] = max_perp(bdy_part_tuck["left_wrist"], bdy_part_tuck["left_elbow"], edges_tuck, image_tuck)
-
+        bdy_part_tuck["left_mid_arm"] = (bdy_part_tuck["left_shoulder"] + bdy_part_tuck["left_elbow"]) / 2
+        #print(max_perp(bdy_part_tuck["left_mid_arm"], bdy_part_tuck["left_elbow"], edges_tuck, image_tuck) * self.ratio_tuck)
+        if np.linalg.norm(bdy_part_tuck["right_ankle"] - bdy_part_tuck["right_arch"]) * self.ratio_tuck < 6:
+            bdy_part_tuck["right_arch"] = (bdy_part_tuck["right_ankle"] + bdy_part_tuck["right_toe_nail"]) / 2
+        if np.linalg.norm(bdy_part_tuck["right_ankle"] - bdy_part_tuck["right_ball"]) * self.ratio_tuck < 10:
+            bdy_part_tuck["right_ball"] = (bdy_part_tuck["right_ankle"] + bdy_part_tuck["right_toe_nail"] * 2) / 3
         # left side tuck
         bdy_part_r_tuck["right_toe_nail"], dist = get_maximum_pit(data_l_tuck[16], edges_l_tuck)
         bdy_part_r_tuck["right_heel"] = get_max_pt(data_l_tuck[16], bdy_part_r_tuck["right_toe_nail"], edges_l_tuck)

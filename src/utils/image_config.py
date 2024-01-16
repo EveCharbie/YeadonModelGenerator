@@ -94,7 +94,7 @@ def calibrate_image(im):
     if not os.path.exists("camera_calibration.npz"):
         chessboard_imgs = glob.glob('img/chessboard/*.jpg')
         if (len(chessboard_imgs) == 0):
-            print("You need a chessboards folder with images with chessboard in it with you camera")
+            print("You need a chessboards folder with images with chessboard in it")
         criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
         obj_points = []
         img_points = []
@@ -118,8 +118,7 @@ def calibrate_image(im):
         np.savez('camera_calibration.npz', mtx=mtx, dist=dist, rvecs=rvecs, tvecs=tvecs)
     else:
         calibration_data = np.load('camera_calibration.npz')
-        mtx, dist, rvecs, tvecs = calibration_data['mtx'], calibration_data['dist'], calibration_data['rvecs'], \
-        calibration_data['tvecs']
+        mtx, dist, rvecs, tvecs = calibration_data['mtx'], calibration_data['dist'], calibration_data['rvecs'], calibration_data['tvecs']
     h, w = im.shape[:2]
     newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
     undist = cv.undistort(im, mtx, dist, None, newcameramtx)
