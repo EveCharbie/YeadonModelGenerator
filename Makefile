@@ -30,3 +30,6 @@ biomake:
 
 bioviz:
 	python src/biov.py "${name}"
+
+comparison:
+	python src/comparison.py "${meas}".bioMod "${gen}".bioMod

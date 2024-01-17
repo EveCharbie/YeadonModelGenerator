@@ -3,15 +3,6 @@ import matplotlib.pyplot as plt
 import biorbd
 import argparse
 
-
-def main():
-    parser = argparse.ArgumentParser(description="Comparison")
-    parser.add_argument("measured_model_path", type=str, help="Path to the measured model biomod")
-    parser.add_argument("generated_model_path", type=str, help="Path to the generated model biomod")
-    args = parser.parse_args()
-    com_comparison(args.measured_model_path, args.generated_model_path)
-
-
 def com_comparison(measured_model, generated_model):
     model_gen = biorbd.Model(generated_model)
     model_ref = biorbd.Model(measured_model)
@@ -34,6 +25,14 @@ def com_comparison(measured_model, generated_model):
     plt.title('Comparison of CoM by segment between the generated model and the reference model')
     plt.legend()
     plt.savefig(f"{measured_model.split('/')[-1].split('_')[0]}_com_comparison.png")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Comparison")
+    parser.add_argument("measured_model_path", type=str, help="Path to the measured model biomod")
+    parser.add_argument("generated_model_path", type=str, help="Path to the generated model biomod")
+    args = parser.parse_args()
+    com_comparison(args.measured_model_path, args.generated_model_path)
 
 
 if __name__ == "__main__":
