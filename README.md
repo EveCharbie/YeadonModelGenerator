@@ -76,7 +76,7 @@ To visualize the 3d body model you can use the command:
 make bioviz name=THE_NAME
 ```
 # Optionnal features
-For more precision, you can perform camera calibration. Although this process may not guarantee success in all cases, it improves accuracy. To initiate calibration, follow these steps:
+For more precision, you can perform camera calibration (for more information on the [documentation](https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html)). Although this process may not guarantee success in all cases, it improves accuracy. To initiate calibration, follow these steps:
 
 Capture at least 10 images of a chessboard from various angles. Exemplary images can be found in the 'tests/pictures/chessboard' directory.
 

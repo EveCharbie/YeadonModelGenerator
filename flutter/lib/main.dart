@@ -155,8 +155,6 @@ class _CameraScreenState extends State<CameraScreen> {
     double previewWidth = 384 * 0.62;
     double previewWidthLittleSquares = 384 * 0.075;
 
-    double boxSize = previewWidth;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(''),
@@ -191,8 +189,8 @@ class _CameraScreenState extends State<CameraScreen> {
                   bottom: 0,
                   child: Center(
                     child: Container(
-                      width: boxSize,
-                      height: boxSize,
+                      width: previewWidth,
+                      height: previewWidth,
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.red, width: 2.0),
                       ),

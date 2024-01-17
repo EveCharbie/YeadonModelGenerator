@@ -1,10 +1,12 @@
 export PYTHONPATH := $(CURDIR):$(PYTHONPATH)
 
 alexandre:
-	python src/im2meas.py img/a/*
+	python src/im2meas.py img/al/*
 
 kael:
-	python src/im2meas.py img/kael/k/*
+	python src/im2meas.py img/kl/*
+eve:
+	python src/im2meas.py img/e/*
 pierre:
 	python src/im2meas.py img/pierre/*
 

@@ -100,8 +100,8 @@ class YeadonModel:
         body_parts_index = {
             "nose": 0,
             "nose_height": 74,
-            "nose_left": 35,
-            "nose_right": 27,
+            "nose_left": 36,
+            "nose_right": 26,
             "left_knuckles": 100,
             "right_knuckles": 121,
             "left_ear": 39,
@@ -256,7 +256,7 @@ class YeadonModel:
         bdy_part_tuck["right_arch"] = (data_tuck[16] + bdy_part_tuck["right_ball"]) / 2
         bdy_part_tuck["left_wrist_width"] = max_perp(bdy_part_tuck["left_wrist"], bdy_part_tuck["left_elbow"], edges_tuck, image_tuck)
         bdy_part_tuck["left_mid_arm"] = (bdy_part_tuck["left_shoulder"] + bdy_part_tuck["left_elbow"]) / 2
-        #print(max_perp(bdy_part_tuck["left_mid_arm"], bdy_part_tuck["left_elbow"], edges_tuck, image_tuck) * self.ratio_tuck)
+        #print(circle_p(max_perp(bdy_part_tuck["left_mid_arm"], bdy_part_tuck["left_elbow"], edges_tuck, image_tuck) * self.ratio_tuck))
         if np.linalg.norm(bdy_part_tuck["right_ankle"] - bdy_part_tuck["right_arch"]) * self.ratio_tuck < 6:
             bdy_part_tuck["right_arch"] = (bdy_part_tuck["right_ankle"] + bdy_part_tuck["right_toe_nail"]) / 2
         if np.linalg.norm(bdy_part_tuck["right_ankle"] - bdy_part_tuck["right_ball"]) * self.ratio_tuck < 10:
@@ -289,7 +289,7 @@ class YeadonModel:
             "Ls3p": stad_p(max_line(bdy_part["right_nipple"], bdy_part["left_nipple"], edges, image) * self.ratio,
                            max_line(bdy_part_r_side["right_nipple_pit"] + np.array([-2, 0]), bdy_part_r_side["right_nipple_pit"] + np.array([-5, 0]), edges_r_side, image_r_side) * self.ratio_r_side),
             "Ls5p": circle_p(get_length(bdy_part["left_acromion"], bdy_part["right_acromion"], image) * self.ratio),
-            "Ls6p": circle_p(max_line(bdy_part["nose_right"], bdy_part["nose_left"], edges, image)) * self.ratio,
+            "Ls6p": circle_p(get_length(bdy_part["nose_right"], bdy_part["nose_left"], image)) * self.ratio,
             "Ls7p": stad_p(get_length(bdy_part["left_ear"], bdy_part["right_ear"], image) * self.ratio,
                            max_line(bdy_part_r_side["right_ear"], bdy_part_r_side["right_eye"], edges_r_side, image_r_side) * self.ratio_r_side),
 
@@ -314,7 +314,7 @@ class YeadonModel:
 
             "La0p": circle_p(max_perp(bdy_part["left_shoulder_perimeter_width"], bdy_part["left_shoulder"], edges,
                                       image)) * self.ratio2,
-            "La1p": circle_p(max_perp(bdy_part["left_mid_arm"], bdy_part["left_elbow"], edges, image)) * self.ratio2,
+            "La1p": circle_p(max_perp(bdy_part_tuck["left_mid_arm"], bdy_part_tuck["left_elbow"], edges_tuck, image_tuck) * self.ratio_tuck),
             "La2p": circle_p(max_perp(bdy_part["left_elbow"], bdy_part["left_mid_arm"], edges, image)) * self.ratio2,
             "La3p": circle_p(max_perp(bdy_part["left_maximum_forearm"], bdy_part["left_elbow"], edges, image)) * self.ratio2,
             "La4p": stad_p(bdy_part["left_wrist_width"], bdy_part["left_wrist_width"] / 2) * self.ratio2,
@@ -337,7 +337,7 @@ class YeadonModel:
             "Lb7L": get_length(bdy_part["right_wrist"], bdy_part["right_nails"], image) * self.ratio,
 
             "Lb0p": circle_p(max_perp(bdy_part["right_shoulder_perimeter_width"], bdy_part["right_shoulder"], edges, image)) * self.ratio2,
-            "Lb1p": circle_p(max_perp(bdy_part["right_mid_arm"], bdy_part["right_elbow"], edges, image)) * self.ratio2,
+            "Lb1p": circle_p(max_perp(bdy_part_tuck["left_mid_arm"], bdy_part_tuck["left_elbow"], edges_tuck, image_tuck) * self.ratio_tuck),
             "Lb2p": circle_p(max_perp(bdy_part["right_elbow"], bdy_part["right_mid_arm"], edges, image)) * self.ratio2,
             "Lb3p": circle_p(max_perp(bdy_part["right_maximum_forearm"], bdy_part["right_elbow"], edges, image)) * self.ratio2,
             "Lb4p": stad_p(bdy_part["right_wrist_width"], bdy_part["right_wrist_width"] / 2) * self.ratio2,
