@@ -1,4 +1,4 @@
-name: yeadon
+name: yeadonnn
 channels:
 - conda-forge
 - default
@@ -8,5 +8,6 @@ dependencies:
     - pip
     - pip:
         - yeadon
+        - IPython
         - rembg
         - openpifpaf
