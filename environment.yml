@@ -1,0 +1,12 @@
+name: yeadon
+channels:
+- conda-forge
+- default
+dependencies:
+    - python==3.10
+    - bioviz
+    - pip
+    - pip:
+        - yeadon
+        - rembg
+        - openpifpaf
