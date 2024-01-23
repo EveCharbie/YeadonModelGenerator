@@ -20,6 +20,7 @@ flutter:
     - assets/side.png
     - assets/r_tuck.png
     - assets/tuck.png
+    - assets/pike.png
     - assets/camera_button.png
     - assets/home_page.png
     - assets/flashlight.jpg

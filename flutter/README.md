@@ -9,7 +9,12 @@ First you will have to download flutter:
 ```bash
  sudo snap install flutter --classic
 ```
-After that, you juste have to run the flutter run command in the flutter folder:
+Then before dowloading the app you will have to unlock the developper mode in your android. The method to activate it may differ depending of the model of your device (check how to unlock it on the internet). After that you will be able to find a developper setting where you can activate the developper mode and also allow USB debugging.
+After that, you can plug you usb cable and connect it to your device (be sure that you allow file transfert) and to ensure your device is connected to your computer you can run the command and check if your device is connected:
+```bash
+ flutter devices
+```
+Then you just have to run the flutter run command in the flutter folder:
 ```bash
  flutter run
 ```

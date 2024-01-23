@@ -8,14 +8,14 @@
       gravity: [0, 0, -9.81]
     
     Pelvis:
-      meshfile: Model_mesh/boule.stl
+      meshfile: Model_mesh/pelvis.stl
       meshrt: [-0.175, 0, 0]
       meshxyz: [0, 0, 0]
       translations: xyz
       rotations: xyz
       markers:
         HeadTop:
-          position: [0, 0, 1.0643419976544906] # change depending on the length of hip_joint to top_of_the_head
+          position: [0, 0, 0.83664709539155] # change depending on the length of hip_joint to top_of_the_head
         PelvisBase:
           position: [0, 0, 0]
 
@@ -31,11 +31,6 @@
       meshxyz: [0, -0.025, 0]
       rotations: xyz
       
-    Thorax:
-      meshfile: Model_mesh/thorax.stl
-      meshrt: [-0.15, 0, 0]
-      meshxyz: [0, -0.025, 0]
-      rotations: xyz
     Nipple:
       meshfile: Model_mesh/boule.stl
       meshrt: [-0.15, 0, 0]
@@ -81,7 +76,7 @@
         MiddleRightHand:
           position: [0, 0, -0.1]
         RightKnuckle:
-          position: [0, 0, 0.1305957034115825] # length wrist-knuckle
+          position: [0, 0, 0.12366248253555544] # length wrist-knuckle
     
     LeftUpperArm:
       meshfile: Model_mesh/bras.stl
@@ -104,7 +99,7 @@
         MiddleLeftHand:
           position: [0, 0, -0.1]
         LeftKnuckle:
-          position: [0, 0, 0.1305957034115825] # length wrist-knuckle
+          position: [0, 0, 0.12366248253555544] # length wrist-knuckle
     
     UpperLegs:
       meshfile: Model_mesh/cuisse.stl
@@ -117,14 +112,14 @@
       rotations: xyz
       markers: 
         PikeTargetRightHand:
-          position: [-0.1, 0, 0.16574530977871646] # pike knee to hand
+          position: [-0.1, 0, 0.22417961466271003] # pike knee to hand
         PikeTargetLeftHand:
-          position: [0.1, 0, 0.16574530977871646]
+          position: [0.1, 0, 0.22417961466271003]
       markers: 
         TuckTargetRightHand:
-          position: [-0.1, 0, 0.10326023348953903] # tuck knee to hand
+          position: [-0.1, 0, 0.0816147613872891] # tuck knee to hand
         TuckTargetLeftHand:
-          position: [0.1, 0, 0.10326023348953903]
+          position: [0.1, 0, 0.0816147613872891]
         Knee:
           position: [0, 0, 0]
     

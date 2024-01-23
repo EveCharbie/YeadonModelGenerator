@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:path/path.dart' show join;
 import 'package:path_provider/path_provider.dart';
-//import 'package:intl/intl.dart';
+import 'package:intl/intl.dart';
 
 void main() => runApp(MyApp());
 
@@ -78,7 +78,7 @@ class _CameraScreenState extends State<CameraScreen> {
     'assets/tuck.png',
     'assets/pike.png',
   ];
-  
+
   @override
   void initState() {
     super.initState();
@@ -91,8 +91,10 @@ class _CameraScreenState extends State<CameraScreen> {
 
     _controller = CameraController(
       camera,
-      ResolutionPreset.veryHigh,
+      ResolutionPreset.max,
+      imageFormatGroup: ImageFormatGroup.jpeg,
     );
+    
     _initializeControllerFuture = _controller.initialize();
 
     _initializeControllerFuture.then((_) {
@@ -150,11 +152,8 @@ class _CameraScreenState extends State<CameraScreen> {
       );
     }
 
-    double previewWidth = MediaQuery.of(context).size.width * 0.72;
-    double previewWidthLittleSquares =
-        MediaQuery.of(context).size.width * 0.075;
-
-    double boxSize = previewWidth;
+    double previewWidth = 384 * 0.62;
+    double previewWidthLittleSquares = 384 * 0.075;
 
     return Scaffold(
       appBar: AppBar(
@@ -166,7 +165,7 @@ class _CameraScreenState extends State<CameraScreen> {
             height: 24.0,
           ),
           onPressed: () {
-            Navigator.pop(context); 
+            Navigator.pop(context);
           },
         ),
       ),
@@ -190,8 +189,8 @@ class _CameraScreenState extends State<CameraScreen> {
                   bottom: 0,
                   child: Center(
                     child: Container(
-                      width: boxSize,
-                      height: boxSize,
+                      width: previewWidth,
+                      height: previewWidth,
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.red, width: 2.0),
                       ),
@@ -253,16 +252,15 @@ class _CameraScreenState extends State<CameraScreen> {
                 Positioned.fill(
                   child: Image.asset(
                     _silhouetteImages[_currentSilhouetteIndex],
-                    fit: BoxFit.contain,
                   ),
                 ),
               ],
             ),
-            
+
           ),
           if (_capturedImage != null)
             Container(
-              padding: EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(5.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -272,7 +270,6 @@ class _CameraScreenState extends State<CameraScreen> {
                     },
                     child: Text('Delete'),
                   ),
-                  SizedBox(width: 16.0), // Add some space between buttons
                   ElevatedButton(
                     onPressed: () {
                       _toggleSilhouette();
@@ -281,6 +278,16 @@ class _CameraScreenState extends State<CameraScreen> {
                       });
                     },
                     child: Text('Ok'),
+                  ),
+                  SizedBox(width: 24.0),
+                  FloatingActionButton(
+                  onPressed: _toggleFlash,
+                  child: Image.asset(
+                    'assets/flashlight.jpg',
+                    width: 24.0,
+                    height: 24.0,
+                    color: _isFlashOn ? Colors.white : Colors.black,
+                    ),
                   ),
                 ],
               ),
@@ -300,9 +307,10 @@ class _CameraScreenState extends State<CameraScreen> {
                             final XFile picture = await _controller.takePicture();
                             final String directory =
                                 (await getExternalStorageDirectory())?.path ?? "";
-                            //final String formattedTimestamp = DateFormat('yyyy-MM-dd_HHmmss').format(DateTime.now()); // not used in the final version
+                            final String formattedTimestamp =
+                                DateFormat('yyyy-MM-dd_HHmmss').format(DateTime.now());
                             final String fileName =
-                                '${widget.imageName}_${position}.jpg';
+                                '${widget.imageName}_${position}_$formattedTimestamp.jpg';
                             final String filePath = join(directory, fileName);
                             await picture.saveTo(filePath);
                             setState(() {

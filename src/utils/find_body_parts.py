@@ -97,6 +97,20 @@ def find_top_of_head(data: np.ndarray, edges: np.ndarray):
 
 
 def get_crotch_right_left(edges: np.ndarray, data: np.ndarray):
+    """Finds the left and right crotch given an image.
+
+     Parameters
+     ----------
+     data : numpy array
+         The keypoints of the image
+     edges : numpy array
+         The image to be processed.
+
+     Returns
+     -------
+     numpy array
+         The coordinates of the right and the left crotch in the image.
+     """
     # crop the image to see the right hip to the left knee
     crotch_zone = _crop(edges, data[12], data[13])
     # now the cropped image only has the crotch as an edge so we can get it like the head
@@ -111,6 +125,24 @@ def get_crotch_right_left(edges: np.ndarray, data: np.ndarray):
 
 
 def get_mid_thigh_right_left(data: np.ndarray, r_crotch: np.ndarray, l_crotch: np.ndarray):
+    """Finds the left and right thigh given an image and the position of the right and left crotch.
+
+     Parameters
+     ----------
+     r_crotch : numpy array
+         The position of the left crotch in the image
+     l_crotch : numpy array
+         The position of the left crotch in the image
+     data : numpy array
+         The keypoints of the image
+     edges : numpy array
+         The image to be processed.
+
+     Returns
+     -------
+     numpy array
+         The coordinates of the right and the left thigh in the image.
+     """
     mid_thigh_right, mid_thigh_left = (data[14][0:2] + r_crotch) / 2, (
         data[13][0:2] + l_crotch
     ) / 2

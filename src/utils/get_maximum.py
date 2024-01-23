@@ -144,6 +144,7 @@ def get_maximum_pit(start: np.ndarray, edges: np.ndarray):
     vector = np.array([point2[0] - point[0], point2[1] - point[1]])
     angle_radians = np.arctan2(vector[1], vector[0])
     max_save = find_edge(point, angle_radians, edges, save=[])
+    # separate left and right to keep the direction for left and right
     angle_radians_left = angle_radians
     angle_radians_right = angle_radians
     max_save_right = max_save
@@ -168,6 +169,22 @@ def get_maximum_pit(start: np.ndarray, edges: np.ndarray):
 
     return point[0], int(distance)
 
+def get_side_nipple(start: np.ndarray, edges: np.ndarray):
+    point = np.array([start[1], start[0]])
+    point2 = np.array([point[0], point[1] + 1])
+    vector = np.array([point2[0] - point[0], point2[1] - point[1]])
+    angle_radians = np.arctan2(vector[1], vector[0])
+    max_save = find_edge(point, angle_radians, edges, save=[])
+    while True:
+        point = np.array([point[0] + 1, start[0]])
+        point2 = np.array([point[0], start[0] + 1])
+        vector = np.array([point2[0] - point[0], point2[1] - point[1]])
+        angle_radians = np.arctan2(vector[1], vector[0])
+        current_max = find_edge(point, angle_radians, edges, save=[])
+        if np.linalg.norm(max_save) < np.linalg.norm(current_max):
+            break
+        max_save = current_max
+    return max_save[0]
 
 def get_length(point1: np.ndarray, point2: np.ndarray, image: np.ndarray):
     length = np.linalg.norm(point1 - point2)
