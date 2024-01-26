@@ -7,7 +7,7 @@ import yeadon
 import yaml
 from math import pi
 
-from biomake_models_prev import combine_rel_inertia
+from src.biomake.biomake_models_prev import combine_rel_inertia
 
 
 # From [https://stackoverflow.com/questions/71109838/numpy-typing-with-specific-shape-and-datatype]
@@ -27,7 +27,86 @@ def format_mat(mat: Mat3x3, leading=""):
         f"{leading}{mat[2, 0]} {mat[2, 1]} {mat[2, 2]}"
     )
 
-
+# def combine_rel_inertia(human, solid_names, xyz_global):
+#     """
+#     Combine the relative inertia of several segments into one.
+#     P -> s0, s1
+#     T -> s2
+#     C -> s3, s4, s5, s6, s7
+#     """
+#
+#     solids = {"s0": human.P.solids[0],
+#               "s1": human.P.solids[1],
+#               "s2": human.T.solids[0],
+#               "s3": human.C.solids[0],
+#               "s4": human.C.solids[1],
+#               "s5": human.C.solids[2],
+#               "s6": human.C.solids[3],
+#               "s7": human.C.solids[4],
+#               "a0": human.A1.solids[0],
+#               "a1": human.A1.solids[1],
+#               "a2": human.A2.solids[0],
+#               "a3": human.A2.solids[1],
+#               "a4": human.A2.solids[2],
+#               "a5": human.A2.solids[3],
+#               "a6": human.A2.solids[4],
+#               "b0": human.B1.solids[0],
+#               "b1": human.B1.solids[1],
+#               "b2": human.B2.solids[0],
+#               "b3": human.B2.solids[1],
+#               "b4": human.B2.solids[2],
+#               "b5": human.B2.solids[3],
+#               "b6": human.B2.solids[4],
+#               "j0": human.J1.solids[0],
+#               "j1": human.J1.solids[1],
+#               "j2": human.J1.solids[2],
+#               "j3": human.J2.solids[0],
+#               "j4": human.J2.solids[1],
+#               "j5": human.J2.solids[2],
+#               "j6": human.J2.solids[3],
+#               "j7": human.J2.solids[4],
+#               "j8": human.J2.solids[5],
+#               "k0": human.K1.solids[0],
+#               "k1": human.K1.solids[1],
+#               "k2": human.K1.solids[2],
+#               "k3": human.K2.solids[0],
+#               "k4": human.K2.solids[1],
+#               "k5": human.K2.solids[2],
+#               "k6": human.K2.solids[3],
+#               "k7": human.K2.solids[4],
+#               "k8": human.K2.solids[5],
+#               }
+#
+#     segments = []
+#     mass = 0
+#     for solid_name in solid_names:
+#         segments += [solids[solid_name]]
+#         mass += segments[-1].mass
+#
+#     com = np.zeros((3, ))
+#     for i_segment, segment in enumerate(segments):
+#         com += segment.mass * (np.array(segment.center_of_mass).reshape((3, )) - xyz_global)
+#     com /= mass
+#
+#     inertia = np.zeros((3, 3))
+#     for i_segment, segment in enumerate(segments):
+#         current_com = np.array(segment.center_of_mass).reshape((3, )) - xyz_global
+#         dist = current_com - com
+#         a = dist[0]
+#         b = dist[1]
+#         c = dist[2]
+#
+#         inertia[0, 0] += segment.rel_inertia[0, 0] + segment.mass * (b ** 2 + c ** 2)
+#         inertia[0, 1] += segment.rel_inertia[0, 1] - segment.mass * (-a * b)
+#         inertia[0, 2] += segment.rel_inertia[0, 2] - segment.mass * (-a * c)
+#         inertia[1, 0] += segment.rel_inertia[1, 0] - segment.mass * (-a * b)
+#         inertia[1, 1] += segment.rel_inertia[1, 1] + segment.mass * (c ** 2 + a ** 2)
+#         inertia[1, 2] += segment.rel_inertia[1, 2] - segment.mass * (-b * c)
+#         inertia[2, 0] += segment.rel_inertia[2, 0] - segment.mass * (-a * c)
+#         inertia[2, 1] += segment.rel_inertia[2, 1] - segment.mass * (-b * c)
+#         inertia[2, 2] += segment.rel_inertia[2, 2] + segment.mass * (a ** 2 + b ** 2)
+#
+#     return mass, com, inertia
 class BioModMarker:
     def __init__(self, label: str, parent: str, position: Vec3, technical: int, anatomical: int, axestoremove: str):
         self.label = label

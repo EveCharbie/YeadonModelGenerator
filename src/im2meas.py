@@ -28,7 +28,8 @@ class YeadonModel:
                  rotation: int,
                  mass: float,
                  calibration: int,
-                 distance: int):
+                 distance: int,
+                 luminosity: int):
         """Creates a YeadonModel object from an image path.
 
         Parameters
@@ -47,8 +48,9 @@ class YeadonModel:
             The YeadonModel object with the key points of the image.
         """
         # front
-        pil_im, image, im, original_img, min_ratio = create_resize_remove_im(impath_front, calibration, rotation)
+        pil_im, image, im, original_img, min_ratio = create_resize_remove_im_front(impath_front, calibration, rotation, luminosity)
         edges = thresh(im, image, 2)
+
         # edges short was for the edges for the hip to the knee because the original detection had some difficulty to detect the black of the short
         edges_short = thresh(im, image, 2)
         predictor = openpifpaf.Predictor(checkpoint="shufflenetv2k30-wholebody")
@@ -91,7 +93,8 @@ class YeadonModel:
         self.ratio_r_tuck, self.ratio_r_tuck2 = get_new_ratio(distance, distance - 50, 150, self.ratio_r_tuck, self.ratio_r_tuck2)
         # pike
         pil_pike_im, image_pike, im_pike, original_img_pike, min_ratio = create_resize_remove_im(impath_pike, calibration, rotation)
-
+        img = Image.fromarray(image_pike)
+        img.save("t.jpg")
         predictions3, gt_anns3, image_meta3 = predictor.pil_image(pil_pike_im)
         data_pike = predictions3[0].data[:, 0:2]
         self.ratio_pike, self.ratio_pike2 = get_ratio(original_img_pike, min_ratio)
@@ -133,6 +136,8 @@ class YeadonModel:
             "nose": 0,
             "right_eye": 60,
             "right_ear": 23,
+            "nose_up": 72,
+            "below_ear": 27,
             "right_shoulder": 6,
             "right_elbow": 8,
             "right_wrist": 10,
@@ -191,7 +196,7 @@ class YeadonModel:
 
         # front
         bdy_part["left_nails"] = (data[102] + data[103]) / 2
-        bdy_part["right_nails"] = (data[123] + data[124]) / 2
+        bdy_part["right_nails"] = data[123]#(data[123] + data[124]) / 2
         left_lowest_front_rib_approx = (data[5] + data[11] * 1.1) / 2.1
         bdy_part["left_lowest_front_rib"] = left_lowest_front_rib_approx
         right_lowest_front_rib_approx = (data[6] + data[12] * 1.1) / 2.1
@@ -220,8 +225,10 @@ class YeadonModel:
         bdy_part["right_mid_elbow_wrist"] = (data[10] + data[8]) / 2
         bdy_part["right_maximum_forearm"] = np.array(get_max_pt(data[8], bdy_part["right_mid_elbow_wrist"], edges))
         bdy_part["left_maximum_forearm"] = np.array(get_max_pt(data[7], bdy_part["left_mid_elbow_wrist"], edges))
-        bdy_part["right_maximum_calf"] = np.array(get_max_pt(data[14] + np.array([0, 5]), data[16], edges))
-        bdy_part["left_maximum_calf"] = np.array(get_max_pt(data[13] + np.array([0, 5]), data[15], edges))
+        #bdy_part["right_maximum_calf"] = np.array(get_max_pt(data[14] + np.array([0, 5]), data[16], edges))
+        #bdy_part["left_maximum_calf"] = np.array(get_max_pt(data[13] + np.array([0, 5]), data[15], edges))
+        bdy_part["right_maximum_calf"] = (data[14] + data[16]) / 2
+        bdy_part["left_maximum_calf"] = (data[13] + data[15]) / 2
         bdy_part["right_crotch"], bdy_part["left_crotch"] = get_crotch_right_left(edges_short, data)
         bdy_part["right_mid_thigh"], bdy_part["left_mid_thigh"] = get_mid_thigh_right_left(data, bdy_part["right_crotch"], bdy_part["left_crotch"])
         bdy_part["left_wrist_width"] = max_perp(bdy_part["left_wrist"], bdy_part["left_elbow"], edges, image)
@@ -247,7 +254,7 @@ class YeadonModel:
         bdy_part_r_side["right_lowest_front_rib"] = right_lowest_front_rib_approx
         bdy_part_r_side["right_nipple"] = np.array([right_lowest_front_rib_approx[0], (right_lowest_front_rib_approx[1] + data_r_side[6][1]) / 2])
         bdy_part_r_side["right_umbiculus"] = (right_lowest_front_rib_approx + data_r_side[12]) / 2
-        bdy_part_r_side["right_maximum_calf"] = get_max_pt(data_r_side[14] + np.array([0, 5]), data_r_side[16], edges_r_side)
+        #bdy_part_r_side["right_maximum_calf"] = get_max_pt(data_r_side[14] + np.array([0, 5]), data_r_side[16], edges_r_side)
         bdy_part_r_side["right_nipple_pit"] = get_side_nipple(bdy_part_r_side["right_nipple"], edges_r_side)
         # front tuck
         point, dist = get_maximum_pit(data_tuck[16], edges_tuck)
@@ -289,7 +296,7 @@ class YeadonModel:
             "Ls3p": stad_p(max_line(bdy_part["right_nipple"], bdy_part["left_nipple"], edges, image) * self.ratio,
                            max_line(bdy_part_r_side["right_nipple_pit"] + np.array([-2, 0]), bdy_part_r_side["right_nipple_pit"] + np.array([-5, 0]), edges_r_side, image_r_side) * self.ratio_r_side),
             "Ls5p": circle_p(get_length(bdy_part["left_acromion"], bdy_part["right_acromion"], image) * self.ratio),
-            "Ls6p": circle_p(get_length(bdy_part["nose_right"], bdy_part["nose_left"], image)) * self.ratio,
+            "Ls6p": stad_p(get_length(bdy_part["nose_right"], bdy_part["nose_left"], image) * self.ratio, max_line(bdy_part_r_side["nose_up"], bdy_part_r_side["below_ear"], edges_r_side, image_r_side) * self.ratio_r_side),
             "Ls7p": stad_p(get_length(bdy_part["left_ear"], bdy_part["right_ear"], image) * self.ratio,
                            max_line(bdy_part_r_side["right_ear"], bdy_part_r_side["right_eye"], edges_r_side, image_r_side) * self.ratio_r_side),
 
@@ -314,12 +321,13 @@ class YeadonModel:
 
             "La0p": circle_p(max_perp(bdy_part["left_shoulder_perimeter_width"], bdy_part["left_shoulder"], edges,
                                       image)) * self.ratio2,
-            "La1p": circle_p(max_perp(bdy_part_tuck["left_mid_arm"], bdy_part_tuck["left_elbow"], edges_tuck, image_tuck) * self.ratio_tuck),
+            "La1p": circle_p(min(max_perp(bdy_part_tuck["left_mid_arm"], bdy_part_tuck["left_elbow"], edges_tuck, image_tuck) * self.ratio_tuck,
+                                 max_perp(bdy_part["left_mid_arm"], bdy_part["left_elbow"], edges, image) * self.ratio)),
             "La2p": circle_p(max_perp(bdy_part["left_elbow"], bdy_part["left_mid_arm"], edges, image)) * self.ratio2,
             "La3p": circle_p(max_perp(bdy_part["left_maximum_forearm"], bdy_part["left_elbow"], edges, image)) * self.ratio2,
             "La4p": stad_p(bdy_part["left_wrist_width"], bdy_part["left_wrist_width"] / 2) * self.ratio2,
             #"La4p": stad_p(bdy_part["left_wrist_width"] * self.ratio2, bdy_part_tuck["left_wrist_width"] * self.ratio_tuck) ,
-            "La5p": stad_p(max_perp(bdy_part["left_base_of_thumb"], bdy_part["left_base_of_thumb"] + np.array([1, 0]), edges,image) * self.ratio2, 0),
+            "La5p": stad_p(max_perp(bdy_part["left_base_of_thumb"], bdy_part["left_base_of_thumb"] + np.array([1, 0]), edges, image) * self.ratio2, 0),
             "La6p": stad_p(bdy_part["left_knuckles_width"], bdy_part["left_knuckles_width"] / 3) * self.ratio2,
             "La7p": stad_p(bdy_part["left_nails_width"], bdy_part["left_nails_width"] / 3) * self.ratio2,
 
@@ -337,7 +345,8 @@ class YeadonModel:
             "Lb7L": get_length(bdy_part["right_wrist"], bdy_part["right_nails"], image) * self.ratio,
 
             "Lb0p": circle_p(max_perp(bdy_part["right_shoulder_perimeter_width"], bdy_part["right_shoulder"], edges, image)) * self.ratio2,
-            "Lb1p": circle_p(max_perp(bdy_part_tuck["left_mid_arm"], bdy_part_tuck["left_elbow"], edges_tuck, image_tuck) * self.ratio_tuck),
+            "Lb1p": circle_p(min(max_perp(bdy_part_tuck["left_mid_arm"], bdy_part_tuck["left_elbow"], edges_tuck, image_tuck) * self.ratio_tuck,
+                             max_perp(bdy_part["right_mid_arm"], bdy_part["right_elbow"], edges, image) * self.ratio)),
             "Lb2p": circle_p(max_perp(bdy_part["right_elbow"], bdy_part["right_mid_arm"], edges, image)) * self.ratio2,
             "Lb3p": circle_p(max_perp(bdy_part["right_maximum_forearm"], bdy_part["right_elbow"], edges, image)) * self.ratio2,
             "Lb4p": stad_p(bdy_part["right_wrist_width"], bdy_part["right_wrist_width"] / 2) * self.ratio2,
@@ -472,6 +481,15 @@ class YeadonModel:
         self.keypoints["Lk6d"] = loop(self.keypoints["Lk6p"], self.keypoints["Lk6d"], "Lk6d")
         self.keypoints["Lk8w"] = loop(self.keypoints["Lk8p"], self.keypoints["Lk8w"], "Lk8w")
         self.keypoints["Lk9w"] = loop(self.keypoints["Lk9p"], self.keypoints["Lk9w"], "Lk9w")
+        if abs(self.keypoints["La5w"] - self.keypoints["Lb5w"]) > 2:
+            self.keypoints["Lb5w"] = self.keypoints["La5w"]
+            self.keypoints["Lb5p"] = self.keypoints["La5p"]
+        if abs(self.keypoints["La6w"] - self.keypoints["Lb6w"]) > 2:
+            self.keypoints["Lb6w"] = self.keypoints["La6w"]
+            self.keypoints["Lb6p"] = self.keypoints["La6p"]
+        if abs(self.keypoints["La7w"] - self.keypoints["Lb7w"]) > 2:
+            self.keypoints["Lb7w"] = self.keypoints["La7w"]
+            self.keypoints["Lb7p"] = self.keypoints["La7p"]
 
     def _verify_keypoints(self):
         """
@@ -498,10 +516,14 @@ def main():
     parser.add_argument("-c", "--calibration", type=int, default=0, help="Enter 1 if you want to calibrate the images")
     # Used to change the distance between the camera and the wall just in case
     parser.add_argument("--distance", type=int, default=350, help="Enter the distance between the camera and the wall")
+    parser.add_argument("-l", "--luminosity", type=int, default=0, help="Enter 1 if you want to increase the luminosity of the images")
+
 
     args = parser.parse_args()
-    yeadon = YeadonModel(args.front_img, args.pike_img, args.right_tuck_img, args.side_img, args.tuck_img, args.rotation, args.mass, args.calibration, args.distance)
+    yeadon = YeadonModel(args.front_img, args.pike_img, args.right_tuck_img, args.side_img, args.tuck_img, args.rotation, args.mass, args.calibration, args.distance, args.luminosity)
 
+
+    return yeadon
 
 if __name__ == "__main__":
     main()

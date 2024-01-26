@@ -116,7 +116,6 @@ def generate_yml(pelvis: float, knuckle: float, pike_hand: float, tuck_hand: flo
           position: [-0.1, 0, {pike_hand}] # pike knee to hand
         PikeTargetLeftHand:
           position: [0.1, 0, {pike_hand}]
-      markers: 
         TuckTargetRightHand:
           position: [-0.1, 0, {tuck_hand}] # tuck knee to hand
         TuckTargetLeftHand:

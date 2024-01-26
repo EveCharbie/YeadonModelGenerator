@@ -1,6 +1,6 @@
 import numpy as np
 import PIL
-from PIL import Image
+from PIL import Image, ImageEnhance
 from rembg import remove
 import cv2 as cv
 from scipy.ndimage import rotate
@@ -34,6 +34,7 @@ def _resize(im):
         return im.copy()
     x_resize, y_resize = int(min_ratio * x_im), int(min_ratio * y_im)
     return im.resize((y_resize, x_resize)), min_ratio
+
 
 
 def canny_edges(im: np.ndarray, image: np.ndarray):
@@ -77,6 +78,7 @@ def thresh(im: np.ndarray, image: np.ndarray, line_size):
     PIL Image
         the edges of the image after thresh
     """
+
     grayscale_image = cv.cvtColor(im, cv.COLOR_BGR2GRAY)
     _, binary_silhouette = cv.threshold(grayscale_image, 5, 255, cv.THRESH_BINARY)
 
@@ -124,6 +126,43 @@ def calibrate_image(im):
     undist = cv.undistort(im, mtx, dist, None, newcameramtx)
     return undist
 
+def create_resize_remove_im_front(im_path: str, calibration: int, rotation: int, luminosity):
+    """
+    Take and image path and return image without background, resized and the pil version
+    Parameters
+    ----------
+    calibration : int
+    rotation : int
+    im_path: str
+
+    Returns
+    -------
+    PIL Image
+    """
+    pil_im = PIL.Image.open(im_path).convert("RGB")
+    if luminosity:
+        img_enhancer = ImageEnhance.Brightness(pil_im)
+        factor = 1.5
+        pil_im = img_enhancer.enhance(factor)
+    original_image = np.asarray(pil_im)
+    pil_im, min_ratio = _resize(pil_im)
+    image_resized = np.asarray(pil_im)
+    im = remove(image_resized)
+    if rotation:
+        im = rotate(im, -90, reshape=True, mode='nearest')
+        image_resized = rotate(image_resized, -90, reshape=True, mode='nearest')
+        original_image = rotate(original_image, -90, reshape=True, mode='nearest')
+    if calibration:
+        original_image = calibrate_image(original_image)
+        original_pil_image = Image.fromarray(original_image)
+        original_pil_image.save("t.jpg")
+        image_resized, min_ratio2 = _resize(original_pil_image)
+        image_resized = np.asarray(image_resized)
+        im = remove(image_resized)
+        pil_im = Image.fromarray(image_resized)
+    else:
+        pil_im = pil_im.transpose(Image.ROTATE_270)
+    return pil_im, image_resized, im, original_image, min_ratio
 
 def create_resize_remove_im(im_path: str, calibration: int, rotation: int):
     """

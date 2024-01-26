@@ -3,10 +3,21 @@ export PYTHONPATH := $(CURDIR):$(PYTHONPATH)
 alexandre:
 	python src/im2meas.py img/al/*
 
+romane:
+	python src/im2meas.py img/romane/*
+josee:
+	python src/im2meas.py img/josee/*
+mathieu:
+	python src/im2meas.py img/mathieu/*
+francisca:
+	python src/im2meas.py img/francisca/*
+
 kael:
 	python src/im2meas.py img/kl/*
+
 eve:
 	python src/im2meas.py img/e/*
+
 pierre:
 	python src/im2meas.py img/pierre/*
 
@@ -15,13 +26,19 @@ william:
 
 william_calib:
 	python src/im2meas.py img/william/w/w/* --calibration 1
+
 martin:
 	python src/im2meas.py img/m/*
 
+mohammad:
+	python src/im2meas.py img/mohammad/*
+
 run:
 	python src/im2meas.py img/*.*
+
 run_calibration:
 	python src/im2meas.py img/*.* --calibration 1
+
 run_with_mass:
 	python src/im2meas.py img/* -m "${mass}"
 
