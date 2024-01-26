@@ -509,7 +509,7 @@ def main():
     parser.add_argument("side_img", type=str, help="Path to the side image")
     parser.add_argument("tuck_img", type=str, help="Path to the tuck image")
     # This is used because some phones rotate the images taken from the app, so set to 1 if you want to rotate it back to the original state
-    parser.add_argument("--rotation", type=int, default=1, help="Enter 1 if you need to rotate the images")
+    parser.add_argument("--rotation", type=int, default=0, help="Enter 1 if you need to rotate the images")
 
     parser.add_argument("-m", "--mass", type=float, default=0, help="Enter the mass of the person")
     # Used if you want to use the calibration because it can be wrong

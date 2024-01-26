@@ -9,9 +9,6 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"message": "Hello, FastAPI!"}
 
 class YeadonModelRequest(BaseModel):
     impath_front: str

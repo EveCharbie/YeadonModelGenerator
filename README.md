@@ -86,3 +86,21 @@ After that you can use the following command to start the script witht the camer
 ```bash
 make run_calibration
 ```
+## Mass
+You can add a mass
+
+```bash
+make run_with_mass mass=YOUR_MASS
+```
+## Luminosity
+If the script fail you can enhance the luminosity using
+
+```bash
+make run_luminosity
+```
+
+## rotate
+Sometimes the app gives a rotated image, to rotate it back use:
+```bash
+make run_rotate
+```
