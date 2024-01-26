@@ -1,6 +1,5 @@
 export PYTHONPATH := $(CURDIR):$(PYTHONPATH)
 
-
 run:
 	python src/im2meas.py img/*.*
 
@@ -24,6 +23,10 @@ comparison:
 
 
 #for debug:
+# To run the code with more options than just 1 everytime you have to export your pythonpath use:
+# YOUR_PATH=pwd
+# export PYTHONPATH=YOUR_PATH
+#
 alexandre:
 	python src/im2meas.py img/al/*
 
