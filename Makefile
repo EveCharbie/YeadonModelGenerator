@@ -8,7 +8,7 @@ run_calibration:
 run_luminosity:
 	python src/im2meas.py img/*.* -l 1
 run_rotate:
-	python src/im2meas.py img/*.* -r 1
+	python src/im2meas.py img/*.* --rotation 1
 run_with_mass:
 	python src/im2meas.py img/* -m "${mass}"
 biomake:

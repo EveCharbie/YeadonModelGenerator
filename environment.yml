@@ -4,6 +4,7 @@ channels:
 - default
 dependencies:
     - python==3.10
+    - bioviz
     - pip
     - uvicorn
     - fastapi
